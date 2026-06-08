@@ -99,8 +99,8 @@ class _SideTargetCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return SizedBox(
-      width: 96,
-      height: 98,
+      width: 104,
+      height: 100,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: const Color(0xFFF7F9FA),
@@ -115,7 +115,15 @@ class _SideTargetCard extends StatelessWidget {
             children: <Widget>[
               Icon(icon, color: scheme.primary),
               const SizedBox(height: 7),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
               const SizedBox(height: 2),
               FittedBox(
                 fit: BoxFit.scaleDown,

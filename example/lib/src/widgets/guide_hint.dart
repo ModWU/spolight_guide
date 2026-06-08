@@ -78,13 +78,13 @@ class GuideHintBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 8,
             children: <Widget>[
-              if (onSecondary != null) ...<Widget>[
+              if (onSecondary != null)
                 TextButton(onPressed: onSecondary, child: const Text('Back')),
-                const SizedBox(width: 8),
-              ],
               FilledButton(onPressed: onPrimary, child: Text(primaryLabel)),
             ],
           ),

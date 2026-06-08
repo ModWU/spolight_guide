@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotlight_guide/spotlight_guide.dart';
+import 'package:spotlight_guide_example/src/pages/side_anchor_page.dart';
 import 'package:spotlight_guide_example/src/scenarios/custom_anchor_scenario.dart';
 import 'package:spotlight_guide_example/src/scenarios/lazy_target_reveal_scenario.dart';
 import 'package:spotlight_guide_example/src/scenarios/side_anchor_scenario.dart';
@@ -119,6 +120,31 @@ void main() {
     expect(find.text('Large group'), findsOneWidget);
     expect(find.text('Custom anchor'), findsOneWidget);
     expect(find.text('Controller API'), findsOneWidget);
+  });
+
+  testWidgets('side anchor page target cards do not overflow on tall phones', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(const MaterialApp(home: SideAnchorPage()));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Left arrow'), findsWidgets);
+    expect(find.text('Right arrow'), findsWidgets);
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Back'), findsOneWidget);
+    expect(find.text('Done'), findsOneWidget);
   });
 
   testWidgets('barrier tap skips the home intro', (WidgetTester tester) async {
