@@ -82,17 +82,24 @@ void main() {
       waitFor: find.text('Tap outside anytime'),
     );
     await _capture(tester, 'barrier_dismiss_01.png');
-    await _hideGuide(tester);
+    await tester.tapAt(const Offset(32, 760));
+    await tester.pumpAndSettle();
+    await _capture(tester, 'barrier_dismiss_02.png');
 
     await tester.tap(find.text('Final'));
     await tester.pumpAndSettle();
     await _pumpUntilFound(tester, find.text('Complete-only start'));
-    await _capture(tester, 'barrier_dismiss_02.png');
+    await _capture(tester, 'barrier_dismiss_03.png');
+    await tester.tapAt(const Offset(32, 760));
+    await tester.pumpAndSettle();
+    await _capture(tester, 'barrier_dismiss_04.png');
     await tester.tap(find.text('Next').hitTestable());
     await tester.pumpAndSettle();
     await _pumpUntilFound(tester, find.text('Complete-only final step'));
-    await _capture(tester, 'barrier_dismiss_03.png');
-    await _hideGuide(tester);
+    await _capture(tester, 'barrier_dismiss_05.png');
+    await tester.tapAt(const Offset(32, 760));
+    await tester.pumpAndSettle();
+    await _capture(tester, 'barrier_dismiss_06.png');
   });
 
   testWidgets('capture side anchor frames', (WidgetTester tester) async {
