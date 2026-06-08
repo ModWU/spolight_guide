@@ -9,10 +9,13 @@ import 'package:spotlight_guide_example/src/spotlight_guide_example_app.dart';
 
 void main() {
   test('lazy target scenario uses automatic vertical placement', () {
+    final ScrollController pageController = ScrollController();
     final ScrollController controller = ScrollController();
+    addTearDown(pageController.dispose);
     addTearDown(controller.dispose);
 
     final SpotlightGuideStep step = buildLazyTargetRevealScenario(
+      pageController: pageController,
       historyController: controller,
     ).single;
 

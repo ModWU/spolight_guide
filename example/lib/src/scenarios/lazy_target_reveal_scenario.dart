@@ -5,6 +5,7 @@ import '../guide_target_ids.dart';
 import '../widgets/guide_hint.dart';
 
 List<SpotlightGuideStep> buildLazyTargetRevealScenario({
+  required ScrollController pageController,
   required ScrollController historyController,
 }) {
   return <SpotlightGuideStep>[
@@ -13,13 +14,20 @@ List<SpotlightGuideStep> buildLazyTargetRevealScenario({
         targetId: lazyHistoryId,
         placement: SpotlightGuidePlacement.verticalAuto,
         maxWidth: 320,
-        onReveal: (SpotlightGuideRevealContext context) {
-          return context.scrollToIndex(
+        onReveal: (SpotlightGuideRevealContext context) async {
+          await context.scrollToOffset(
+            controller: pageController,
+            offset: 220,
+            duration: const Duration(milliseconds: 520),
+            curve: Curves.easeOutCubic,
+            settleFrames: 1,
+          );
+          await context.scrollToIndex(
             controller: historyController,
             index: lazyHistoryIndex,
             itemExtent: historyItemExtent,
             alignment: 0.4,
-            duration: const Duration(milliseconds: 450),
+            duration: const Duration(milliseconds: 720),
             curve: Curves.easeOutCubic,
             settleFrames: 2,
           );

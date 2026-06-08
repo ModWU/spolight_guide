@@ -128,12 +128,20 @@ class SpotlightGuideNoAnchor extends SpotlightGuideBubbleAnchor {
 /// the outline must begin or end exactly at the body connection.
 class SpotlightGuideAnchorPathBuilder {
   SpotlightGuideAnchorPathBuilder({
+    required this.direction,
     required Offset Function(double side, double outward) pointBuilder,
     required this.startSide,
     required this.endSide,
   }) : _pointBuilder = pointBuilder;
 
   final Offset Function(double side, double outward) _pointBuilder;
+
+  /// Physical side where the anchor is attached and points outward.
+  ///
+  /// Use this when a custom shape needs side-specific geometry beyond the
+  /// normalized coordinate transform. For example, a custom arrow can switch
+  /// control points when the bubble anchor is on the left or right side.
+  final SpotlightGuideIndicatorDirection direction;
 
   /// Normalized side value for the connection start on the bubble body edge.
   final double startSide;
@@ -300,6 +308,7 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
     final SpotlightGuideAnchorPathBuilder builder = switch (resolved
         .direction) {
       SpotlightGuideIndicatorDirection.up => SpotlightGuideAnchorPathBuilder(
+        direction: resolved.direction,
         startSide: startSide,
         endSide: endSide,
         pointBuilder: (double side, double outward) => Offset(
@@ -308,6 +317,7 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
         ),
       ),
       SpotlightGuideIndicatorDirection.down => SpotlightGuideAnchorPathBuilder(
+        direction: resolved.direction,
         startSide: startSide,
         endSide: endSide,
         pointBuilder: (double side, double outward) => Offset(
@@ -317,6 +327,7 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
         ),
       ),
       SpotlightGuideIndicatorDirection.left => SpotlightGuideAnchorPathBuilder(
+        direction: resolved.direction,
         startSide: startSide,
         endSide: endSide,
         pointBuilder: (double side, double outward) => Offset(
@@ -325,6 +336,7 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
         ),
       ),
       SpotlightGuideIndicatorDirection.right => SpotlightGuideAnchorPathBuilder(
+        direction: resolved.direction,
         startSide: startSide,
         endSide: endSide,
         pointBuilder: (double side, double outward) => Offset(

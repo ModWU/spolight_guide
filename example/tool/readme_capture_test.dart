@@ -39,29 +39,59 @@ void main() {
       waitFor: find.text('Already visible.'),
     );
     await _capture(tester, 'same_step_scroll_01.png');
-    await _pumpFor(tester, const Duration(milliseconds: 2500));
+    await _pumpFor(tester, const Duration(milliseconds: 900));
+    for (int i = 2; i <= 15; i++) {
+      await _capture(tester, _numberedFrame('same_step_scroll', i));
+      await _pumpFor(tester, const Duration(milliseconds: 45));
+    }
     await _pumpUntilFound(tester, find.text('Offscreen'));
-    await _capture(tester, 'same_step_scroll_02.png');
-    await _pumpFor(tester, const Duration(milliseconds: 2500));
-    await _capture(tester, 'same_step_scroll_03.png');
+    await _capture(tester, 'same_step_scroll_16.png');
     await _hideGuide(tester);
   });
 
   testWidgets('capture lazy target reveal frame', (WidgetTester tester) async {
     await _pumpScenario(tester, 'Lazy target');
-    await _pumpFor(tester, const Duration(milliseconds: 1200));
-    await _pumpUntilFound(tester, find.text('Lazy list target'));
+    await _pumpUntilFound(
+      tester,
+      find.text('Lazy list target'),
+      timeout: const Duration(seconds: 5),
+    );
     await _capture(tester, 'lazy_target_01.png');
+    await _hideGuide(tester);
+
+    await tester.tap(find.byTooltip('Replay guide'));
+    await tester.pump();
+    await _capture(tester, 'lazy_target_scroll_01.png');
+    for (int i = 2; i <= 25; i++) {
+      await _pumpFor(tester, const Duration(milliseconds: 55));
+      await _capture(tester, _numberedFrame('lazy_target_scroll', i));
+    }
+    await _pumpUntilFound(
+      tester,
+      find.text('Lazy list target'),
+      timeout: const Duration(seconds: 5),
+    );
+    await _capture(tester, 'lazy_target_scroll_26.png');
     await _hideGuide(tester);
   });
 
-  testWidgets('capture barrier dismiss frame', (WidgetTester tester) async {
+  testWidgets('capture barrier dismiss frames', (WidgetTester tester) async {
     await _pumpScenario(
       tester,
       'Barrier dismiss',
       waitFor: find.text('Tap outside anytime'),
     );
     await _capture(tester, 'barrier_dismiss_01.png');
+    await _hideGuide(tester);
+
+    await tester.tap(find.text('Final'));
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Complete-only start'));
+    await _capture(tester, 'barrier_dismiss_02.png');
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Complete-only final step'));
+    await _capture(tester, 'barrier_dismiss_03.png');
     await _hideGuide(tester);
   });
 
@@ -268,4 +298,8 @@ Future<void> _capture(WidgetTester tester, String fileName) async {
     find.byType(SpotlightGuideExampleApp),
     matchesGoldenFile('../../doc/images/readme/frames/$fileName'),
   );
+}
+
+String _numberedFrame(String prefix, int index) {
+  return '${prefix}_${index.toString().padLeft(2, '0')}.png';
 }

@@ -19,21 +19,27 @@ def main() -> None:
         duration=1350,
     )
     build_gif(
-        "scroll_and_reveal.gif",
+        "same_step_scroll.gif",
         [
-            ("same_step_scroll_01.png", "Same-step visible target"),
-            ("same_step_scroll_02.png", "Auto-scroll to offscreen target"),
-            ("same_step_scroll_03.png", "Show hint after scroll settles"),
-            ("lazy_target_01.png", "Reveal a lazy-list target"),
+            *[
+                (f"same_step_scroll_{index:02}.png", "Same-step auto scroll")
+                for index in range(1, 16)
+            ],
+            *[
+                ("same_step_scroll_16.png", "Hint appears after scroll settles")
+                for _ in range(4)
+            ],
         ],
-        duration=1050,
+        duration=120,
     )
     build_gif(
         "barrier_dismiss.gif",
         [
-            ("barrier_dismiss_01.png", "Outside tap dismiss modes"),
+            ("barrier_dismiss_01.png", "Anytime outside tap mode"),
+            ("barrier_dismiss_02.png", "Outside taps wait until final step"),
+            ("barrier_dismiss_03.png", "Final passive hint can close outside"),
         ],
-        duration=1500,
+        duration=1250,
     )
     build_gif(
         "custom_anchors.gif",
@@ -47,18 +53,26 @@ def main() -> None:
         duration=1400,
     )
     build_gif(
-        "horizontal_auto_left.gif",
+        "lazy_target_reveal.gif",
         [
-            ("side_anchor_left_01.png", "Auto picks the right side"),
+            *[
+                (f"lazy_target_scroll_{index:02}.png", "Lazy target reveal")
+                for index in range(1, 26)
+            ],
+            *[
+                ("lazy_target_scroll_26.png", "Hint appears after reveal settles")
+                for _ in range(8)
+            ],
         ],
-        duration=1500,
+        duration=95,
     )
     build_gif(
-        "horizontal_auto_right.gif",
+        "horizontal_auto.gif",
         [
+            ("side_anchor_left_01.png", "Auto picks the right side"),
             ("side_anchor_right_01.png", "Auto picks the left side"),
         ],
-        duration=1500,
+        duration=1250,
     )
 
 

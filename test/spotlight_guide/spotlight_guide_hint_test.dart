@@ -217,6 +217,65 @@ void main() {
     );
   });
 
+  testWidgets('path anchor builder exposes resolved physical direction', (
+    tester,
+  ) async {
+    final List<SpotlightGuideIndicatorDirection> directions =
+        <SpotlightGuideIndicatorDirection>[];
+    final Map<SpotlightGuidePlacement, SpotlightGuideIndicatorDirection> cases =
+        <SpotlightGuidePlacement, SpotlightGuideIndicatorDirection>{
+          SpotlightGuidePlacement.top: SpotlightGuideIndicatorDirection.down,
+          SpotlightGuidePlacement.bottom: SpotlightGuideIndicatorDirection.up,
+          SpotlightGuidePlacement.left: SpotlightGuideIndicatorDirection.right,
+          SpotlightGuidePlacement.right: SpotlightGuideIndicatorDirection.left,
+        };
+
+    for (final MapEntry<
+          SpotlightGuidePlacement,
+          SpotlightGuideIndicatorDirection
+        >
+        entry
+        in cases.entries) {
+      directions.clear();
+      await tester.pumpWidget(
+        guideApp(
+          child: singleTargetStack(
+            id: 'a',
+            left: 300,
+            top: 220,
+            width: 80,
+            height: 40,
+          ),
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'a',
+                placement: entry.key,
+                targetPadding: EdgeInsets.zero,
+                decoration: SpotlightGuideBubbleDecoration(
+                  anchor: SpotlightGuidePathAnchor(
+                    shape: _RecordingPathAnchorShape(directions),
+                  ),
+                ),
+                hintBuilder:
+                    (BuildContext context, SpotlightGuideStepContext guide) {
+                      return SpotlightGuideBubbleHint(
+                        guide: guide,
+                        child: const SizedBox(width: 80, height: 32),
+                      );
+                    },
+              ),
+            ),
+          ],
+        ),
+      );
+      await pumpGuide(tester);
+      await tester.pump();
+
+      expect(directions, contains(entry.value));
+    }
+  });
+
   testWidgets('bubble hint paints pointer below the bubble by default', (
     tester,
   ) async {
@@ -887,5 +946,24 @@ class _WideVisualAnchorShape extends SpotlightGuidePathAnchorShape {
       builder.endSide,
       0,
     );
+  }
+}
+
+class _RecordingPathAnchorShape extends SpotlightGuidePathAnchorShape {
+  const _RecordingPathAnchorShape(this.directions);
+
+  final List<SpotlightGuideIndicatorDirection> directions;
+
+  @override
+  Size get preferredSize => const Size(16, 10);
+
+  @override
+  double get connectionHalfExtent => 6;
+
+  @override
+  void addToPath(Path path, SpotlightGuideAnchorPathBuilder builder) {
+    directions.add(builder.direction);
+    builder.lineTo(path, 0, 1);
+    builder.lineTo(path, builder.endSide, 0);
   }
 }

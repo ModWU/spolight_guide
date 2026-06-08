@@ -4,11 +4,11 @@
 
 ## Preview
 
-| Basic flow | Auto scroll and lazy reveal | Barrier dismiss |
+| Basic flow | Same-step auto scroll | Barrier dismiss |
 | --- | --- | --- |
-| ![Basic spotlight guide flow](doc/images/readme/basic_flow.gif) | ![Automatic scroll and lazy target reveal](doc/images/readme/scroll_and_reveal.gif) | ![Barrier tap dismiss modes](doc/images/readme/barrier_dismiss.gif) |
-| Custom anchors and groups | Horizontal auto: left arrow | Horizontal auto: right arrow |
-| ![Custom anchors and repeated target groups](doc/images/readme/custom_anchors.gif) | ![Horizontal auto placement choosing a left arrow](doc/images/readme/horizontal_auto_left.gif) | ![Horizontal auto placement choosing a right arrow](doc/images/readme/horizontal_auto_right.gif) |
+| ![Basic spotlight guide flow](doc/images/readme/basic_flow.gif) | ![Same-step automatic scroll](doc/images/readme/same_step_scroll.gif) | ![Barrier tap dismiss modes](doc/images/readme/barrier_dismiss.gif) |
+| Custom anchors and groups | Lazy target reveal | Horizontal auto |
+| ![Custom anchors and repeated target groups](doc/images/readme/custom_anchors.gif) | ![Lazy target reveal scroll](doc/images/readme/lazy_target_reveal.gif) | ![Horizontal auto placement choosing left and right arrows](doc/images/readme/horizontal_auto.gif) |
 
 ## Highlights
 
@@ -378,5 +378,10 @@ Use `SpotlightGuideAnchorPosition.start`, `center`, or `end` for semantic alignm
 - Any custom widget, image composition, or app-specific guide UI.
 
 The layout data is available through `SpotlightGuideStepContext`.
+Use `guide.indicatorDirection` when a custom hint needs to know which physical
+side the anchor is on. For example, a hint placed below a target has an
+`up` indicator because the anchor sits on the bubble's top edge and points
+toward the target. Path-based custom anchors can read the same resolved side
+from `SpotlightGuideAnchorPathBuilder.direction` inside `addToPath`.
 
 For the full API and built-in hint catalog, see `doc/reference.md`.

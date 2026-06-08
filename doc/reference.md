@@ -161,7 +161,7 @@ built-in fallback -> SpotlightGuidePortal.barrier -> SpotlightGuideStep.barrier
 | `SpotlightGuidePathAnchor` | `SpotlightGuideBubbleDecoration.anchor` | Generic path-driven anchor for custom Bezier arrows and non-triangle shapes. |
 | `SpotlightGuidePathAnchorShape.connectionHalfExtent` | `SpotlightGuidePathAnchorShape` | Half of the bubble-edge opening. Keep this small for a pointed base. |
 | `SpotlightGuidePathAnchorShape.visualHalfExtent` | `SpotlightGuidePathAnchorShape` | Half of the visual drawing range. This may be wider than the connection, so an arrow can have a narrow base and a broad head. |
-| `SpotlightGuideAnchorPathBuilder` | `SpotlightGuidePathAnchorShape.addToPath` | Converts normalized side/outward coordinates into the current physical anchor direction and exposes line/cubic helpers. |
+| `SpotlightGuideAnchorPathBuilder` | `SpotlightGuidePathAnchorShape.addToPath` | Converts normalized side/outward coordinates into the current physical anchor direction, exposes that side through `direction`, and provides line/cubic helpers. |
 | `SpotlightGuideProxyDecoration` | `SpotlightGuideStepItem.decoration` | Lets a regular Flutter `Decoration` participate in guide layout. Use the built-in bubble decoration when the anchor must visually connect to the body. |
 
 Anchor chain:
@@ -267,6 +267,13 @@ Use `SpotlightGuideBubble` when the hint is only a bubble with arrow.
 Use `SpotlightGuideBubbleDecoration` when you want a custom widget tree but still need the same connected bubble path.
 
 Return a custom widget from `hintBuilder` when the guide is image-based, product-specific, animated, or does not look like a bubble.
+
+Use `SpotlightGuideStepContext.indicatorDirection` when a fully custom hint
+needs to draw differently for top, bottom, left, or right anchors. Use
+`SpotlightGuideAnchorPathBuilder.direction` inside
+`SpotlightGuidePathAnchorShape.addToPath` when only the bubble anchor shape
+needs that side-specific logic. Both values are the final physical side after
+auto placement and semantic `start`/`end` placement have resolved.
 
 When adding a reusable built-in hint:
 
