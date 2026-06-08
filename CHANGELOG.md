@@ -2,6 +2,13 @@
 
 This file records the current component contract for maintainers.
 
+## 0.1.1
+
+Documentation-only patch release.
+
+- Changed README preview GIF links to versioned GitHub raw URLs so pub.dev can
+  render them correctly.
+
 ## 0.1.0
 
 Initial standalone Flutter package release.
