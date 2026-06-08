@@ -212,6 +212,233 @@ void main() {
     expect(find.byKey(const ValueKey<String>('async-step')), findsOneWidget);
   });
 
+  testWidgets('preparation blocks child taps by default', (tester) async {
+    final SpotlightGuidePortalController controller =
+        SpotlightGuidePortalController();
+    final Completer<void> completer = Completer<void>();
+    int childTapCount = 0;
+
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        onStepWillShow: (int index, SpotlightGuideStep step) {
+          return completer.future;
+        },
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep.item(
+            SpotlightGuideStepItem(
+              targetId: 'a',
+              targetPadding: EdgeInsets.zero,
+              hintBuilder: hint('blocked-preparation'),
+            ),
+          ),
+        ],
+        child: Stack(
+          children: <Widget>[
+            Positioned.fill(
+              child: GestureDetector(
+                key: const ValueKey<String>('preparation-child'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  childTapCount++;
+                },
+              ),
+            ),
+            const Positioned(
+              left: 40,
+              top: 40,
+              child: SpotlightGuideTarget(
+                id: 'a',
+                child: SizedBox(
+                  width: 100,
+                  height: 40,
+                  child: ColoredBox(color: Colors.red),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    controller.reset();
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey<String>('blocked-preparation')),
+      findsNothing,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('preparation-child')),
+      warnIfMissed: false,
+    );
+    await tester.pump();
+    expect(childTapCount, 0);
+
+    completer.complete();
+    await pumpGuide(tester);
+    expect(
+      find.byKey(const ValueKey<String>('blocked-preparation')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('preparation can allow child taps when configured', (
+    tester,
+  ) async {
+    final SpotlightGuidePortalController controller =
+        SpotlightGuidePortalController();
+    final Completer<void> completer = Completer<void>();
+    int childTapCount = 0;
+
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        blockInteractionDuringPreparation: false,
+        onStepWillShow: (int index, SpotlightGuideStep step) {
+          return completer.future;
+        },
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep.item(
+            SpotlightGuideStepItem(
+              targetId: 'a',
+              targetPadding: EdgeInsets.zero,
+              hintBuilder: hint('pass-through-preparation'),
+            ),
+          ),
+        ],
+        child: Stack(
+          children: <Widget>[
+            Positioned.fill(
+              child: GestureDetector(
+                key: const ValueKey<String>('pass-through-child'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  childTapCount++;
+                },
+              ),
+            ),
+            const Positioned(
+              left: 40,
+              top: 40,
+              child: SpotlightGuideTarget(
+                id: 'a',
+                child: SizedBox(
+                  width: 100,
+                  height: 40,
+                  child: ColoredBox(color: Colors.red),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    controller.reset();
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey<String>('pass-through-preparation')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const ValueKey<String>('pass-through-child')));
+    await tester.pump();
+    expect(childTapCount, 1);
+
+    completer.complete();
+    await pumpGuide(tester);
+    expect(
+      find.byKey(const ValueKey<String>('pass-through-preparation')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('preparation can allow child taps while reveal scrolling', (
+    tester,
+  ) async {
+    final SpotlightGuidePortalController controller =
+        SpotlightGuidePortalController();
+    final ScrollController scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
+    int childTapCount = 0;
+
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        blockInteractionDuringPreparation: false,
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep.item(
+            SpotlightGuideStepItem(
+              targetId: 'scroll-reveal-target',
+              targetPadding: EdgeInsets.zero,
+              revealOptions: const SpotlightGuideRevealOptions(
+                duration: Duration(milliseconds: 300),
+                alignment: 0.5,
+              ),
+              hintBuilder: hint('scroll-reveal-pass-through'),
+            ),
+          ),
+        ],
+        child: Stack(
+          children: <Widget>[
+            SingleChildScrollView(
+              controller: scrollController,
+              child: const SizedBox(
+                height: 1400,
+                child: Stack(
+                  children: <Widget>[
+                    Positioned(
+                      left: 40,
+                      top: 1100,
+                      child: SpotlightGuideTarget(
+                        id: 'scroll-reveal-target',
+                        child: SizedBox(
+                          width: 100,
+                          height: 40,
+                          child: ColoredBox(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: GestureDetector(
+                key: const ValueKey<String>('scroll-reveal-child'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  childTapCount++;
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    controller.reset();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(
+      find.byKey(const ValueKey<String>('scroll-reveal-pass-through')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const ValueKey<String>('scroll-reveal-child')));
+    await tester.pump();
+    expect(childTapCount, 1);
+
+    await pumpGuide(tester);
+    expect(scrollController.offset, greaterThan(0));
+    expect(
+      find.byKey(const ValueKey<String>('scroll-reveal-pass-through')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('finish cancels a pending async step preparation', (
     tester,
   ) async {
@@ -255,9 +482,7 @@ void main() {
     final List<FlutterErrorDetails> errors = <FlutterErrorDetails>[];
     final previousOnError = FlutterError.onError;
     FlutterError.onError = errors.add;
-    addTearDown(() {
-      FlutterError.onError = previousOnError;
-    });
+    addTearDown(() => FlutterError.onError = previousOnError);
 
     await tester.pumpWidget(
       guideApp(
@@ -280,6 +505,7 @@ void main() {
     controller.reset();
     await tester.pump();
     await tester.pump();
+    FlutterError.onError = previousOnError;
 
     expect(errors, isNotEmpty);
     expect(controller.isShowing, isFalse);
@@ -363,6 +589,8 @@ void main() {
   testWidgets(
     'auto-start waits for route push transition before showing hints',
     (tester) async {
+      int routeTapCount = 0;
+
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
@@ -378,7 +606,11 @@ void main() {
                             BuildContext context,
                             Animation<double> animation,
                             Animation<double> secondaryAnimation,
-                          ) => const _AutoStartGuideRoutePage(),
+                          ) => _AutoStartGuideRoutePage(
+                            onTap: () {
+                              routeTapCount++;
+                            },
+                          ),
                       transitionsBuilder:
                           (
                             BuildContext context,
@@ -409,16 +641,24 @@ void main() {
       await tester.pump(const Duration(milliseconds: 150));
 
       expect(find.byKey(const ValueKey<String>('route-hint')), findsNothing);
+      await tester.tapAt(const Offset(700, 300));
+      await tester.pump();
+      expect(routeTapCount, 1);
 
       await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey<String>('route-hint')), findsOneWidget);
+      await tester.tapAt(const Offset(700, 300));
+      await tester.pump();
+      expect(routeTapCount, 1);
     },
   );
 
   testWidgets(
     'controller show waits for route push transition before showing hints',
     (tester) async {
+      int routeTapCount = 0;
+
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
@@ -434,7 +674,11 @@ void main() {
                             BuildContext context,
                             Animation<double> animation,
                             Animation<double> secondaryAnimation,
-                          ) => const _ControllerGuideRoutePage(),
+                          ) => _ControllerGuideRoutePage(
+                            onTap: () {
+                              routeTapCount++;
+                            },
+                          ),
                       transitionsBuilder:
                           (
                             BuildContext context,
@@ -470,6 +714,9 @@ void main() {
         find.byKey(const ValueKey<String>('controller-route-hint')),
         findsNothing,
       );
+      await tester.tapAt(const Offset(700, 300));
+      await tester.pump();
+      expect(routeTapCount, 1);
 
       await tester.pumpAndSettle();
 
@@ -477,6 +724,9 @@ void main() {
         find.byKey(const ValueKey<String>('controller-route-hint')),
         findsOneWidget,
       );
+      await tester.tapAt(const Offset(700, 300));
+      await tester.pump();
+      expect(routeTapCount, 1);
     },
   );
 
@@ -1492,7 +1742,9 @@ void main() {
 }
 
 class _AutoStartGuideRoutePage extends StatelessWidget {
-  const _AutoStartGuideRoutePage();
+  const _AutoStartGuideRoutePage({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -1508,8 +1760,15 @@ class _AutoStartGuideRoutePage extends StatelessWidget {
           ),
         ],
         child: Stack(
-          children: const <Widget>[
-            Positioned(
+          children: <Widget>[
+            Positioned.fill(
+              child: GestureDetector(
+                key: const ValueKey<String>('route-page-surface'),
+                behavior: HitTestBehavior.opaque,
+                onTap: onTap,
+              ),
+            ),
+            const Positioned(
               left: 220,
               top: 120,
               child: SpotlightGuideTarget(
@@ -1529,7 +1788,9 @@ class _AutoStartGuideRoutePage extends StatelessWidget {
 }
 
 class _ControllerGuideRoutePage extends StatefulWidget {
-  const _ControllerGuideRoutePage();
+  const _ControllerGuideRoutePage({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   State<_ControllerGuideRoutePage> createState() =>
@@ -1562,8 +1823,15 @@ class _ControllerGuideRoutePageState extends State<_ControllerGuideRoutePage> {
           ),
         ],
         child: Stack(
-          children: const <Widget>[
-            Positioned(
+          children: <Widget>[
+            Positioned.fill(
+              child: GestureDetector(
+                key: const ValueKey<String>('controller-route-page-surface'),
+                behavior: HitTestBehavior.opaque,
+                onTap: widget.onTap,
+              ),
+            ),
+            const Positioned(
               left: 220,
               top: 120,
               child: SpotlightGuideTarget(

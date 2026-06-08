@@ -80,6 +80,7 @@ class SpotlightGuidePortal extends StatefulWidget {
     this.onBarrierTap,
     this.barrierDismissBehavior = SpotlightGuideBarrierDismissBehavior.disabled,
     this.barrier = const SpotlightGuideBarrierStyle(),
+    this.blockInteractionDuringPreparation = true,
     this.revealPresentationStrategy =
         const SpotlightGuideDeferredRevealPresentationStrategy(),
   });
@@ -97,6 +98,19 @@ class SpotlightGuidePortal extends StatefulWidget {
   ///
   /// Turning this off hides the guide without calling [onFinish].
   final bool enabled;
+
+  /// Whether the portal should block page interaction while a guide step is
+  /// preparing before the first hint and spotlight holes are ready.
+  ///
+  /// This is separate from [enabled]: [enabled] controls whether the guide is
+  /// allowed to run, while this option controls the short startup/reveal window
+  /// after the guide has started but before target geometry has settled. The
+  /// default blocks interaction by showing the barrier-only overlay during
+  /// preparation after route transitions settle. It does not keep blocking once
+  /// preparation has finished and the guide is only waiting for a missing target
+  /// to mount. Set this to false to preserve pass-through behavior until the
+  /// visible guide overlay is ready.
+  final bool blockInteractionDuringPreparation;
 
   /// Whether the guide starts automatically when [enabled] is true and steps
   /// are available.
@@ -191,6 +205,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   bool _targetRefreshScheduled = false;
   bool _overlayHidePending = false;
   bool _hasShownGuideContent = false;
+  bool _waitingForRouteTransition = false;
   int _overlayMotionToken = 0;
   bool _autoScrollSequenceActive = false;
   bool _autoScrollPresentationActive = false;
@@ -480,6 +495,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       _stopOverlayMotionRefresh();
       _prepareToken++;
       _preparing = false;
+      _waitingForRouteTransition = false;
     }
     final _SpotlightGuideTargetFilterRefresh initialRefresh =
         _refreshTargetFilteredStepsForAvailability();
@@ -497,23 +513,37 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     _autoScrollItemIndexNotified = null;
     _configureAutoScrollPresentationForStep(_step);
     _preparing = true;
+    _waitingForRouteTransition = _isRouteTransitionInProgress;
     _controller._syncFromState(this);
+    if (!_waitingForRouteTransition) {
+      _showPreparationOverlayIfNeeded(token);
+    }
     try {
       await _waitForRouteTransitionToSettle(token);
       if (!_finishPrepareIfCancelled(token)) {
         return;
       }
-      await widget.onStepWillShow?.call(_effectiveIndex, _step);
-      await _waitForEndOfFrame(token);
-      if (!_finishPrepareIfCancelled(token)) {
-        return;
-      }
-      if (!_overlayController.isShowing) {
+      if (_waitingForRouteTransition) {
+        _waitingForRouteTransition = false;
         setState(() {});
-        _overlayController.show();
+        _showPreparationOverlayIfNeeded(token);
       }
-      await _revealStepTargets(token);
-      await _waitForEndOfFrame(token);
+      if (widget.onStepWillShow != null) {
+        await widget.onStepWillShow!.call(_effectiveIndex, _step);
+        await _waitForEndOfFrame(token);
+        if (!_finishPrepareIfCancelled(token)) {
+          return;
+        }
+      }
+      if (!_overlayController.isShowing &&
+          widget.blockInteractionDuringPreparation) {
+        setState(() {});
+        _showOverlay(token: token);
+      }
+      final bool revealMayHaveChangedLayout = await _revealStepTargets(token);
+      if (revealMayHaveChangedLayout) {
+        await _waitForEndOfFrame(token);
+      }
       if (!_finishPrepareIfCancelled(token)) {
         return;
       }
@@ -537,6 +567,8 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     } catch (error, stackTrace) {
       if (mounted && token == _prepareToken) {
         _preparing = false;
+        _waitingForRouteTransition = false;
+        _hideOverlay();
         _controller._syncFromState(this);
       }
       FlutterError.reportError(
@@ -553,9 +585,10 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       return;
     }
     _preparing = false;
+    _waitingForRouteTransition = false;
     _hasShownGuideContent = true;
     setState(() {});
-    _overlayController.show();
+    _showOverlay(token: token);
     if (_hasActiveScrollAnimation()) {
       _startOverlayMotionRefresh();
     }
@@ -567,26 +600,30 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     _startStepItemAutoScroll(token);
   }
 
-  Future<void> _revealStepTargets(int token) async {
+  Future<bool> _revealStepTargets(int token) async {
     if (!mounted || token != _prepareToken || !_canShowGuide) {
-      return;
+      return false;
     }
+    bool mayHaveChangedLayout = false;
     final int stepIndex = _effectiveIndex;
     final SpotlightGuideStep step = _step;
-    await step.onReveal?.call(
-      SpotlightGuideRevealContext(
-        context: context,
-        index: stepIndex,
-        step: step,
-        controller: _controller,
-        targetContexts: _targetResolver.contextsForStep(step),
-      ),
-    );
-    await _waitForEndOfFrame(token);
+    if (step.onReveal != null) {
+      await step.onReveal!.call(
+        SpotlightGuideRevealContext(
+          context: context,
+          index: stepIndex,
+          step: step,
+          controller: _controller,
+          targetContexts: _targetResolver.contextsForStep(step),
+        ),
+      );
+      mayHaveChangedLayout = true;
+      await _waitForEndOfFrame(token);
+    }
 
     for (int itemIndex = 0; itemIndex < step.items.length; itemIndex++) {
       if (!mounted || token != _prepareToken || !_canShowGuide) {
-        return;
+        return mayHaveChangedLayout;
       }
       final SpotlightGuideStepItem item = step.items[itemIndex];
       // Defer later items of an auto-scroll step, including their onReveal hook,
@@ -596,25 +633,33 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       if (_shouldAutoScrollStepItems(step) && itemIndex > 0) {
         continue;
       }
-      await _runItemReveal(step, item, itemIndex, stepIndex, token);
+      mayHaveChangedLayout =
+          await _runItemReveal(step, item, itemIndex, stepIndex, token) ||
+          mayHaveChangedLayout;
 
       final SpotlightGuideRevealOptions revealOptions =
           item.revealOptions ?? step.revealOptions;
       if (!revealOptions.enabled) {
         continue;
       }
-      await _ensureItemVisible(item, revealOptions, token, stepIndex);
+      mayHaveChangedLayout =
+          await _ensureItemVisible(item, revealOptions, token, stepIndex) ||
+          mayHaveChangedLayout;
     }
+    return mayHaveChangedLayout;
   }
 
-  Future<void> _runItemReveal(
+  Future<bool> _runItemReveal(
     SpotlightGuideStep step,
     SpotlightGuideStepItem item,
     int itemIndex,
     int stepIndex,
     int token,
   ) async {
-    await item.onReveal?.call(
+    if (item.onReveal == null) {
+      return false;
+    }
+    await item.onReveal!.call(
       SpotlightGuideRevealContext(
         context: context,
         index: stepIndex,
@@ -626,6 +671,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       ),
     );
     await _waitForEndOfFrame(token);
+    return true;
   }
 
   bool _shouldAutoScrollStepItems(SpotlightGuideStep step) {
@@ -894,44 +940,52 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     });
   }
 
-  Future<void> _ensureItemVisible(
+  Future<bool> _ensureItemVisible(
     SpotlightGuideStepItem item,
     SpotlightGuideRevealOptions revealOptions,
     int token,
     int stepIndex,
   ) async {
-    if (!_isSamePreparedStep(token, stepIndex)) {
-      return;
+    if (!_isSamePreparingStep(token, stepIndex)) {
+      return false;
     }
+    bool didScroll = false;
     final List<BuildContext> targetContexts = _revealScrollStrategy
         .revealContextsForItem(item, revealOptions);
     for (final BuildContext targetContext in targetContexts) {
-      if (!_isSamePreparedStep(token, stepIndex)) {
-        return;
+      if (!_isSamePreparingStep(token, stepIndex)) {
+        return didScroll;
       }
       if (!targetContext.mounted) {
         continue;
       }
-      await _scrollTargetIntoView(targetContext, revealOptions);
-      await _waitForEndOfFrame(token);
+      final bool scrolled = await _scrollTargetIntoView(
+        targetContext,
+        revealOptions,
+      );
+      didScroll = scrolled || didScroll;
+      if (scrolled) {
+        await _waitForEndOfFrame(token);
+      }
     }
+    return didScroll;
   }
 
   /// Reveals [targetContext] according to [revealOptions] and rebuilds the
   /// overlay each frame while animated scrolling runs so spotlight holes track
   /// moving targets.
-  Future<void> _scrollTargetIntoView(
+  Future<bool> _scrollTargetIntoView(
     BuildContext targetContext,
     SpotlightGuideRevealOptions revealOptions,
   ) async {
     if (!targetContext.mounted) {
-      return;
+      return false;
     }
     if (!_revealScrollStrategy.shouldScrollTargetIntoView(
       targetContext,
       revealOptions,
     )) {
-      return;
+      return false;
     }
     final Duration duration = revealOptions.duration;
     if (duration > Duration.zero && _overlayController.isShowing) {
@@ -944,6 +998,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       curve: revealOptions.curve,
       alignmentPolicy: revealOptions.alignmentPolicy,
     );
+    return true;
   }
 
   void _startOverlayMotionRefresh({Duration? expectedDuration}) {
@@ -1051,10 +1106,14 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   }
 
   bool _isSamePreparedStep(int token, int stepIndex) {
+    return _isSamePreparingStep(token, stepIndex) &&
+        _overlayController.isShowing;
+  }
+
+  bool _isSamePreparingStep(int token, int stepIndex) {
     return mounted &&
         token == _prepareToken &&
         _canShowGuide &&
-        _overlayController.isShowing &&
         _steps.isNotEmpty &&
         _effectiveIndex == stepIndex;
   }
@@ -1148,11 +1207,61 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     _overlayController.hide();
   }
 
+  void _showPreparationOverlayIfNeeded(int token) {
+    if (!widget.blockInteractionDuringPreparation ||
+        _overlayController.isShowing ||
+        !_canShowGuide) {
+      return;
+    }
+    setState(() {});
+    _showOverlay(token: token);
+  }
+
+  void _showOverlay({int? token}) {
+    if (_overlayController.isShowing) {
+      return;
+    }
+    if (!_canShowOverlayForToken(token)) {
+      return;
+    }
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted &&
+            !_overlayController.isShowing &&
+            _canShowOverlayForToken(token)) {
+          _overlayController.show();
+        }
+      });
+      return;
+    }
+    _overlayController.show();
+  }
+
+  bool _canShowOverlayForToken(int? token) {
+    if (!_canShowGuide) {
+      return false;
+    }
+    if (token != null && token != _prepareToken) {
+      return false;
+    }
+    return _preparing || _hasShownGuideContent;
+  }
+
   Future<void> _waitForEndOfFrame(int token) async {
     await WidgetsBinding.instance.endOfFrame;
     if (!mounted || token != _prepareToken) {
       return;
     }
+  }
+
+  bool get _isRouteTransitionInProgress {
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    final Animation<double>? animation = route?.animation;
+    return route != null &&
+        animation != null &&
+        animation.status == AnimationStatus.forward &&
+        animation.value < 1;
   }
 
   Future<void> _waitForRouteTransitionToSettle(int token) async {
@@ -1195,6 +1304,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       return true;
     }
     _preparing = false;
+    _waitingForRouteTransition = false;
     _hideOverlay();
     _controller._syncFromState(this);
     return false;
@@ -1275,6 +1385,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     _cancelAutoScroll();
     _prepareToken++;
     _preparing = false;
+    _waitingForRouteTransition = false;
     _hasShownGuideContent = false;
     _hideOverlay();
     setState(() {
@@ -1401,6 +1512,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     _autoScrollTransitionItemIndex = null;
     _prepareToken++;
     _preparing = false;
+    _waitingForRouteTransition = false;
     _hideOverlay();
     _controller._syncFromState(this);
     if (notifyFinish) {
@@ -1416,6 +1528,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     _stopOverlayMotionRefresh();
     _prepareToken++;
     _preparing = false;
+    _waitingForRouteTransition = false;
 
     if (_steps.isEmpty) {
       _hideOverlay();
@@ -1542,12 +1655,14 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
           return const SizedBox.expand();
         }
         if (_preparing &&
-            _shouldHideRevealTransitionContent(
-              reason: SpotlightGuideRevealPresentationReason.stepPreparation,
-              step: step,
-              stepIndex: stepIndex,
-              total: steps.length,
-            )) {
+            (_waitingForRouteTransition ||
+                _shouldHideRevealTransitionContent(
+                  reason:
+                      SpotlightGuideRevealPresentationReason.stepPreparation,
+                  step: step,
+                  stepIndex: stepIndex,
+                  total: steps.length,
+                ))) {
           return _emptyOverlayLayout(
             step: step,
             stepIndex: stepIndex,
@@ -1626,6 +1741,14 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
                 item: step.items[transitionItemIndex],
                 itemIndex: transitionItemIndex,
               )) {
+            return _emptyOverlayLayout(
+              step: step,
+              stepIndex: stepIndex,
+              total: steps.length,
+              overlaySize: info.overlaySize,
+            );
+          }
+          if (_preparing && widget.blockInteractionDuringPreparation) {
             return _emptyOverlayLayout(
               step: step,
               stepIndex: stepIndex,

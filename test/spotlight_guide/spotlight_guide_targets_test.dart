@@ -457,6 +457,55 @@ void main() {
     expect(find.byKey(const ValueKey<String>('late-target')), findsOneWidget);
   });
 
+  testWidgets(
+    'missing target wait does not block page taps after preparation',
+    (tester) async {
+      final SpotlightGuidePortalController controller =
+          SpotlightGuidePortalController();
+      int childTaps = 0;
+
+      await tester.pumpWidget(
+        guideApp(
+          controller: controller,
+          child: GestureDetector(
+            key: const ValueKey<String>('missing-wait-child'),
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              childTaps++;
+            },
+            child: const SizedBox.expand(),
+          ),
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'late-never',
+                targetPadding: EdgeInsets.zero,
+                hintBuilder: hint('late-never-hint'),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      controller.reset();
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.byKey(const ValueKey<String>('late-never-hint')),
+        findsNothing,
+      );
+      expect(controller.isShowing, isTrue);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('missing-wait-child')),
+      );
+      await tester.pump();
+
+      expect(childTaps, 1);
+    },
+  );
+
   testWidgets('target removal rebuilds visible hints and notifies state', (
     tester,
   ) async {

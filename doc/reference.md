@@ -99,6 +99,7 @@ sequence.
 | --- | --- | --- |
 | `onStepWillShow` | `SpotlightGuidePortal` | Page-level async preparation before a step is revealed. |
 | `autoStart` | `SpotlightGuidePortal` | Controls startup. By default, a portal without an external controller auto-starts, and a portal with an external controller waits for controller commands. Set true to auto-start even with a controller, or false to show only through controller commands. |
+| `blockInteractionDuringPreparation` | `SpotlightGuidePortal` | Blocks page taps while the guide is preparing before hints and spotlight holes are ready. Defaults to `true`. Route push transitions still settle before the barrier appears, and a guide waiting for a missing target does not keep an empty barrier active. Set false to preserve pass-through behavior until the visible overlay is ready. |
 | `onStateChanged` | `SpotlightGuidePortal` | Fires after a step is shown, after the guide hides, after active portal steps change, and after targets register or unregister while the guide is active. The callback receives `index`, `total`, `isFirst`, `isLast`, `isShowing`, and `resolvedItemCount`. |
 | `onFinish` | `SpotlightGuidePortal` | Called once when the guide finishes through `next` on the last step, `finish`, or when the steps become empty while active. Not called when `enabled` is toggled off. |
 | `barrierDismissBehavior` | `SpotlightGuidePortal` | Built-in empty-space close behavior. Defaults to `disabled`; `onComplete` finishes only after the last step/final same-step item is presented; `anytime` finishes even mid-flow. |

@@ -57,6 +57,7 @@ Widget guideApp({
   SpotlightGuideBarrierDismissBehavior barrierDismissBehavior =
       SpotlightGuideBarrierDismissBehavior.disabled,
   SpotlightGuideBarrierStyle barrier = const SpotlightGuideBarrierStyle(),
+  bool blockInteractionDuringPreparation = true,
   SpotlightGuideRevealPresentationStrategy revealPresentationStrategy =
       const SpotlightGuideDeferredRevealPresentationStrategy(),
   TextDirection textDirection = TextDirection.ltr,
@@ -85,6 +86,8 @@ Widget guideApp({
             onBarrierTap: onBarrierTap,
             barrierDismissBehavior: barrierDismissBehavior,
             barrier: barrier,
+            blockInteractionDuringPreparation:
+                blockInteractionDuringPreparation,
             revealPresentationStrategy: revealPresentationStrategy,
             child:
                 child ??

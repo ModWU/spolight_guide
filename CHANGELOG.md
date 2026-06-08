@@ -2,6 +2,18 @@
 
 This file records the current component contract for maintainers.
 
+## 0.1.2
+
+- Added `SpotlightGuidePortal.blockInteractionDuringPreparation`, which blocks
+  page interaction during step preparation by default while keeping the existing
+  delayed hint presentation after route transitions and reveal scrolling settle.
+- When preparation blocking is disabled, reveal scrolling now stays pass-through
+  until the visible guide overlay is ready.
+- Reduced unnecessary preparation frame waits when no reveal hooks or scrolling
+  actually change layout, so first-screen mounted targets can present faster.
+- Kept missing-target wait states pass-through after preparation, so an
+  unavailable target does not leave an empty blocking barrier on screen.
+
 ## 0.1.1
 
 Documentation-only patch release.
