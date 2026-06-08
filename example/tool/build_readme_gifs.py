@@ -11,35 +11,54 @@ FRAME_DIR = IMAGE_DIR / "frames"
 def main() -> None:
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     build_gif(
-        "overview.gif",
+        "basic_flow.gif",
         [
-            ("basic_01.png", "Basic multi-step guide"),
-            ("same_step_hints_01.png", "Multiple hints in one step"),
-            ("lazy_target_01.png", "Reveal lazy list targets"),
-            ("barrier_dismiss_01.png", "Outside tap dismiss modes"),
-            ("anchor_group_01.png", "Repeated target ids with one anchor"),
-            ("controller_01.png", "External controller commands"),
+            ("basic_01.png", "Highlight a visible target"),
+            ("basic_02.png", "Advance to the next step"),
         ],
         duration=1350,
     )
     build_gif(
-        "same_step_scroll.gif",
+        "scroll_and_reveal.gif",
         [
-            ("same_step_scroll_01.png", "Same step, first target"),
-            ("same_step_scroll_02.png", "Auto-scroll to the offscreen target"),
-            ("same_step_scroll_03.png", "Hint stays connected after scroll"),
+            ("same_step_scroll_01.png", "Same-step visible target"),
+            ("same_step_scroll_02.png", "Auto-scroll to offscreen target"),
+            ("same_step_scroll_03.png", "Show hint after scroll settles"),
+            ("lazy_target_01.png", "Reveal a lazy-list target"),
         ],
         duration=1050,
     )
     build_gif(
-        "anchors_and_groups.gif",
+        "barrier_dismiss.gif",
+        [
+            ("barrier_dismiss_01.png", "Outside tap dismiss modes"),
+        ],
+        duration=1500,
+    )
+    build_gif(
+        "custom_anchors.gif",
         [
             ("anchor_group_01.png", "Large repeated target group"),
             ("anchor_group_02.png", "Custom droplet anchor"),
             ("anchor_group_03.png", "Switch to a curved arrow"),
             ("anchor_group_04.png", "Switch to a sharp arrow"),
+            ("anchor_group_05.png", "No visible anchor option"),
         ],
         duration=1400,
+    )
+    build_gif(
+        "horizontal_auto_left.gif",
+        [
+            ("side_anchor_left_01.png", "Auto picks the right side"),
+        ],
+        duration=1500,
+    )
+    build_gif(
+        "horizontal_auto_right.gif",
+        [
+            ("side_anchor_right_01.png", "Auto picks the left side"),
+        ],
+        duration=1500,
     )
 
 

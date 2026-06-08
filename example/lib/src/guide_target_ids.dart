@@ -14,6 +14,8 @@ const String barrierDismissOnCompleteStartId =
     'barrier-dismiss-on-complete-start';
 const String barrierDismissOnCompleteEndId = 'barrier-dismiss-on-complete-end';
 const String barrierDismissDisabledId = 'barrier-dismiss-disabled';
+const String sideAnchorLeftArrowId = 'side-anchor-left-arrow';
+const String sideAnchorRightArrowId = 'side-anchor-right-arrow';
 
 const String homeBasicId = 'home-basic';
 const String homeSameStepHintsId = 'home-same-step-hints';
@@ -21,6 +23,7 @@ const String homeSameStepScrollId = 'home-same-step-scroll';
 const String homeLazyTargetId = 'home-lazy-target';
 const String homeBarrierDismissId = 'home-barrier-dismiss';
 const String homeDynamicStepsId = 'home-dynamic-steps';
+const String homeSideAnchorsId = 'home-side-anchors';
 const String homeLargeGroupId = 'home-large-group';
 const String homeCustomAnchorId = 'home-custom-anchor';
 const String homeControllerApiId = 'home-controller-api';

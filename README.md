@@ -1,12 +1,14 @@
 # Spotlight Guide
 
-`SpotlightGuidePortal` is a reusable onboarding overlay for highlighting one or more widgets on a page. It supports target holes, custom hint UI, connected bubble arrows, pointer images, RTL-aware anchor positions, automatic placement, reveal scrolling, lazy-list preparation, and multiple hints in the same step.
+`SpotlightGuidePortal` is a reusable onboarding overlay for highlighting one or more widgets on a page. It supports target holes, custom hint UI, connected bubble arrows, pointer images, RTL-aware anchor positions and semantic placement, automatic placement, reveal scrolling, lazy-list preparation, and multiple hints in the same step.
 
 ## Preview
 
-| Common flows | Same-step auto scroll | Anchors and target groups |
+| Basic flow | Auto scroll and lazy reveal | Barrier dismiss |
 | --- | --- | --- |
-| ![Spotlight guide overview](doc/images/readme/overview.gif) | ![Same-step auto scroll](doc/images/readme/same_step_scroll.gif) | ![Anchors and repeated target groups](doc/images/readme/anchors_and_groups.gif) |
+| ![Basic spotlight guide flow](doc/images/readme/basic_flow.gif) | ![Automatic scroll and lazy target reveal](doc/images/readme/scroll_and_reveal.gif) | ![Barrier tap dismiss modes](doc/images/readme/barrier_dismiss.gif) |
+| Custom anchors and groups | Horizontal auto: left arrow | Horizontal auto: right arrow |
+| ![Custom anchors and repeated target groups](doc/images/readme/custom_anchors.gif) | ![Horizontal auto placement choosing a left arrow](doc/images/readme/horizontal_auto_left.gif) | ![Horizontal auto placement choosing a right arrow](doc/images/readme/horizontal_auto_right.gif) |
 
 ## Highlights
 
@@ -76,6 +78,7 @@ example/lib/src/scenarios/same_step_hints_scenario.dart
 example/lib/src/scenarios/same_step_auto_scroll_scenario.dart
 example/lib/src/scenarios/lazy_target_reveal_scenario.dart
 example/lib/src/scenarios/dynamic_steps_scenario.dart
+example/lib/src/scenarios/side_anchor_scenario.dart
 example/lib/src/scenarios/large_group_anchor_scenario.dart
 example/lib/src/scenarios/custom_anchor_scenario.dart
 example/lib/src/scenarios/controller_usage_scenario.dart

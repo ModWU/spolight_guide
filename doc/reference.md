@@ -139,11 +139,13 @@ built-in fallback -> SpotlightGuidePortal.barrier -> SpotlightGuideStep.barrier
 
 `SpotlightGuidePlacement.verticalAuto` chooses top or bottom. This is the default because most guides are vertical.
 
-`SpotlightGuidePlacement.horizontalAuto` chooses left or right.
+`SpotlightGuidePlacement.horizontalAuto` chooses the physical left or right side with more available space.
 
 `SpotlightGuideAnchorPosition.start` and `end` are semantic. In RTL, start means right and end means left on horizontal axes.
 
-`SpotlightGuideIndicatorDirection.up/down/left/right` is physical screen direction. It is not mirrored by RTL; the semantic values are `start` and `end`.
+`SpotlightGuidePlacement.left` and `right` are physical screen sides. Use `SpotlightGuidePlacement.start` or `end` when the side should follow `Directionality`; in RTL, `start` resolves to physical right and `end` resolves to physical left.
+
+`SpotlightGuideIndicatorDirection.up/down/left/right` is physical screen direction. It is not mirrored by RTL; semantic side placement is represented by `SpotlightGuidePlacement.start` and `end`.
 
 ## Pointer And Anchor
 

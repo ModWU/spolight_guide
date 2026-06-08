@@ -16,6 +16,9 @@ void main() {
   testWidgets('capture basic guide frame', (WidgetTester tester) async {
     await _pumpScenario(tester, 'Basic', waitFor: find.text('Basic target'));
     await _capture(tester, 'basic_01.png');
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _capture(tester, 'basic_02.png');
     await _hideGuide(tester);
   });
 
@@ -62,6 +65,20 @@ void main() {
     await _hideGuide(tester);
   });
 
+  testWidgets('capture side anchor frames', (WidgetTester tester) async {
+    await _pumpScenario(
+      tester,
+      'Side anchors',
+      waitFor: find.text('Horizontal auto: left arrow'),
+    );
+    await _capture(tester, 'side_anchor_left_01.png');
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Horizontal auto: right arrow'));
+    await _capture(tester, 'side_anchor_right_01.png');
+    await _hideGuide(tester);
+  });
+
   testWidgets('capture group and custom anchor frames', (
     WidgetTester tester,
   ) async {
@@ -75,7 +92,7 @@ void main() {
 
     await _pumpFreshApp(tester);
     await _tapScenario(tester, 'Custom anchor');
-    await _pumpUntilFound(tester, find.textContaining('Pick a Bezier arrow'));
+    await _pumpUntilFound(tester, find.textContaining('Pick an anchor style'));
     await _capture(tester, 'anchor_group_02.png');
     await tester.tap(find.text('Sweep'));
     await tester.pumpAndSettle();
@@ -83,6 +100,14 @@ void main() {
     await tester.tap(find.text('Arrow'));
     await tester.pumpAndSettle();
     await _capture(tester, 'anchor_group_04.png');
+    await tester.drag(
+      find.byKey(const ValueKey<String>('custom-anchor-choice-scroll')),
+      const Offset(-140, 0),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('None'));
+    await tester.pumpAndSettle();
+    await _capture(tester, 'anchor_group_05.png');
     await _hideGuide(tester);
   });
 

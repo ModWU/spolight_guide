@@ -755,6 +755,10 @@ class SpotlightGuideRevealContext {
 /// available space, and [horizontalAuto] when the hint should only choose
 /// between left and right.
 ///
+/// [left] and [right] are physical screen sides. Use [start] and [end] when
+/// the horizontal side should follow [Directionality], such as Arabic or Hebrew
+/// UI where semantic start is physically right.
+///
 /// Auto placement is resolved against the full overlay visible area because
 /// hints are rendered in that overlay. A target's nearest scrollable viewport
 /// is used for reveal scrolling, not for choosing the hint side. The automatic
@@ -777,13 +781,30 @@ enum SpotlightGuidePlacement {
   /// Automatically choose between top and bottom only.
   verticalAuto,
 
-  /// Automatically choose between left and right only.
+  /// Automatically choose between physical left and right only.
   horizontalAuto,
 
+  /// Place the hint above the target.
   top,
+
+  /// Place the hint below the target.
   bottom,
+
+  /// Place the hint on the physical left side of the target.
   left,
+
+  /// Place the hint on the physical right side of the target.
   right,
+
+  /// Place the hint on the semantic start side of the target.
+  ///
+  /// Resolves to [left] in LTR and [right] in RTL.
+  start,
+
+  /// Place the hint on the semantic end side of the target.
+  ///
+  /// Resolves to [right] in LTR and [left] in RTL.
+  end,
 }
 
 /// Physical direction of the visual anchor drawn by a bubble.
@@ -1302,7 +1323,8 @@ class SpotlightGuideStepContext {
   /// Resolved hint rect in overlay coordinates.
   final Rect hintRect;
 
-  /// Final placement after resolving auto placement options.
+  /// Final physical placement after resolving auto placement and semantic
+  /// [SpotlightGuidePlacement.start]/[SpotlightGuidePlacement.end] options.
   final SpotlightGuidePlacement placement;
 
   /// Physical direction used by the bubble anchor.

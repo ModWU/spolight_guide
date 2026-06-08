@@ -6,6 +6,11 @@ This file records the current component contract for maintainers.
 
 Initial standalone Flutter package release.
 
+- Added semantic `SpotlightGuidePlacement.start` and
+  `SpotlightGuidePlacement.end` while keeping physical `left` and `right`.
+- Expanded the example app and README previews with horizontal auto-placement,
+  no-anchor custom style, and automatic scroll/lazy-target GIFs.
+
 ## Current Contract
 
 - `SpotlightGuidePortal` owns the overlay host and may be created with static

@@ -144,6 +144,8 @@ void main() {
         case SpotlightGuidePlacement.auto:
         case SpotlightGuidePlacement.verticalAuto:
         case SpotlightGuidePlacement.horizontalAuto:
+        case SpotlightGuidePlacement.start:
+        case SpotlightGuidePlacement.end:
           fail('auto placements are not part of this fixed placement test');
       }
     }
@@ -196,6 +198,89 @@ void main() {
       final SpotlightGuideStepContext guide = contexts[label]!;
       expect(guide.placement, entry.key);
       expect(guide.indicatorDirection, entry.value);
+    }
+  });
+
+  testWidgets('semantic start and end placements follow text direction', (
+    tester,
+  ) async {
+    final List<
+      ({
+        TextDirection direction,
+        SpotlightGuidePlacement placement,
+        SpotlightGuidePlacement expected,
+        SpotlightGuideIndicatorDirection arrow,
+      })
+    >
+    cases =
+        <
+          ({
+            TextDirection direction,
+            SpotlightGuidePlacement placement,
+            SpotlightGuidePlacement expected,
+            SpotlightGuideIndicatorDirection arrow,
+          })
+        >[
+          (
+            direction: TextDirection.ltr,
+            placement: SpotlightGuidePlacement.start,
+            expected: SpotlightGuidePlacement.left,
+            arrow: SpotlightGuideIndicatorDirection.right,
+          ),
+          (
+            direction: TextDirection.ltr,
+            placement: SpotlightGuidePlacement.end,
+            expected: SpotlightGuidePlacement.right,
+            arrow: SpotlightGuideIndicatorDirection.left,
+          ),
+          (
+            direction: TextDirection.rtl,
+            placement: SpotlightGuidePlacement.start,
+            expected: SpotlightGuidePlacement.right,
+            arrow: SpotlightGuideIndicatorDirection.left,
+          ),
+          (
+            direction: TextDirection.rtl,
+            placement: SpotlightGuidePlacement.end,
+            expected: SpotlightGuidePlacement.left,
+            arrow: SpotlightGuideIndicatorDirection.right,
+          ),
+        ];
+
+    for (final testCase in cases) {
+      final String label =
+          '${testCase.direction.name}-${testCase.placement.name}';
+      final Map<String, SpotlightGuideStepContext> contexts =
+          <String, SpotlightGuideStepContext>{};
+
+      await tester.pumpWidget(
+        guideApp(
+          appKey: ValueKey<String>(label),
+          textDirection: testCase.direction,
+          child: singleTargetStack(
+            id: 'a',
+            left: 340,
+            top: 260,
+            width: 100,
+            height: 60,
+          ),
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'a',
+                placement: testCase.placement,
+                targetPadding: EdgeInsets.zero,
+                hintBuilder: hint(label, contexts),
+              ),
+            ),
+          ],
+        ),
+      );
+      await pumpGuide(tester);
+
+      final SpotlightGuideStepContext guide = contexts[label]!;
+      expect(guide.placement, testCase.expected);
+      expect(guide.indicatorDirection, testCase.arrow);
     }
   });
 

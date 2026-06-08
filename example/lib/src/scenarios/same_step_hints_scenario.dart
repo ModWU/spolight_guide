@@ -52,19 +52,13 @@ SpotlightGuideStepItem _item({
               Text(
                 title,
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 5),
-              Text(
-                message,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12),
-              ),
+              Text(message, maxLines: 2, style: const TextStyle(fontSize: 12)),
               if (guide.isLastItem) ...<Widget>[
                 const SizedBox(height: 8),
                 Align(

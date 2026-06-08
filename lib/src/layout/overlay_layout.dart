@@ -274,6 +274,7 @@ class _HintLayout {
       step: step,
       margin: margin,
       hintSize: hintSize,
+      textDirection: textDirection,
     );
 
     return switch (placement) {
@@ -299,8 +300,10 @@ class _HintLayout {
         hintSize: hintSize,
       ),
       SpotlightGuidePlacement.verticalAuto ||
-      SpotlightGuidePlacement.horizontalAuto => throw StateError(
-        'auto placements must be resolved before layout',
+      SpotlightGuidePlacement.horizontalAuto ||
+      SpotlightGuidePlacement.start ||
+      SpotlightGuidePlacement.end => throw StateError(
+        'auto and semantic placements must be resolved before layout',
       ),
       SpotlightGuidePlacement.left => _horizontal(
         screenSize: screenSize,
@@ -331,11 +334,16 @@ class _HintLayout {
     required SpotlightGuideStepItem step,
     required EdgeInsets margin,
     required Size? hintSize,
+    required TextDirection textDirection,
   }) {
-    if (step.placement != SpotlightGuidePlacement.auto &&
-        step.placement != SpotlightGuidePlacement.verticalAuto &&
-        step.placement != SpotlightGuidePlacement.horizontalAuto) {
-      return step.placement;
+    final SpotlightGuidePlacement placement = _resolveDirectionalPlacement(
+      step.placement,
+      textDirection,
+    );
+    if (placement != SpotlightGuidePlacement.auto &&
+        placement != SpotlightGuidePlacement.verticalAuto &&
+        placement != SpotlightGuidePlacement.horizontalAuto) {
+      return placement;
     }
 
     // Hints are painted in the full-screen overlay, so auto placement must use
@@ -367,19 +375,44 @@ class _HintLayout {
       ),
     ];
 
-    final List<_PlacementSpace> spaces = switch (step.placement) {
+    final List<_PlacementSpace> spaces = switch (placement) {
       SpotlightGuidePlacement.verticalAuto => verticalSpaces,
       SpotlightGuidePlacement.horizontalAuto => horizontalSpaces,
       SpotlightGuidePlacement.auto => [...verticalSpaces, ...horizontalSpaces],
       SpotlightGuidePlacement.top ||
       SpotlightGuidePlacement.bottom ||
       SpotlightGuidePlacement.left ||
-      SpotlightGuidePlacement.right => throw StateError(
+      SpotlightGuidePlacement.right ||
+      SpotlightGuidePlacement.start ||
+      SpotlightGuidePlacement.end => throw StateError(
         'fixed placements must return before auto resolution',
       ),
     };
     spaces.sort((a, b) => _comparePlacementSpace(a, b, hintSize));
     return spaces.first.placement;
+  }
+
+  static SpotlightGuidePlacement _resolveDirectionalPlacement(
+    SpotlightGuidePlacement placement,
+    TextDirection textDirection,
+  ) {
+    return switch (placement) {
+      SpotlightGuidePlacement.start => switch (textDirection) {
+        TextDirection.ltr => SpotlightGuidePlacement.left,
+        TextDirection.rtl => SpotlightGuidePlacement.right,
+      },
+      SpotlightGuidePlacement.end => switch (textDirection) {
+        TextDirection.ltr => SpotlightGuidePlacement.right,
+        TextDirection.rtl => SpotlightGuidePlacement.left,
+      },
+      SpotlightGuidePlacement.auto ||
+      SpotlightGuidePlacement.verticalAuto ||
+      SpotlightGuidePlacement.horizontalAuto ||
+      SpotlightGuidePlacement.top ||
+      SpotlightGuidePlacement.bottom ||
+      SpotlightGuidePlacement.left ||
+      SpotlightGuidePlacement.right => placement,
+    };
   }
 
   static int _comparePlacementSpace(
@@ -426,7 +459,9 @@ class _HintLayout {
       SpotlightGuidePlacement.left => 3,
       SpotlightGuidePlacement.auto ||
       SpotlightGuidePlacement.verticalAuto ||
-      SpotlightGuidePlacement.horizontalAuto => 4,
+      SpotlightGuidePlacement.horizontalAuto ||
+      SpotlightGuidePlacement.start ||
+      SpotlightGuidePlacement.end => 4,
     };
   }
 

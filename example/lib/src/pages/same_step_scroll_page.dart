@@ -17,7 +17,7 @@ class _SameStepScrollPageState extends State<SameStepScrollPage> {
   final SpotlightGuidePortalController _guideController =
       SpotlightGuidePortalController();
   final ScrollController _wideController = ScrollController();
-  String _autoScrollStatus = 'Waiting for same-step auto-scroll...';
+  String _autoScrollStatus = 'Waiting for same-step auto-scroll';
 
   @override
   void dispose() {
@@ -53,7 +53,7 @@ class _SameStepScrollPageState extends State<SameStepScrollPage> {
       _wideController.jumpTo(0);
     }
     setState(() {
-      _autoScrollStatus = 'Waiting for same-step auto-scroll...';
+      _autoScrollStatus = 'Waiting for same-step auto-scroll';
     });
     _guideController.reset();
   }

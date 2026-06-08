@@ -37,7 +37,8 @@ SpotlightGuideBubbleDecoration _anchorDecoration(_CustomAnchorStyle style) {
 enum _CustomAnchorStyle {
   droplet('Drop', Color(0xFF0891B2)),
   sweep('Sweep', Color(0xFFF59E0B)),
-  arrow('Arrow', Color(0xFFEF4444));
+  arrow('Arrow', Color(0xFFEF4444)),
+  none('None', Color(0xFF64748B));
 
   const _CustomAnchorStyle(this.label, this.color);
 
@@ -49,6 +50,7 @@ enum _CustomAnchorStyle {
       _CustomAnchorStyle.droplet => const _DropletAnchorSpec(),
       _CustomAnchorStyle.sweep => const _SweepAnchorSpec(),
       _CustomAnchorStyle.arrow => const _ArrowAnchorSpec(),
+      _CustomAnchorStyle.none => const _NoVisibleAnchorSpec(),
     };
   }
 }
@@ -89,7 +91,7 @@ class _CustomAnchorDemoHintState extends State<_CustomAnchorDemoHint> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Pick a Bezier arrow; the bubble redraws it while staying '
+            'Pick an anchor style; the bubble redraws it while staying '
             'aimed at the target center.',
             style: TextStyle(fontSize: 15.5, height: 1.35),
           ),
@@ -128,20 +130,26 @@ class _AnchorChoiceStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        for (int i = 0; i < _CustomAnchorStyle.values.length; i++) ...[
-          Expanded(
-            child: _AnchorChoiceButton(
-              style: _CustomAnchorStyle.values[i],
-              selected: _CustomAnchorStyle.values[i] == selected,
-              onPressed: () => onChanged(_CustomAnchorStyle.values[i]),
+    return SingleChildScrollView(
+      key: const ValueKey<String>('custom-anchor-choice-scroll'),
+      scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.hardEdge,
+      child: Row(
+        children: <Widget>[
+          for (int i = 0; i < _CustomAnchorStyle.values.length; i++) ...[
+            SizedBox(
+              width: 96,
+              child: _AnchorChoiceButton(
+                style: _CustomAnchorStyle.values[i],
+                selected: _CustomAnchorStyle.values[i] == selected,
+                onPressed: () => onChanged(_CustomAnchorStyle.values[i]),
+              ),
             ),
-          ),
-          if (i != _CustomAnchorStyle.values.length - 1)
-            const SizedBox(width: 10),
+            if (i != _CustomAnchorStyle.values.length - 1)
+              const SizedBox(width: 7),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -197,14 +205,16 @@ class _AnchorChoiceButton extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 3),
-              Text(
-                style.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-                  color: selected ? scheme.primary : scheme.onSurfaceVariant,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  style.label,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                    color: selected ? scheme.primary : scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
@@ -266,8 +276,26 @@ class _AnchorPreviewPainter extends CustomPainter {
       case _CustomAnchorStyle.arrow:
         _paintCurvedArrowPreview(canvas, size, fill, sweep: false);
         break;
+      case _CustomAnchorStyle.none:
+        _paintNoAnchorPreview(canvas, size, fill);
+        break;
     }
     canvas.restore();
+  }
+
+  void _paintNoAnchorPreview(Canvas canvas, Size size, Paint fill) {
+    final Paint stroke = Paint()
+      ..color = fill.color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = fill.maskFilter;
+    final double y = size.height * 0.55;
+    canvas.drawLine(
+      Offset(size.width * 0.26, y),
+      Offset(size.width * 0.74, y),
+      stroke,
+    );
   }
 
   void _paintCurvedArrowPreview(
@@ -383,4 +411,20 @@ class _ArrowAnchorSpec extends SpotlightGuidePathAnchorShape {
     builder.lineTo(path, -0.14, 0.62);
     builder.cubicTo(path, -0.08, 0.38, -0.02, 0.16, builder.endSide, 0);
   }
+}
+
+class _NoVisibleAnchorSpec extends SpotlightGuidePathAnchorShape {
+  const _NoVisibleAnchorSpec();
+
+  @override
+  Size get preferredSize => _anchorShapeSize;
+
+  @override
+  double get connectionHalfExtent => 0;
+
+  @override
+  double get visualHalfExtent => 0;
+
+  @override
+  void addToPath(Path path, SpotlightGuideAnchorPathBuilder builder) {}
 }

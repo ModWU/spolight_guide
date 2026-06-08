@@ -62,7 +62,6 @@ class MetricCard extends StatelessWidget {
             Text(
               title,
               maxLines: 2,
-              overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 12, color: Colors.black54),
             ),
             const SizedBox(height: 6),
@@ -116,7 +115,6 @@ class HistoryRow extends StatelessWidget {
                   Text(
                     isTarget ? 'Lazy target row' : 'Saving record ${index + 1}',
                     maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),

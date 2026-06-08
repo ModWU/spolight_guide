@@ -11,6 +11,7 @@ import 'pages/large_group_page.dart';
 import 'pages/lazy_target_page.dart';
 import 'pages/same_step_hints_page.dart';
 import 'pages/same_step_scroll_page.dart';
+import 'pages/side_anchor_page.dart';
 import 'widgets/guide_hint.dart';
 
 class SpotlightGuideHomePage extends StatefulWidget {
@@ -85,6 +86,16 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
       guideTitle: 'Dynamic steps',
       guideMessage:
           'This scenario covers server-driven targets and runtime target availability.',
+    ),
+    _ScenarioEntry(
+      targetId: homeSideAnchorsId,
+      title: 'Side anchors',
+      subtitle: 'Horizontal auto placement chooses left or right.',
+      icon: Icons.compare_arrows,
+      pageBuilder: (BuildContext context) => const SideAnchorPage(),
+      guideTitle: 'Side anchors',
+      guideMessage:
+          'This scene shows horizontalAuto choosing the larger side and drawing left or right arrows.',
     ),
     _ScenarioEntry(
       targetId: homeLargeGroupId,
@@ -251,11 +262,7 @@ class _ScenarioButton extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  entry.subtitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(entry.subtitle, maxLines: 3),
               ],
             ),
           ),

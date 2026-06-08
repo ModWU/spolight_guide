@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spotlight_guide/spotlight_guide.dart';
 import 'package:spotlight_guide_example/src/scenarios/custom_anchor_scenario.dart';
 import 'package:spotlight_guide_example/src/scenarios/lazy_target_reveal_scenario.dart';
+import 'package:spotlight_guide_example/src/scenarios/side_anchor_scenario.dart';
 import 'package:spotlight_guide_example/src/spotlight_guide_example_app.dart';
 
 void main() {
@@ -24,6 +25,22 @@ void main() {
     expect(item.decoration.anchor, isNot(isA<SpotlightGuideTriangleAnchor>()));
     expect(item.targetAnchorPosition.anchor, SpotlightGuideAnchor.center);
     expect(item.targetAnchorPosition.offset, 0);
+  });
+
+  test('side anchor scenario uses horizontal auto placement', () {
+    final List<SpotlightGuideStep> steps = buildSideAnchorScenario();
+
+    expect(steps, hasLength(2));
+    expect(
+      steps.expand((SpotlightGuideStep step) => step.items),
+      everyElement(
+        isA<SpotlightGuideStepItem>().having(
+          (SpotlightGuideStepItem item) => item.placement,
+          'placement',
+          SpotlightGuidePlacement.horizontalAuto,
+        ),
+      ),
+    );
   });
 
   testWidgets('custom anchor selector switches arrow styles', (
@@ -49,6 +66,7 @@ void main() {
     expect(find.text('Drop'), findsOneWidget);
     expect(find.text('Sweep'), findsOneWidget);
     expect(find.text('Arrow'), findsOneWidget);
+    expect(find.text('None'), findsOneWidget);
 
     final Finder bubbleHint = find.byType(SpotlightGuideBubbleHint);
     final Size initialSize = tester.getSize(bubbleHint);
@@ -68,6 +86,19 @@ void main() {
       findsOneWidget,
     );
     expect(tester.getSize(bubbleHint), initialSize);
+
+    await tester.drag(
+      find.byKey(const ValueKey<String>('custom-anchor-choice-scroll')),
+      const Offset(-140, 0),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('None'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('custom-anchor-none-selected')),
+      findsOneWidget,
+    );
+    expect(tester.getSize(bubbleHint), initialSize);
   });
 
   testWidgets('example app renders the scenario entry list', (
@@ -84,6 +115,7 @@ void main() {
     expect(find.text('Lazy target'), findsOneWidget);
     expect(find.text('Barrier dismiss'), findsOneWidget);
     expect(find.text('Dynamic steps'), findsOneWidget);
+    expect(find.text('Side anchors'), findsOneWidget);
     expect(find.text('Large group'), findsOneWidget);
     expect(find.text('Custom anchor'), findsOneWidget);
     expect(find.text('Controller API'), findsOneWidget);
