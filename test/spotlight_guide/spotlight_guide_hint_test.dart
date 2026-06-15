@@ -109,6 +109,150 @@ void main() {
     );
   });
 
+  testWidgets('rounded triangle anchor paints without flattening layout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      guideApp(
+        child: singleTargetStack(
+          id: 'a',
+          left: 300,
+          top: 160,
+          width: 80,
+          height: 40,
+        ),
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep.item(
+            SpotlightGuideStepItem(
+              targetId: 'a',
+              placement: SpotlightGuidePlacement.bottom,
+              targetPadding: EdgeInsets.zero,
+              decoration: const SpotlightGuideBubbleDecoration(
+                anchor: SpotlightGuideTriangleAnchor(
+                  size: Size(24, 16),
+                  tipArcAngle: math.pi / 6,
+                ),
+              ),
+              hintBuilder:
+                  (BuildContext context, SpotlightGuideStepContext guide) {
+                    return SpotlightGuideBubbleHint(
+                      guide: guide,
+                      child: const SizedBox(
+                        key: ValueKey<String>('rounded-triangle-anchor'),
+                        width: 120,
+                        height: 40,
+                      ),
+                    );
+                  },
+            ),
+          ),
+        ],
+      ),
+    );
+    await pumpGuide(tester);
+
+    final SpotlightGuideBubbleDecoration decoration = tester
+        .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+        .map((DecoratedBox box) => box.decoration)
+        .whereType<SpotlightGuideBubbleDecoration>()
+        .first;
+    final SpotlightGuideTriangleAnchor anchor =
+        decoration.anchor as SpotlightGuideTriangleAnchor;
+
+    expect(
+      find.byKey(const ValueKey<String>('rounded-triangle-anchor')),
+      findsWidgets,
+    );
+    expect(anchor.size, const Size(24, 16));
+    expect(anchor.tipArcAngle, moreOrLessEquals(math.pi / 6));
+  });
+
+  testWidgets(
+    'bubble hint visual stays inside horizontal margin near target edge anchors',
+    (tester) async {
+      const double margin = 40;
+      const List<_EdgeAnchorCase> cases = <_EdgeAnchorCase>[
+        _EdgeAnchorCase(
+          label: 'ltr-start-left',
+          direction: TextDirection.ltr,
+          targetLeft: 20,
+          anchor: SpotlightGuideAnchorPosition.start(),
+        ),
+        _EdgeAnchorCase(
+          label: 'ltr-end-right',
+          direction: TextDirection.ltr,
+          targetLeft: 700,
+          anchor: SpotlightGuideAnchorPosition.end(),
+        ),
+        _EdgeAnchorCase(
+          label: 'rtl-start-right',
+          direction: TextDirection.rtl,
+          targetLeft: 700,
+          anchor: SpotlightGuideAnchorPosition.start(),
+        ),
+        _EdgeAnchorCase(
+          label: 'rtl-end-left',
+          direction: TextDirection.rtl,
+          targetLeft: 20,
+          anchor: SpotlightGuideAnchorPosition.end(),
+        ),
+      ];
+
+      for (final caseInfo in cases) {
+        await tester.pumpWidget(
+          guideApp(
+            appKey: ValueKey<String>(caseInfo.label),
+            textDirection: caseInfo.direction,
+            child: singleTargetStack(
+              id: 'a',
+              left: caseInfo.targetLeft,
+              top: 120,
+              width: 80,
+              height: 40,
+            ),
+            steps: <SpotlightGuideStep>[
+              SpotlightGuideStep.item(
+                SpotlightGuideStepItem(
+                  targetId: 'a',
+                  placement: SpotlightGuidePlacement.bottom,
+                  targetPadding: EdgeInsets.zero,
+                  margin: const EdgeInsets.symmetric(horizontal: margin),
+                  targetAnchorPosition: caseInfo.anchor,
+                  hintBuilder:
+                      (BuildContext context, SpotlightGuideStepContext guide) {
+                        return SpotlightGuideBubbleHint(
+                          guide: guide,
+                          child: const SizedBox(
+                            width: 360,
+                            height: 40,
+                            child: Text('edge anchor'),
+                          ),
+                        );
+                      },
+                ),
+              ),
+            ],
+          ),
+        );
+        await pumpGuide(tester);
+
+        final Rect bubbleRect = tester.getRect(
+          find.byType(SpotlightGuideBubble).last,
+        );
+        expect(
+          bubbleRect.left,
+          greaterThanOrEqualTo(margin - 0.5),
+          reason: caseInfo.label,
+        );
+        expect(
+          bubbleRect.right,
+          lessThanOrEqualTo(800 - margin + 0.5),
+          reason: caseInfo.label,
+        );
+      }
+    },
+  );
+
   testWidgets(
     'bubble hint keeps first visible frame aligned after measurement',
     (tester) async {
@@ -918,6 +1062,20 @@ void main() {
       expect(barrierTaps, 1);
     },
   );
+}
+
+class _EdgeAnchorCase {
+  const _EdgeAnchorCase({
+    required this.label,
+    required this.direction,
+    required this.targetLeft,
+    required this.anchor,
+  });
+
+  final String label;
+  final TextDirection direction;
+  final double targetLeft;
+  final SpotlightGuideAnchorPosition anchor;
 }
 
 class _WideVisualAnchorShape extends SpotlightGuidePathAnchorShape {

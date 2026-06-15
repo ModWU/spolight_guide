@@ -377,6 +377,10 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
   final Size size;
 
   /// Radian angle used to round the triangle tip. Zero keeps a sharp point.
+  ///
+  /// The tip is rounded by cutting back along both triangle sides and connecting
+  /// those tangent points with a conic arc. Values around `pi / 6` give a
+  /// noticeable rounded tip without making the anchor look flat.
   final double tipArcAngle;
 
   final SpotlightGuideAnchorGeometry? _geometry;
@@ -477,11 +481,12 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
         tip = _upDownTip(gap.center, paintOffset.dy, body.top);
         path
           ..lineTo(tip.left.dx, tip.left.dy)
-          ..quadraticBezierTo(
+          ..conicTo(
             tip.control.dx,
             tip.control.dy,
             tip.right.dx,
             tip.right.dy,
+            tip.weight,
           )
           ..lineTo(gap.end, body.top);
       case SpotlightGuideIndicatorDirection.down:
@@ -492,22 +497,24 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
         );
         path
           ..lineTo(tip.right.dx, tip.right.dy)
-          ..quadraticBezierTo(
+          ..conicTo(
             tip.control.dx,
             tip.control.dy,
             tip.left.dx,
             tip.left.dy,
+            tip.weight,
           )
           ..lineTo(gap.start, body.bottom);
       case SpotlightGuideIndicatorDirection.left:
         tip = _leftRightTip(paintOffset.dx, gap.center, body.left);
         path
           ..lineTo(tip.right.dx, tip.right.dy)
-          ..quadraticBezierTo(
+          ..conicTo(
             tip.control.dx,
             tip.control.dy,
             tip.left.dx,
             tip.left.dy,
+            tip.weight,
           )
           ..lineTo(body.left, gap.start);
       case SpotlightGuideIndicatorDirection.right:
@@ -518,11 +525,12 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
         );
         path
           ..lineTo(tip.left.dx, tip.left.dy)
-          ..quadraticBezierTo(
+          ..conicTo(
             tip.control.dx,
             tip.control.dy,
             tip.right.dx,
             tip.right.dy,
+            tip.weight,
           )
           ..lineTo(body.right, gap.end);
     }
@@ -543,13 +551,15 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     double baseY,
   ) {
     final double sign = tipY < baseY ? 1 : -1;
-    final double roundness = _tipRoundness;
-    final double halfArc = size.width * 0.18 * roundness;
-    final double inset = size.height * 0.12 * roundness;
+    final _SpotlightGuideRoundedTriangleTip roundedTip = _roundedTip;
+    final double sideFraction = roundedTip.sideFraction;
+    final double halfArc = (size.width / 2) * sideFraction;
+    final double inset = size.height * sideFraction;
     return _SpotlightGuideAnchorTip(
       left: Offset(centerX - halfArc, tipY + inset * sign),
       control: Offset(centerX, tipY),
       right: Offset(centerX + halfArc, tipY + inset * sign),
+      weight: roundedTip.conicWeight,
     );
   }
 
@@ -559,21 +569,48 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     double baseX,
   ) {
     final double sign = tipX < baseX ? 1 : -1;
-    final double roundness = _tipRoundness;
-    final double halfArc = size.width * 0.18 * roundness;
-    final double inset = size.height * 0.12 * roundness;
+    final _SpotlightGuideRoundedTriangleTip roundedTip = _roundedTip;
+    final double sideFraction = roundedTip.sideFraction;
+    final double halfArc = (size.width / 2) * sideFraction;
+    final double inset = size.height * sideFraction;
     return _SpotlightGuideAnchorTip(
       left: Offset(tipX + inset * sign, centerY - halfArc),
       control: Offset(tipX, centerY),
       right: Offset(tipX + inset * sign, centerY + halfArc),
+      weight: roundedTip.conicWeight,
     );
   }
 
-  double get _tipRoundness {
+  _SpotlightGuideRoundedTriangleTip get _roundedTip {
     if (tipArcAngle <= 0) {
-      return 0;
+      return const _SpotlightGuideRoundedTriangleTip(
+        sideFraction: 0,
+        conicWeight: 1,
+      );
     }
-    return (tipArcAngle / (math.pi / 2)).clamp(0, 1).toDouble();
+    final double halfWidth = math.max(0, size.width / 2);
+    final double height = math.max(0, size.height);
+    if (halfWidth <= 0 || height <= 0) {
+      return const _SpotlightGuideRoundedTriangleTip(
+        sideFraction: 0,
+        conicWeight: 1,
+      );
+    }
+    final double sideLength = math.sqrt(
+      halfWidth * halfWidth + height * height,
+    );
+    final double maxCut = sideLength * 0.45;
+    final double angle = tipArcAngle.clamp(0, math.pi / 2).toDouble();
+    final double cut = math.min(maxCut, height * math.tan(angle / 2));
+    final double apexAngle = 2 * math.atan2(halfWidth, height);
+    final double conicWeight = math
+        .sin(apexAngle / 2)
+        .clamp(0.05, 1)
+        .toDouble();
+    return _SpotlightGuideRoundedTriangleTip(
+      sideFraction: cut / sideLength,
+      conicWeight: conicWeight,
+    );
   }
 
   @override
@@ -856,9 +893,21 @@ class _SpotlightGuideAnchorTip {
     required this.left,
     required this.control,
     required this.right,
+    required this.weight,
   });
 
   final Offset left;
   final Offset control;
   final Offset right;
+  final double weight;
+}
+
+class _SpotlightGuideRoundedTriangleTip {
+  const _SpotlightGuideRoundedTriangleTip({
+    required this.sideFraction,
+    required this.conicWeight,
+  });
+
+  final double sideFraction;
+  final double conicWeight;
 }

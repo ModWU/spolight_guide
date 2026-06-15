@@ -223,7 +223,7 @@ class _SpotlightGuideBubbleHintState extends State<SpotlightGuideBubbleHint> {
     Size? size,
     double indicatorOffset,
   ) {
-    return switch (guide.indicatorDirection) {
+    final Offset preferred = switch (guide.indicatorDirection) {
       SpotlightGuideIndicatorDirection.up ||
       SpotlightGuideIndicatorDirection.down => Offset(
         guide.targetAnchorPoint.dx - guide.hintRect.left - indicatorOffset,
@@ -243,6 +243,48 @@ class _SpotlightGuideBubbleHintState extends State<SpotlightGuideBubbleHint> {
         guide.targetAnchorPoint.dy - guide.hintRect.top - indicatorOffset,
       ),
     };
+    return _clampTranslationToHintRect(
+      preferred,
+      _contentBounds(textDirection, size, indicatorOffset),
+    );
+  }
+
+  Rect _contentBounds(
+    TextDirection textDirection,
+    Size? pointerSize,
+    double indicatorOffset,
+  ) {
+    Rect bounds = Rect.fromLTWH(
+      _bubbleOffset.dx,
+      _bubbleOffset.dy,
+      _effectiveBubbleWidth,
+      _effectiveBubbleHeight,
+    );
+    if (widget.pointer == null || pointerSize == null) {
+      return bounds;
+    }
+    final Rect pointerBounds = Rect.fromLTWH(
+      _pointerLeft(textDirection, pointerSize, indicatorOffset),
+      _pointerTop(textDirection, pointerSize, indicatorOffset),
+      pointerSize.width,
+      pointerSize.height,
+    );
+    bounds = bounds.expandToInclude(pointerBounds);
+    return bounds;
+  }
+
+  Offset _clampTranslationToHintRect(Offset preferred, Rect contentBounds) {
+    final double dx = _HintLayout._clampDouble(
+      preferred.dx,
+      -contentBounds.left,
+      guide.hintRect.width - contentBounds.right,
+    );
+    final double dy = _HintLayout._clampDouble(
+      preferred.dy,
+      -contentBounds.top,
+      guide.hintRect.height - contentBounds.bottom,
+    );
+    return Offset(dx, dy);
   }
 
   double? _constrainedPointerHeight(Size size) {
