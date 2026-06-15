@@ -2,6 +2,14 @@
 
 This file records the current component contract for maintainers.
 
+## 0.1.3
+
+- Treated hint `margin` as the highest-priority visual boundary, so built-in
+  bubble hints can no longer translate outside the resolved safe hint rect while
+  aligning their anchors.
+- Improved `SpotlightGuideTriangleAnchor.tipArcAngle` rendering by using a
+  rounded conic tip instead of the previous shallow quadratic approximation.
+
 ## 0.1.2
 
 - Added `SpotlightGuidePortal.blockInteractionDuringPreparation`, which blocks
