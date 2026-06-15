@@ -84,8 +84,8 @@ If the real widget is replaced by an image in the hint, the barrier cannot cut o
 The barrier clips visual holes to the visible overlay before painting. If a
 target is wider than the screen, the clipped hole keeps its rounded corners
 inside the screen instead of letting them disappear offscreen. Placement still
-uses the original target or anchor rect, and `allowTargetInteraction` still uses
-the unpadded real target rect.
+uses the target or anchor rect expanded by `targetDecoration.padding`, and
+`allowTargetInteraction` still uses the unpadded real target rect.
 
 ## A Live Reveal Leaves Only The Spotlight Hole
 

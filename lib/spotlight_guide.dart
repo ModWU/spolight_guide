@@ -10,6 +10,7 @@ import 'package:flutter/scheduler.dart';
 part 'src/api/models.dart';
 part 'src/api/portal.dart';
 part 'src/api/target.dart';
+part 'src/api/target_decoration.dart';
 part 'src/api/controller.dart';
 part 'src/runtime/geometry.dart';
 part 'src/runtime/step_source.dart';

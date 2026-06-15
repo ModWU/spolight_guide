@@ -1635,6 +1635,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       controller: _overlayController,
       child: _SpotlightGuideTargetScope(portal: this, child: widget.child),
       overlayChildBuilder: (BuildContext context, OverlayChildLayoutInfo info) {
+        final TextDirection textDirection = Directionality.of(context);
         if (!_canShowGuide) {
           return const SizedBox.expand();
         }
@@ -1691,13 +1692,15 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
             continue;
           }
 
+          final EdgeInsets decorationPadding = item.targetDecoration.padding
+              .resolve(textDirection);
           final List<Rect> targetRects = targetGeometry.rects
-              .map((Rect rect) => rect.inflateRect(item.targetPadding))
+              .map((Rect rect) => rect.inflateRect(decorationPadding))
               .map((Rect rect) => _clipTargetHoleRect(rect, info.overlaySize))
               .whereType<Rect>()
               .toList(growable: false);
           final Rect targetRect = targetGeometry.anchorRect.inflateRect(
-            item.targetPadding,
+            decorationPadding,
           );
           resolvedOverlayItems.add(
             _SpotlightGuideOverlayItem(
@@ -1719,7 +1722,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
               targetHoles,
               _SpotlightGuideTargetHole(
                 rect: rect,
-                radius: overlayItem.item.targetRadius,
+                decoration: overlayItem.item.targetDecoration,
               ),
             );
           }
@@ -1927,7 +1930,8 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   ) {
     final bool exists = targetHoles.any(
       (_SpotlightGuideTargetHole hole) =>
-          hole.rect == targetHole.rect && hole.radius == targetHole.radius,
+          hole.rect == targetHole.rect &&
+          hole.decoration == targetHole.decoration,
     );
     if (!exists) {
       targetHoles.add(targetHole);

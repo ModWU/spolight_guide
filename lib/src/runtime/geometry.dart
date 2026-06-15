@@ -39,7 +39,8 @@ class _SpotlightGuideOverlayItem {
   final Rect targetRect;
 
   /// Visual hole rects, i.e. target rects expanded by
-  /// [SpotlightGuideStepItem.targetPadding] and clipped to the visible overlay.
+  /// [SpotlightGuideTargetDecoration.padding] and clipped to the visible
+  /// overlay.
   final List<Rect> targetRects;
 
   /// The unpadded target rects, used for [SpotlightGuideStepItem.allowTargetInteraction]
@@ -47,10 +48,13 @@ class _SpotlightGuideOverlayItem {
   final List<Rect> rawTargetRects;
 }
 
-/// One dim-barrier cutout rect and radius.
+/// One dim-barrier cutout and optional visual decoration.
 class _SpotlightGuideTargetHole {
-  const _SpotlightGuideTargetHole({required this.rect, required this.radius});
+  const _SpotlightGuideTargetHole({
+    required this.rect,
+    required this.decoration,
+  });
 
   final Rect rect;
-  final double radius;
+  final SpotlightGuideTargetDecoration decoration;
 }

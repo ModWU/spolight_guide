@@ -30,7 +30,9 @@ void main() {
             SpotlightGuideStepItem(
               targetId: 'a',
               placement: SpotlightGuidePlacement.bottom,
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               gap: 0,
               targetAnchorPosition: const SpotlightGuideAnchorPosition.center(),
               hintBuilder:
@@ -105,7 +107,9 @@ void main() {
               SpotlightGuideStepItem(
                 targetId: 'a',
                 placement: placementCase.placement,
-                targetPadding: EdgeInsets.zero,
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
                 gap: 0,
                 targetAnchorPosition:
                     const SpotlightGuideAnchorPosition.center(),
@@ -162,7 +166,9 @@ void main() {
             SpotlightGuideStepItem(
               targetId: 'a',
               placement: SpotlightGuidePlacement.bottom,
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               targetAnchorPosition: const SpotlightGuideAnchorPosition.start(
                 20,
               ),
@@ -201,7 +207,9 @@ void main() {
             SpotlightGuideStepItem(
               targetId: 'a',
               placement: SpotlightGuidePlacement.top,
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               gap: 0,
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
@@ -258,7 +266,9 @@ void main() {
             SpotlightGuideStepItem(
               targetId: 'a',
               placement: SpotlightGuidePlacement.bottom,
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               gap: 0,
               targetAnchorPosition: const SpotlightGuideAnchorPosition.center(),
               hintBuilder:

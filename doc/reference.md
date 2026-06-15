@@ -28,8 +28,9 @@ SpotlightGuidePortal
 | `anchorId` | `SpotlightGuideTarget` | Optional id for selecting this mounted target as an anchor while its `id` still participates in group highlighting. |
 | `anchorTargetId` | `SpotlightGuideStepItem` | Chooses which highlighted id or `SpotlightGuideTarget.anchorId` drives hint placement. Without it, the union rect drives placement. |
 | `targetKey` | `SpotlightGuideStepItem` | Points directly to a `GlobalKey` target and is mutually exclusive with id-based targeting. |
+| `targetDecoration` | `SpotlightGuideStepItem` | Controls spotlight hole padding, shape, and optional paint layers such as rings or shadows. |
 | `missingTargetBehavior` | `SpotlightGuidePortal` / `SpotlightGuideStepItem` | Controls unresolved targets after reveal preparation. Portal default is `wait`; item value overrides it. Use `skip` for API-driven guides with optional targets. |
-| `allowTargetInteraction` | `SpotlightGuideStepItem` | When true, taps over this item's target rect pass through to the real widget behind the guide instead of being absorbed by the barrier. Only the unpadded target rect passes through; the `targetPadding` band stays absorbed. Default false. |
+| `allowTargetInteraction` | `SpotlightGuideStepItem` | When true, taps over this item's target rect pass through to the real widget behind the guide instead of being absorbed by the barrier. Only the unpadded target rect passes through; the padding from `targetDecoration.padding` stays absorbed. Default false. |
 
 When an item provides none of `targetId`, `targetIds`, or `targetKey`, the
 whole `SpotlightGuidePortal.child` rect becomes the target. This is useful for a
@@ -67,6 +68,43 @@ of becoming dim again. Placement uses `anchorTargetId` or the matching
 highlighted area or the anchor target drives visibility. This supports cases
 such as highlighting a whole summary row while aiming the bubble anchor at the
 center card in that row.
+
+## Target Decoration
+
+`SpotlightGuideTargetDecoration` owns the visual treatment of one highlighted
+target hole. It does not decorate the real widget; it decorates the transparent
+hole and optional layers painted by the overlay.
+
+| Parameter | Owner | Meaning |
+| --- | --- | --- |
+| `padding` | `SpotlightGuideTargetDecoration` | Expands the target rect before the hole is cut and before placement is computed. Directional padding resolves with `Directionality`. |
+| `shape` | `SpotlightGuideTargetDecoration` | Builds the hole path. Built-ins include `SpotlightGuideRoundedRectTargetShape` and `SpotlightGuideOvalTargetShape`. |
+| `layers` | `SpotlightGuideTargetDecoration` | Paints visual effects around the hole in list order above the barrier and before hints. |
+| `SpotlightGuideTargetRingLayer` | `SpotlightGuideTargetLayer` | Draws an outside-only ring that follows `shape`. Use translucent rings for crisp border-style halos or multiple rings for layered borders. |
+| `SpotlightGuideTargetDashedOutlineLayer` | `SpotlightGuideTargetLayer` | Draws a reusable dashed outline that follows `shape`. Useful for selected, reviewed, or temporary attention states. |
+| `SpotlightGuideTargetGlowLayer` | `SpotlightGuideTargetLayer` | Draws a soft glow that follows `shape` and is cleared away from the real target. Its default `spreadRadius` is zero; positive spread creates a stronger border-like core before blur. |
+| `SpotlightGuideTargetShadowLayer` | `SpotlightGuideTargetLayer` | Draws an offset shadow that follows `shape`. |
+
+Layer order matters. Paint a wider translucent ring first, then a narrower
+translucent ring when the target needs a crisp border-style halo:
+
+```dart
+targetDecoration: const SpotlightGuideTargetDecoration(
+  padding: EdgeInsets.all(8),
+  shape: SpotlightGuideRoundedRectTargetShape(
+    borderRadius: BorderRadius.all(Radius.circular(18)),
+  ),
+  layers: <SpotlightGuideTargetLayer>[
+    SpotlightGuideTargetRingLayer(color: Color(0x1AFFFFFF), width: 16),
+    SpotlightGuideTargetRingLayer(color: Color(0x33FFFFFF), width: 8),
+  ],
+)
+```
+
+Implement `SpotlightGuideTargetShape` for a custom hole path. Implement
+`SpotlightGuideTargetLayer` for custom visual effects. Custom layers receive a
+`SpotlightGuideTargetPaintContext` with the resolved rect, overlay size, text
+direction, shape, and a helper for building the current path.
 
 ## Controller Navigation
 
@@ -114,7 +152,11 @@ sequence.
 | `color` | `SpotlightGuideBarrierStyle` | Color painted over the non-highlighted area. Null means inherit. |
 | `blurSigma` | `SpotlightGuideBarrierStyle` | Background blur applied only to the non-highlighted area. Target holes stay clear and unblurred. Null means inherit. |
 
-Barrier style on the portal describes the common atmosphere for the whole guide. Barrier style on a step describes that one onboarding moment and only overrides the fields it sets. Target hole padding, radius, and pass-through interaction stay on `SpotlightGuideStepItem` because different highlighted widgets may need different holes.
+Barrier style on the portal describes the common atmosphere for the whole guide.
+Barrier style on a step describes that one onboarding moment and only overrides
+the fields it sets. Target hole shape and paint layers stay on
+`SpotlightGuideStepItem.targetDecoration` because different highlighted widgets
+may need different holes.
 
 Target holes are clipped to the visible overlay before the barrier is painted.
 This keeps rounded hole corners visible when a target is wider or taller than
@@ -133,7 +175,7 @@ built-in fallback -> SpotlightGuidePortal.barrier -> SpotlightGuideStep.barrier
 | --- | --- | --- |
 | `placement` | `SpotlightGuideStepItem` | Preferred hint side. Default is `verticalAuto`. |
 | `targetAnchorPosition` | `SpotlightGuideStepItem` | Semantic anchor on the target. It drives the pointer position when a pointer is present, otherwise it drives the visual anchor directly. |
-| `gap` | `SpotlightGuideStepItem` | Main-axis distance between target and hint rect. |
+| `gap` | `SpotlightGuideStepItem` | Signed main-axis distance between target and hint rect. Positive values move the hint away from the target in the final resolved placement direction; negative values move it back toward or across the target. |
 | `margin` | `SpotlightGuideStepItem` | Screen edge margin used by hint placement and min/max constraints. |
 
 `SpotlightGuidePlacement.auto` may choose top, bottom, left, or right based on available space around the target. Auto placement uses the full overlay visible area because hints are painted in that overlay; a target's nearest scrollable viewport is used for reveal scrolling, not for choosing the hint side. The automatic side with the largest usable directional space wins, and after the hint is measured a side that can fit the measured hint is preferred.
@@ -265,7 +307,7 @@ Use `SpotlightGuideBubbleHint` when the hint needs a pointer image or pointer-to
 
 Use `SpotlightGuideBubble` when the hint is only a bubble with arrow.
 
-Use `SpotlightGuideBubbleDecoration` when you want a custom widget tree but still need the same connected bubble path.
+Use `SpotlightGuideBubbleDecoration` when you want a custom widget tree but still need the same connected bubble path. Its `contentPadding` defaults to `EdgeInsets.zero`; set it explicitly when the decoration itself should add inner spacing.
 
 Return a custom widget from `hintBuilder` when the guide is image-based, product-specific, animated, or does not look like a bubble.
 

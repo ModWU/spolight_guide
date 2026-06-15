@@ -292,6 +292,76 @@ SpotlightGuideStep.item(
 )
 ```
 
+## Target Hole Decoration
+
+Use `targetDecoration` for hole padding, rounded shape, glow, and layered
+borders. Rings, glows, dashed outlines, and shadows are painted by the overlay,
+not by the target widget. Translucent rings create a crisp border-style halo;
+glow layers create a blurred soft halo.
+
+```dart
+SpotlightGuideStep.item(
+  SpotlightGuideStepItem(
+    targetId: 'total-price-card',
+    placement: SpotlightGuidePlacement.verticalAuto,
+    targetDecoration: const SpotlightGuideTargetDecoration(
+      padding: EdgeInsets.all(8),
+      shape: SpotlightGuideRoundedRectTargetShape(
+        borderRadius: BorderRadius.all(Radius.circular(18)),
+      ),
+      layers: <SpotlightGuideTargetLayer>[
+        SpotlightGuideTargetRingLayer(color: Color(0x1AFFFFFF), width: 16),
+        SpotlightGuideTargetRingLayer(color: Color(0x33FFFFFF), width: 8),
+      ],
+    ),
+    hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
+      return SpotlightGuideBubbleHint(
+        guide: guide,
+        child: const Text('Layered rings can emphasize important targets.'),
+      );
+    },
+  ),
+)
+```
+
+Use an oval shape for circular controls or avatars:
+
+```dart
+targetDecoration: const SpotlightGuideTargetDecoration(
+  padding: EdgeInsets.all(10),
+  shape: SpotlightGuideOvalTargetShape(),
+  layers: <SpotlightGuideTargetLayer>[
+    SpotlightGuideTargetGlowLayer(
+      color: Color(0x99FFC107),
+      blurRadius: 22,
+      spreadRadius: 4,
+    ),
+    SpotlightGuideTargetRingLayer(color: Color(0xFFFFC107), width: 3),
+  ],
+)
+```
+
+Use a dashed outline when a highlighted target should look selected, reviewed,
+or temporarily marked:
+
+```dart
+targetDecoration: const SpotlightGuideTargetDecoration(
+  padding: EdgeInsets.all(6),
+  shape: SpotlightGuideRoundedRectTargetShape(
+    borderRadius: BorderRadius.all(Radius.circular(16)),
+  ),
+  layers: <SpotlightGuideTargetLayer>[
+    SpotlightGuideTargetDashedOutlineLayer(
+      color: Colors.white,
+      width: 3,
+      dashLength: 10,
+      gapLength: 6,
+      outset: 8,
+    ),
+  ],
+)
+```
+
 ## Stepping Back And Jumping
 
 ```dart

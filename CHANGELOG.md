@@ -2,6 +2,20 @@
 
 This file records the current component contract for maintainers.
 
+## Unreleased
+
+- Replaced `SpotlightGuideStepItem.targetPadding` and `targetRadius` with
+  `targetDecoration`, which owns target hole padding, shape, and optional paint
+  layers.
+- Added shape-aware target hole decoration APIs:
+  `SpotlightGuideTargetDecoration`, `SpotlightGuideTargetShape`,
+  `SpotlightGuideRoundedRectTargetShape`, `SpotlightGuideOvalTargetShape`,
+  `SpotlightGuideTargetLayer`, `SpotlightGuideTargetRingLayer`,
+  `SpotlightGuideTargetDashedOutlineLayer`,
+  `SpotlightGuideTargetGlowLayer`, and `SpotlightGuideTargetShadowLayer`.
+- Added an example target decoration scenario showing layered rounded rings and
+  reusable glow and dashed outline effects.
+
 ## 0.1.3
 
 - Treated hint `margin` as the highest-priority visual boundary, so built-in
@@ -72,6 +86,10 @@ Initial standalone Flutter package release.
   Step-source selection lives in `runtime/step_source.dart`. Missing-target
   decisions live in `runtime/missing_target_policy.dart`. Reveal scroll
   decisions live in `runtime/reveal_scroll_strategy.dart`.
+- Target hole visuals live on `SpotlightGuideStepItem.targetDecoration`.
+  `padding` expands the target used for placement and barrier cutouts, `shape`
+  builds the hole path, and `layers` paint around that path after the barrier
+  and before hints.
 - Reveal hooks run before drawing: portal-level preparation, step-level reveal,
   item-level reveal, then default reveal scrolling. Default reveal uses
   `SpotlightGuideRevealScrollPolicy.onlyIfNeeded`; set `always` to force

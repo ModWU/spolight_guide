@@ -12,6 +12,7 @@ import 'pages/lazy_target_page.dart';
 import 'pages/same_step_hints_page.dart';
 import 'pages/same_step_scroll_page.dart';
 import 'pages/side_anchor_page.dart';
+import 'pages/target_decoration_page.dart';
 import 'widgets/guide_hint.dart';
 
 class SpotlightGuideHomePage extends StatefulWidget {
@@ -108,6 +109,16 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
           'Use target groups when several widgets should light up together.',
     ),
     _ScenarioEntry(
+      targetId: homeTargetDecorationId,
+      title: 'Target decoration',
+      subtitle: 'Shape-aware rings, glow and layered borders.',
+      icon: Icons.blur_on,
+      pageBuilder: (BuildContext context) => const TargetDecorationPage(),
+      guideTitle: 'Target decoration',
+      guideMessage:
+          'This scene shows target hole layers, including stacked rounded rings.',
+    ),
+    _ScenarioEntry(
       targetId: homeCustomAnchorId,
       title: 'Custom anchor',
       subtitle: 'Move the anchor and customize the bubble.',
@@ -191,17 +202,12 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
             SpotlightGuideStepItem(
               targetId: entry.targetId,
               placement: SpotlightGuidePlacement.verticalAuto,
-              targetPadding: const EdgeInsets.all(4),
-              targetRadius: 12,
-              // decoration: SpotlightGuideBubbleDecoration(
-              //   anchor: SpotlightGuideTriangleAnchor(
-              //     size: Size(24, 16),
-              //     tipArcAngle: pi / 6,
-              //   ),
-              // ),
-              // //maxWidth: 320,
-              // margin: EdgeInsets.symmetric(horizontal: 16),
-              //targetAnchorPosition: SpotlightGuideAnchorPosition.start(0),
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.all(4),
+                shape: SpotlightGuideRoundedRectTargetShape(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     return buildGuideHint(

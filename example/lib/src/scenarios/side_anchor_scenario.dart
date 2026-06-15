@@ -33,8 +33,12 @@ SpotlightGuideStepItem _item({
   return SpotlightGuideStepItem(
     targetId: targetId,
     placement: SpotlightGuidePlacement.horizontalAuto,
-    targetPadding: const EdgeInsets.all(5),
-    targetRadius: 12,
+    targetDecoration: const SpotlightGuideTargetDecoration(
+      padding: EdgeInsets.all(5),
+      shape: SpotlightGuideRoundedRectTargetShape(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+    ),
     maxWidth: 228,
     hintBuilder: (context, guide) {
       return buildGuideHint(guide: guide, title: title, message: message);

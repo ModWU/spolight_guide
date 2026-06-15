@@ -10,8 +10,12 @@ List<SpotlightGuideStep> buildLargeGroupAnchorScenario() {
       SpotlightGuideStepItem(
         targetId: metricGroupId,
         anchorTargetId: metricCostAnchorId,
-        targetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        targetRadius: 18,
+        targetDecoration: const SpotlightGuideTargetDecoration(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shape: SpotlightGuideRoundedRectTargetShape(
+            borderRadius: BorderRadius.all(Radius.circular(18)),
+          ),
+        ),
         placement: SpotlightGuidePlacement.verticalAuto,
         revealOptions: const SpotlightGuideRevealOptions(
           scrollTargetPolicy: SpotlightGuideRevealScrollTargetPolicy

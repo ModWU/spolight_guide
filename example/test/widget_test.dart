@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotlight_guide/spotlight_guide.dart';
+import 'package:spotlight_guide_example/src/guide_target_ids.dart';
 import 'package:spotlight_guide_example/src/pages/side_anchor_page.dart';
 import 'package:spotlight_guide_example/src/scenarios/custom_anchor_scenario.dart';
 import 'package:spotlight_guide_example/src/scenarios/lazy_target_reveal_scenario.dart';
 import 'package:spotlight_guide_example/src/scenarios/side_anchor_scenario.dart';
+import 'package:spotlight_guide_example/src/scenarios/target_decoration_scenario.dart';
 import 'package:spotlight_guide_example/src/spotlight_guide_example_app.dart';
 
 void main() {
@@ -44,6 +46,57 @@ void main() {
           SpotlightGuidePlacement.horizontalAuto,
         ),
       ),
+    );
+  });
+
+  test('target decoration scenario uses layered target rings', () {
+    final SpotlightGuideStep step = buildTargetDecorationScenario().first;
+    final SpotlightGuideTargetDecoration decoration =
+        step.items.single.targetDecoration;
+
+    expect(decoration.shape, isA<SpotlightGuideRoundedRectTargetShape>());
+    expect(decoration.layers, hasLength(2));
+    expect(decoration.layers.first, isA<SpotlightGuideTargetRingLayer>());
+    expect(decoration.layers.last, isA<SpotlightGuideTargetRingLayer>());
+  });
+
+  test('target decoration scenario includes a blurred glow layer', () {
+    final SpotlightGuideStep step = buildTargetDecorationScenario()[1];
+    final SpotlightGuideTargetDecoration decoration =
+        step.items.single.targetDecoration;
+
+    expect(step.items.single.targetId, targetDecorationSoftGlowId);
+    expect(decoration.shape, isA<SpotlightGuideRoundedRectTargetShape>());
+    expect(decoration.layers, hasLength(1));
+    final SpotlightGuideTargetGlowLayer layer =
+        decoration.layers.single as SpotlightGuideTargetGlowLayer;
+    expect(layer.blurRadius, greaterThanOrEqualTo(16));
+    expect(layer.spreadRadius, 0);
+  });
+
+  test('target decoration scenario includes an oval glow layer', () {
+    final SpotlightGuideStep step = buildTargetDecorationScenario()[2];
+    final SpotlightGuideTargetDecoration decoration =
+        step.items.single.targetDecoration;
+
+    expect(step.items.single.targetId, targetDecorationGlowId);
+    expect(decoration.shape, isA<SpotlightGuideOvalTargetShape>());
+    expect(decoration.layers, hasLength(2));
+    expect(decoration.layers.first, isA<SpotlightGuideTargetGlowLayer>());
+    expect(decoration.layers.last, isA<SpotlightGuideTargetRingLayer>());
+  });
+
+  test('target decoration scenario includes a dashed outline layer', () {
+    final SpotlightGuideStep step = buildTargetDecorationScenario()[3];
+    final SpotlightGuideTargetDecoration decoration =
+        step.items.single.targetDecoration;
+
+    expect(step.items.single.targetId, targetDecorationDashedId);
+    expect(decoration.shape, isA<SpotlightGuideRoundedRectTargetShape>());
+    expect(decoration.layers, hasLength(1));
+    expect(
+      decoration.layers.single,
+      isA<SpotlightGuideTargetDashedOutlineLayer>(),
     );
   });
 
@@ -118,6 +171,7 @@ void main() {
     expect(find.text('Same-step scroll'), findsOneWidget);
     expect(find.text('Lazy target'), findsOneWidget);
     expect(find.text('Barrier dismiss'), findsOneWidget);
+    expect(find.text('Target decoration'), findsOneWidget);
     expect(find.text('Dynamic steps'), findsOneWidget);
     expect(find.text('Side anchors'), findsOneWidget);
     expect(find.text('Large group'), findsOneWidget);

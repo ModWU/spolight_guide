@@ -659,7 +659,7 @@ class SpotlightGuideBubbleDecoration extends SpotlightGuideAnchoredDecoration {
     this.color = Colors.white,
     this.borderRadius = 6,
     this.anchor = const SpotlightGuideTriangleAnchor(),
-    this.contentPadding = const EdgeInsets.all(16),
+    this.contentPadding = EdgeInsets.zero,
     this.border = BorderSide.none,
     this.boxShadow,
     this.anchorGeometry,
@@ -692,6 +692,8 @@ class SpotlightGuideBubbleDecoration extends SpotlightGuideAnchoredDecoration {
   }
 
   /// Padding around the content body before border and anchor insets are added.
+  ///
+  /// Defaults to zero so custom hint content can own its spacing explicitly.
   final EdgeInsetsGeometry contentPadding;
 
   /// Inward stroke painted around the whole bubble path.

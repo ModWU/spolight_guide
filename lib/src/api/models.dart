@@ -914,8 +914,12 @@ class SpotlightGuideAnchorPosition {
 ///   targetId: 'more-button',
 ///   placement: SpotlightGuidePlacement.verticalAuto,
 ///   targetAnchorPosition: const SpotlightGuideAnchorPosition.end(8),
-///   targetPadding: const EdgeInsets.all(6),
-///   targetRadius: 10,
+///   targetDecoration: const SpotlightGuideTargetDecoration(
+///     padding: EdgeInsets.all(6),
+///     shape: SpotlightGuideRoundedRectTargetShape(
+///       borderRadius: BorderRadius.all(Radius.circular(10)),
+///     ),
+///   ),
 ///   margin: const EdgeInsets.symmetric(horizontal: 12),
 ///   maxWidth: double.infinity,
 ///   decoration: const SpotlightGuideBubbleDecoration(
@@ -950,8 +954,7 @@ class SpotlightGuideStepItem {
     this.placement = SpotlightGuidePlacement.verticalAuto,
     this.targetAnchorPosition = const SpotlightGuideAnchorPosition.center(),
     this.decoration = const SpotlightGuideBubbleDecoration(),
-    this.targetPadding = const EdgeInsets.all(6),
-    this.targetRadius = 8,
+    this.targetDecoration = const SpotlightGuideTargetDecoration(),
     this.allowTargetInteraction = false,
     this.gap = 8,
     this.margin,
@@ -1108,16 +1111,12 @@ class SpotlightGuideStepItem {
   /// custom hint builders may ignore it or pass it to [SpotlightGuideBubble].
   final SpotlightGuideAnchoredDecoration decoration;
 
-  /// Extra padding applied to the target hole and positioning rect.
+  /// Visual decoration for the spotlight target hole.
   ///
-  /// The visual hole is clipped to the visible overlay before painting, so a
-  /// very wide or tall target cannot push rounded hole corners outside the
-  /// screen. The unclipped target rect is still used for placement and target
-  /// interaction.
-  final EdgeInsets targetPadding;
-
-  /// Radius used when cutting the spotlight hole for this target.
-  final double targetRadius;
+  /// The decoration owns the hole padding, shape and optional paint layers such
+  /// as outer rings, glows, and shadows. It decorates the overlay hole only; it does not
+  /// modify the real target widget.
+  final SpotlightGuideTargetDecoration targetDecoration;
 
   /// Whether taps over this item's target pass through to the widget behind the
   /// guide.
@@ -1127,12 +1126,19 @@ class SpotlightGuideStepItem {
   /// onboarding step wants the user to actually press the highlighted control,
   /// such as "tap this button to continue".
   ///
-  /// Only the unpadded target rect passes through; the surrounding
-  /// [targetPadding] band stays absorbed so a neighbouring control is not hit by
-  /// accident.
+  /// Only the raw target rect passes through; the surrounding
+  /// [SpotlightGuideTargetDecoration.padding] band stays absorbed so a
+  /// neighbouring control is not hit by accident.
   final bool allowTargetInteraction;
 
-  /// Main-axis distance between the target and the hint.
+  /// Signed main-axis distance between the target and the hint.
+  ///
+  /// The sign follows the final resolved placement, including auto and semantic
+  /// placements. Positive values move the hint away from the target: down for
+  /// [SpotlightGuidePlacement.bottom], up for [SpotlightGuidePlacement.top],
+  /// left for [SpotlightGuidePlacement.left], and right for
+  /// [SpotlightGuidePlacement.right]. Negative values move the hint in the
+  /// opposite direction, back toward or across the target.
   final double gap;
 
   /// Screen edge margin used by hint placement.

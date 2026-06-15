@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -65,6 +67,16 @@ def main() -> None:
             ("side_anchor_right_01.png", "Auto picks the left side"),
         ],
         duration=1250,
+    )
+    build_gif(
+        "target_decoration.gif",
+        [
+            ("target_decoration_01.png", "Layered border halo"),
+            ("target_decoration_02.png", "Soft blurred glow"),
+            ("target_decoration_03.png", "Shape-aware oval glow"),
+            ("target_decoration_04.png", "Dashed outline layer"),
+        ],
+        duration=1300,
     )
 
 

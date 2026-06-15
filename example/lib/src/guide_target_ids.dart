@@ -16,6 +16,10 @@ const String barrierDismissOnCompleteEndId = 'barrier-dismiss-on-complete-end';
 const String barrierDismissDisabledId = 'barrier-dismiss-disabled';
 const String sideAnchorLeftArrowId = 'side-anchor-left-arrow';
 const String sideAnchorRightArrowId = 'side-anchor-right-arrow';
+const String targetDecorationLayeredId = 'target-decoration-layered';
+const String targetDecorationSoftGlowId = 'target-decoration-soft-glow';
+const String targetDecorationGlowId = 'target-decoration-glow';
+const String targetDecorationDashedId = 'target-decoration-dashed';
 
 const String homeBasicId = 'home-basic';
 const String homeSameStepHintsId = 'home-same-step-hints';
@@ -27,6 +31,7 @@ const String homeSideAnchorsId = 'home-side-anchors';
 const String homeLargeGroupId = 'home-large-group';
 const String homeCustomAnchorId = 'home-custom-anchor';
 const String homeControllerApiId = 'home-controller-api';
+const String homeTargetDecorationId = 'home-target-decoration';
 
 const int lazyHistoryIndex = 28;
 const double historyItemExtent = 72;

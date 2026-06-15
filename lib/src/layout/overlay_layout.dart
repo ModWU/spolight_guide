@@ -50,12 +50,13 @@ class _SpotlightGuideOverlayLayoutState
   @override
   Widget build(BuildContext context) {
     final TextDirection textDirection = Directionality.of(context);
+    final double devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
     final List<Rect> stepTargetRects = widget.targetHoles
         .map((_SpotlightGuideTargetHole hole) => hole.rect)
         .toList(growable: false);
     // Pass-through uses the unpadded target rects so taps only reach the real
-    // highlighted widget, not the surrounding [targetPadding] (which could sit
-    // over an unrelated control on the page).
+    // highlighted widget, not the surrounding target decoration padding (which
+    // could sit over an unrelated control on the page).
     final List<Rect> interactiveHoleRects = <Rect>[];
     for (final _SpotlightGuideOverlayItem overlayItem in widget.items) {
       if (overlayItem.item.allowTargetInteraction) {
@@ -117,7 +118,13 @@ class _SpotlightGuideOverlayLayoutState
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Positioned.fill(child: _buildBarrier(interactiveHoleRects)),
+          Positioned.fill(
+            child: _buildBarrier(
+              interactiveHoleRects,
+              textDirection,
+              devicePixelRatio,
+            ),
+          ),
           for (final _SpotlightGuideRenderedItem renderedItem in renderedItems)
             if (_hintSizes.containsKey(renderedItem.overlayItem.itemIndex))
               Positioned(
@@ -159,12 +166,20 @@ class _SpotlightGuideOverlayLayoutState
     );
   }
 
-  Widget _buildBarrier(List<Rect> interactiveHoleRects) {
+  Widget _buildBarrier(
+    List<Rect> interactiveHoleRects,
+    TextDirection textDirection,
+    double devicePixelRatio,
+  ) {
     final SpotlightGuideBarrierStyle barrier = widget.barrier;
     final List<Widget> barrierLayers = <Widget>[
       if (barrier.hasBlur)
         ClipPath(
-          clipper: _SpotlightBarrierClipper(widget.targetHoles),
+          clipper: _SpotlightBarrierClipper(
+            widget.targetHoles,
+            textDirection,
+            devicePixelRatio,
+          ),
           child: BackdropFilter(
             filter: ui.ImageFilter.blur(
               sigmaX: barrier.effectiveBlurSigma,
@@ -177,6 +192,8 @@ class _SpotlightGuideOverlayLayoutState
         painter: _SpotlightBarrierPainter(
           targetHoles: widget.targetHoles,
           color: barrier.effectiveColor,
+          textDirection: textDirection,
+          devicePixelRatio: devicePixelRatio,
         ),
       ),
     ];
@@ -512,6 +529,8 @@ class _HintLayout {
       connectionHalfExtent: step.decoration.anchorConnectionHalfExtent,
       safeInset: step.decoration.anchorSafeInset,
     );
+    // The gap is signed in the resolved placement direction. For a top hint,
+    // subtracting it moves positive values upward, away from the target.
     final double top = placement == SpotlightGuidePlacement.bottom
         ? targetRect.bottom + step.gap
         : targetRect.top - step.gap - height;
@@ -591,6 +610,8 @@ class _HintLayout {
     final double height = expandHeight
         ? maxHeight
         : _resolveExtent(hintSize?.height ?? maxHeight, minHeight, maxHeight);
+    // The gap is signed in the resolved placement direction. For a left hint,
+    // subtracting it moves positive values leftward, away from the target.
     final double left = placement == SpotlightGuidePlacement.right
         ? targetRect.right + step.gap
         : targetRect.left - step.gap - width;

@@ -17,7 +17,8 @@
 - Dynamic API-driven steps with skip/wait behavior for missing targets.
 - Lazy-list targets using `onReveal` before measurement.
 - Repeated target ids highlighted as a group, with optional `anchorId`.
-- Custom target anchor positions, interactive bubble arrows, barrier style, and hints.
+- Shape-aware target hole decoration, custom anchor positions, interactive
+  bubble arrows, barrier style, and hints.
 
 ## Public Entry
 
@@ -80,6 +81,7 @@ example/lib/src/scenarios/lazy_target_reveal_scenario.dart
 example/lib/src/scenarios/dynamic_steps_scenario.dart
 example/lib/src/scenarios/side_anchor_scenario.dart
 example/lib/src/scenarios/large_group_anchor_scenario.dart
+example/lib/src/scenarios/target_decoration_scenario.dart
 example/lib/src/scenarios/custom_anchor_scenario.dart
 example/lib/src/scenarios/controller_usage_scenario.dart
 ```
@@ -164,6 +166,56 @@ SpotlightGuideStepItem(
 
 For repeated list rows where only one row should be highlighted, use a unique id
 such as `order-row-${order.id}` or use `targetKey`.
+
+## Target Decoration
+
+Use `targetDecoration` when the spotlight hole needs a specific shape, padding,
+outer rings or glow. The decoration paints on the overlay only; it does not wrap
+or modify the real target widget.
+
+![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/target_decoration.gif)
+
+Use translucent `SpotlightGuideTargetRingLayer`s for a crisp border-style halo,
+`SpotlightGuideTargetGlowLayer` for a blurred soft halo, or
+`SpotlightGuideTargetDashedOutlineLayer` for temporary selection and review
+states. Layers paint in list order and follow the resolved target shape.
+
+```dart
+SpotlightGuideStep.item(
+  SpotlightGuideStepItem(
+    targetId: 'price-card',
+    targetDecoration: const SpotlightGuideTargetDecoration(
+      padding: EdgeInsets.all(8),
+      shape: SpotlightGuideRoundedRectTargetShape(
+        borderRadius: BorderRadius.all(Radius.circular(18)),
+      ),
+      layers: <SpotlightGuideTargetLayer>[
+        SpotlightGuideTargetRingLayer(color: Color(0x1AFFFFFF), width: 16),
+        SpotlightGuideTargetRingLayer(color: Color(0x33FFFFFF), width: 8),
+      ],
+    ),
+    hintBuilder: buildPriceHint,
+  ),
+)
+```
+
+Built-in shapes include rounded rectangles and ovals. Implement
+`SpotlightGuideTargetShape` for custom hole paths, or
+`SpotlightGuideTargetLayer` for custom paint effects around the hole.
+
+```dart
+targetDecoration: const SpotlightGuideTargetDecoration(
+  layers: <SpotlightGuideTargetLayer>[
+    SpotlightGuideTargetDashedOutlineLayer(
+      color: Colors.white,
+      width: 3,
+      dashLength: 10,
+      gapLength: 6,
+      outset: 8,
+    ),
+  ],
+)
+```
 
 ## Dynamic Or API-Driven Steps
 
@@ -335,8 +387,9 @@ SpotlightGuidePortal(
 Set `allowTargetInteraction: true` on an item to let taps inside its spotlight
 hole pass through to the real widget behind the guide. This is the "tap this
 button to continue" pattern. The barrier keeps absorbing taps everywhere else.
-Only the target rect itself passes through; the surrounding `targetPadding`
-band stays absorbed so a neighbouring control is not hit by accident.
+Only the target rect itself passes through; the surrounding padding from
+`targetDecoration.padding` stays absorbed so a neighbouring control is not hit
+by accident.
 
 ```dart
 SpotlightGuideStep.item(

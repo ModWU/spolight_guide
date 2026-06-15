@@ -37,7 +37,7 @@ bool _sameTargetHoles(
   }
   for (int i = 0; i < previous.length; i++) {
     if (previous[i].rect != current[i].rect ||
-        previous[i].radius != current[i].radius) {
+        previous[i].decoration != current[i].decoration) {
       return false;
     }
   }

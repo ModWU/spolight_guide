@@ -157,6 +157,31 @@ void main() {
     await _capture(tester, 'controller_01.png');
     await _hideGuide(tester);
   });
+
+  testWidgets('capture target decoration frames', (WidgetTester tester) async {
+    await _pumpScenario(
+      tester,
+      'Target decoration',
+      waitFor: find.text('Layered target halo'),
+    );
+    await _capture(tester, 'target_decoration_01.png');
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.textContaining('diffused halo'));
+    await _capture(tester, 'target_decoration_02.png');
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Shape-aware oval glow'));
+    await _capture(tester, 'target_decoration_03.png');
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Dashed outline layer'));
+    await _capture(tester, 'target_decoration_04.png');
+    await _hideGuide(tester);
+  });
 }
 
 Future<void> _pumpFor(WidgetTester tester, Duration duration) async {

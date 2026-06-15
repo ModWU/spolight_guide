@@ -152,12 +152,20 @@ test/spotlight_guide/spotlight_guide_hint_test.dart
 - `SpotlightGuideAnchorPosition.start/end` are semantic and must respect RTL.
 - The indicator tip position is the visual anchor. Arrow safe-area logic may shift or expand the bubble body, but it must not move the target anchor.
 - Bubble arrows are painted as one continuous path with the bubble body. Avoid drawing a separate triangle widget for the common bubble implementation.
-- `SpotlightGuidePortal.barrier` owns shared background atmosphere such as dim color and blur. `SpotlightGuideStep.barrier` may partially override it. Target hole padding, radius, and pass-through interaction stay on `SpotlightGuideStepItem`.
+- `SpotlightGuidePortal.barrier` owns shared background atmosphere such as dim
+  color and blur. `SpotlightGuideStep.barrier` may partially override it.
+  Target hole padding, shape, and paint layers stay on
+  `SpotlightGuideStepItem.targetDecoration`.
 - Visual target holes must be clipped to the visible overlay before painting so
   oversized or edge-aligned targets keep rounded corners on screen. Do not use
   the clipped hole rect for placement, reveal scrolling, or pass-through
   interaction; those keep using resolved target geometry.
-- The barrier absorbs taps everywhere except the unpadded target rect of an item with `allowTargetInteraction`, which passes through to the page so the user can press the real highlighted widget. The `targetPadding` band stays absorbed. `onBarrierTap` receives the active controller and only adds a reaction; it must not stop the barrier from absorbing elsewhere.
+- The barrier absorbs taps everywhere except the unpadded target rect of an item
+  with `allowTargetInteraction`, which passes through to the page so the user
+  can press the real highlighted widget. The padding band from
+  `targetDecoration.padding` stays absorbed. `onBarrierTap` receives the active
+  controller and only adds a reaction; it must not stop the barrier from
+  absorbing elsewhere.
 - The overlay wrapper `Material` must stay `MaterialType.transparency`. A default `Material` (canvas/card/button) absorbs pointer events and would silently block `allowTargetInteraction` pass-through even though `_SpotlightBarrierRegion` punches the hole.
 - The overlay must be hidden through `_hideOverlay`, never with a direct `OverlayPortalController.hide` from the build phase. Hiding during `didUpdateWidget` is deferred to the end of the frame.
 - Controller replacement should absorb the previous controller state. Hot-reload-like rebuilds should not reset active guide state.

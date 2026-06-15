@@ -29,14 +29,18 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('step-0'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('step-1'),
             ),
           ),
@@ -74,14 +78,18 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('shrink-0', contexts),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('shrink-1', contexts),
             ),
           ),
@@ -101,7 +109,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['shrink-0-updated'] = guide;
@@ -139,7 +149,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('items-old'),
             ),
           ),
@@ -156,12 +168,16 @@ void main() {
             items: <SpotlightGuideStepItem>[
               SpotlightGuideStepItem(
                 targetId: 'a',
-                targetPadding: EdgeInsets.zero,
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
                 hintBuilder: hint('items-new-a'),
               ),
               SpotlightGuideStepItem(
                 targetId: 'b',
-                targetPadding: EdgeInsets.zero,
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
                 hintBuilder: hint('items-new-b'),
               ),
             ],
@@ -193,7 +209,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('async-step'),
             ),
           ),
@@ -228,7 +246,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('blocked-preparation'),
             ),
           ),
@@ -302,7 +322,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('pass-through-preparation'),
             ),
           ),
@@ -371,7 +393,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'scroll-reveal-target',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               revealOptions: const SpotlightGuideRevealOptions(
                 duration: Duration(milliseconds: 300),
                 alignment: 0.5,
@@ -456,7 +480,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('cancelled-step'),
             ),
           ),
@@ -494,7 +520,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('error-step'),
             ),
           ),
@@ -531,14 +559,18 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('replace-0'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('replace-1'),
             ),
           ),
@@ -574,7 +606,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('auto-start'),
             ),
           ),
@@ -746,7 +780,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('unmount-auto-start'),
             ),
           ),
@@ -778,7 +814,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     return TextButton(
@@ -816,7 +854,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     return TextButton(
@@ -857,7 +897,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('pending-command'),
             ),
           ),
@@ -882,7 +924,9 @@ void main() {
         SpotlightGuideStep.item(
           SpotlightGuideStepItem(
             targetId: 'a',
-            targetPadding: EdgeInsets.zero,
+            targetDecoration: const SpotlightGuideTargetDecoration(
+              padding: EdgeInsets.zero,
+            ),
             hintBuilder: hint('pending-show'),
           ),
         ),
@@ -918,7 +962,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('idle-finish'),
             ),
           ),
@@ -950,7 +996,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('disable-hide'),
             ),
           ),
@@ -984,7 +1032,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('empty-steps'),
             ),
           ),
@@ -1021,14 +1071,18 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('barrier-0'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('barrier-1'),
             ),
           ),
@@ -1062,7 +1116,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('default-barrier'),
             ),
           ),
@@ -1099,14 +1155,18 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('complete-first'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('complete-last'),
             ),
           ),
@@ -1149,14 +1209,18 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('anytime-first'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('anytime-last'),
             ),
           ),
@@ -1186,14 +1250,18 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('internal-0'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('internal-1'),
             ),
           ),
@@ -1227,14 +1295,18 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('prev-0'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('prev-1'),
             ),
           ),
@@ -1275,21 +1347,27 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('goto-0'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('goto-1'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('goto-2'),
             ),
           ),
@@ -1333,7 +1411,9 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('async-auto'),
             ),
           ),
@@ -1364,7 +1444,9 @@ void main() {
         SpotlightGuideStep.item(
           SpotlightGuideStepItem(
             targetId: 'a',
-            targetPadding: EdgeInsets.zero,
+            targetDecoration: const SpotlightGuideTargetDecoration(
+              padding: EdgeInsets.zero,
+            ),
             hintBuilder: hint('controller-auto'),
           ),
         ),
@@ -1403,14 +1485,18 @@ void main() {
         SpotlightGuideStep.item(
           SpotlightGuideStepItem(
             targetId: 'a',
-            targetPadding: EdgeInsets.zero,
+            targetDecoration: const SpotlightGuideTargetDecoration(
+              padding: EdgeInsets.zero,
+            ),
             hintBuilder: hint('runtime-0'),
           ),
         ),
         SpotlightGuideStep.item(
           SpotlightGuideStepItem(
             targetId: 'b',
-            targetPadding: EdgeInsets.zero,
+            targetDecoration: const SpotlightGuideTargetDecoration(
+              padding: EdgeInsets.zero,
+            ),
             hintBuilder: hint('runtime-1'),
           ),
         ),
@@ -1450,14 +1536,18 @@ void main() {
       SpotlightGuideStep.item(
         SpotlightGuideStepItem(
           targetId: 'a',
-          targetPadding: EdgeInsets.zero,
+          targetDecoration: const SpotlightGuideTargetDecoration(
+            padding: EdgeInsets.zero,
+          ),
           hintBuilder: hint('runtime-two-0'),
         ),
       ),
       SpotlightGuideStep.item(
         SpotlightGuideStepItem(
           targetId: 'b',
-          targetPadding: EdgeInsets.zero,
+          targetDecoration: const SpotlightGuideTargetDecoration(
+            padding: EdgeInsets.zero,
+          ),
           hintBuilder: hint('runtime-two-1'),
         ),
       ),
@@ -1469,7 +1559,9 @@ void main() {
       SpotlightGuideStep.item(
         SpotlightGuideStepItem(
           targetId: 'a',
-          targetPadding: EdgeInsets.zero,
+          targetDecoration: const SpotlightGuideTargetDecoration(
+            padding: EdgeInsets.zero,
+          ),
           hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
             contexts['runtime-one'] = guide;
             return Text(
@@ -1517,7 +1609,9 @@ void main() {
       SpotlightGuideStep.item(
         SpotlightGuideStepItem(
           targetId: 'a',
-          targetPadding: EdgeInsets.zero,
+          targetDecoration: const SpotlightGuideTargetDecoration(
+            padding: EdgeInsets.zero,
+          ),
           hintBuilder: hint('runtime-empty'),
         ),
       ),
@@ -1552,7 +1646,9 @@ void main() {
       SpotlightGuideStep.item(
         SpotlightGuideStepItem(
           targetId: 'a',
-          targetPadding: EdgeInsets.zero,
+          targetDecoration: const SpotlightGuideTargetDecoration(
+            padding: EdgeInsets.zero,
+          ),
           hintBuilder: hint('hide-runtime'),
         ),
       ),
@@ -1601,7 +1697,9 @@ void main() {
       SpotlightGuideStep.item(
         SpotlightGuideStepItem(
           targetId: 'a',
-          targetPadding: EdgeInsets.zero,
+          targetDecoration: const SpotlightGuideTargetDecoration(
+            padding: EdgeInsets.zero,
+          ),
           hintBuilder: hint('runtime-only'),
         ),
       ),
@@ -1626,14 +1724,18 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('portal-show-0'),
             ),
           ),
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'b',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('portal-show-1'),
             ),
           ),
@@ -1700,7 +1802,9 @@ void main() {
             SpotlightGuideStep.item(
               SpotlightGuideStepItem(
                 targetId: 'a',
-                targetPadding: EdgeInsets.zero,
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
                 hintBuilder: hint('portal-after-runtime'),
               ),
             ),
@@ -1712,7 +1816,9 @@ void main() {
         SpotlightGuideStep.item(
           SpotlightGuideStepItem(
             targetId: 'b',
-            targetPadding: EdgeInsets.zero,
+            targetDecoration: const SpotlightGuideTargetDecoration(
+              padding: EdgeInsets.zero,
+            ),
             hintBuilder: hint('runtime-before-portal'),
           ),
         ),
@@ -1754,7 +1860,9 @@ class _AutoStartGuideRoutePage extends StatelessWidget {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'route-target',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('route-hint'),
             ),
           ),
@@ -1817,7 +1925,9 @@ class _ControllerGuideRoutePageState extends State<_ControllerGuideRoutePage> {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'controller-route-target',
-              targetPadding: EdgeInsets.zero,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
               hintBuilder: hint('controller-route-hint'),
             ),
           ),
@@ -1911,7 +2021,9 @@ class _RebuildingPortalStepsAppState extends State<_RebuildingPortalStepsApp> {
       SpotlightGuideStep.item(
         SpotlightGuideStepItem(
           targetId: 'rebuilding-target',
-          targetPadding: EdgeInsets.zero,
+          targetDecoration: const SpotlightGuideTargetDecoration(
+            padding: EdgeInsets.zero,
+          ),
           hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
             return SizedBox(
               width: 80,
