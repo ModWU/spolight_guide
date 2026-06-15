@@ -195,15 +195,15 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
               placement: SpotlightGuidePlacement.verticalAuto,
               targetPadding: const EdgeInsets.all(4),
               targetRadius: 12,
-              decoration: SpotlightGuideBubbleDecoration(
-                anchor: SpotlightGuideTriangleAnchor(
-                  size: Size(24, 16),
-                  tipArcAngle: pi / 6,
-                ),
-              ),
-              //maxWidth: 320,
-              margin: EdgeInsets.symmetric(horizontal: 16),
-              targetAnchorPosition: SpotlightGuideAnchorPosition.start(0),
+              // decoration: SpotlightGuideBubbleDecoration(
+              //   anchor: SpotlightGuideTriangleAnchor(
+              //     size: Size(24, 16),
+              //     tipArcAngle: pi / 6,
+              //   ),
+              // ),
+              // //maxWidth: 320,
+              // margin: EdgeInsets.symmetric(horizontal: 16),
+              //targetAnchorPosition: SpotlightGuideAnchorPosition.start(0),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     return buildGuideHint(
