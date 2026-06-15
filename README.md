@@ -6,9 +6,9 @@
 
 | Basic flow | Same-step auto scroll | Barrier dismiss |
 | --- | --- | --- |
-| ![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.3/doc/images/readme/basic_flow.gif) | ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.3/doc/images/readme/same_step_scroll.gif) | ![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.3/doc/images/readme/barrier_dismiss.gif) |
+| ![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.4/doc/images/readme/basic_flow.gif) | ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.4/doc/images/readme/same_step_scroll.gif) | ![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.4/doc/images/readme/barrier_dismiss.gif) |
 | Custom anchors and groups | Lazy target reveal | Horizontal auto |
-| ![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.3/doc/images/readme/custom_anchors.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.3/doc/images/readme/lazy_target_reveal.gif) | ![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.3/doc/images/readme/horizontal_auto.gif) |
+| ![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.4/doc/images/readme/custom_anchors.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.4/doc/images/readme/lazy_target_reveal.gif) | ![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.4/doc/images/readme/horizontal_auto.gif) |
 
 ## Highlights
 
@@ -173,7 +173,7 @@ Use `targetDecoration` when the spotlight hole needs a specific shape, padding,
 outer rings or glow. The decoration paints on the overlay only; it does not wrap
 or modify the real target widget.
 
-![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/target_decoration.gif)
+![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.4/doc/images/readme/target_decoration.gif)
 
 Use translucent `SpotlightGuideTargetRingLayer`s for a crisp border-style halo,
 `SpotlightGuideTargetGlowLayer` for a blurred soft halo, or

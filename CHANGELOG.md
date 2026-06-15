@@ -2,7 +2,7 @@
 
 This file records the current component contract for maintainers.
 
-## Unreleased
+## 0.1.4
 
 - Replaced `SpotlightGuideStepItem.targetPadding` and `targetRadius` with
   `targetDecoration`, which owns target hole padding, shape, and optional paint
