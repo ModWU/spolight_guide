@@ -473,7 +473,7 @@ class PointerPlacementCase {
 /// Pumps enough frames for the portal's post-frame preparation, measurement,
 /// overlay rendering, and zero-duration scroll work to settle.
 Future<void> pumpGuide(WidgetTester tester) async {
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 12; i++) {
     await tester.pump();
   }
   await tester.pumpAndSettle();

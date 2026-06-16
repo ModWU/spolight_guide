@@ -542,7 +542,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       }
       final bool revealMayHaveChangedLayout = await _revealStepTargets(token);
       if (revealMayHaveChangedLayout) {
-        await _waitForEndOfFrame(token);
+        await _waitForRevealLayoutToSettle(token);
       }
       if (!_finishPrepareIfCancelled(token)) {
         return;
@@ -1066,6 +1066,44 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     }
   }
 
+  Future<void> _waitForRevealLayoutToSettle(int token) async {
+    const int stableFramesRequired = 2;
+    const double rectTolerance = 0.5;
+    const Duration maxWait = Duration(milliseconds: 700);
+    int stableFrames = 0;
+    Rect? previousSignature;
+    final Stopwatch stopwatch = Stopwatch()..start();
+
+    while (mounted && token == _prepareToken && _canShowGuide) {
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted || token != _prepareToken || !_canShowGuide) {
+        return;
+      }
+
+      final bool scrolling = _hasActiveScrollAnimation();
+      final Rect? signature = _overlayMotionSignature();
+      if (signature == null) {
+        if (!scrolling) {
+          return;
+        }
+      } else if (!scrolling &&
+          previousSignature != null &&
+          _rectsNearlyEqual(signature, previousSignature, rectTolerance)) {
+        stableFrames++;
+        if (stableFrames >= stableFramesRequired) {
+          return;
+        }
+      } else {
+        stableFrames = 0;
+      }
+      previousSignature = signature ?? previousSignature;
+
+      if (stopwatch.elapsed > maxWait) {
+        return;
+      }
+    }
+  }
+
   Rect? _overlayMotionSignature() {
     if (!mounted) {
       return null;
@@ -1093,16 +1131,31 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       for (final BuildContext targetContext in _targetResolver.contextsForItem(
         item,
       )) {
-        if (!targetContext.mounted) {
-          continue;
-        }
-        final ScrollPosition? position = Scrollable.maybeOf(
-          targetContext,
-        )?.position;
-        if (position != null && position.isScrollingNotifier.value) {
+        if (_hasActiveScrollAnimationForContext(targetContext)) {
           return true;
         }
       }
+    }
+    return false;
+  }
+
+  bool _hasActiveScrollAnimationForContext(BuildContext targetContext) {
+    if (!targetContext.mounted) {
+      return false;
+    }
+    final Set<ScrollableState> visitedScrollables = <ScrollableState>{};
+    final Set<ScrollPosition> visitedPositions = <ScrollPosition>{};
+    ScrollableState? scrollable = Scrollable.maybeOf(targetContext);
+    while (scrollable != null) {
+      if (!visitedScrollables.add(scrollable)) {
+        break;
+      }
+      final ScrollPosition position = scrollable.position;
+      if (visitedPositions.add(position) &&
+          position.isScrollingNotifier.value) {
+        return true;
+      }
+      scrollable = Scrollable.maybeOf(scrollable.context);
     }
     return false;
   }

@@ -13,6 +13,11 @@ This file records the current component contract for maintainers.
 - Expanded README visuals so core feature sections include direct GIF previews.
 - Updated documentation for built-in hint types, pointer usage, and the
   recommended example flow.
+- Stabilized first visible hint frames after reveal scrolling, including
+  pointer/bubble layouts, so complex hints no longer expose a delayed layout
+  jump while their anchor position settles.
+- Improved reveal preparation to wait for target geometry to settle after
+  scroll work, including nested scrollable animation checks.
 
 ## 0.1.4
 

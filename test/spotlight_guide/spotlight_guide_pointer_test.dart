@@ -2895,6 +2895,175 @@ void main() {
       moreOrLessEquals(pointerRect.center.dx, epsilon: 0.5),
     );
   });
+
+  testWidgets(
+    'pointer hint is stable on the first visible frame after reveal scrolling',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final SpotlightGuidePortalController controller =
+          SpotlightGuidePortalController();
+      final ScrollController scrollController = ScrollController();
+      addTearDown(scrollController.dispose);
+
+      await tester.pumpWidget(
+        guideApp(
+          controller: controller,
+          autoStart: false,
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: SizedBox(
+              width: 390,
+              height: 1200,
+              child: Stack(
+                children: const <Widget>[
+                  Positioned(
+                    left: 120,
+                    top: 48,
+                    child: SpotlightGuideTarget(
+                      id: 'start',
+                      child: SizedBox(
+                        width: 96,
+                        height: 48,
+                        child: ColoredBox(color: Colors.red),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 24,
+                    top: 920,
+                    child: SpotlightGuideTarget(
+                      id: 'edge',
+                      child: SizedBox(
+                        width: 92,
+                        height: 58,
+                        child: ColoredBox(color: Colors.blue),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'start',
+                placement: SpotlightGuidePlacement.bottom,
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                hintBuilder:
+                    (BuildContext context, SpotlightGuideStepContext guide) {
+                      return SpotlightGuideBubbleHint(
+                        guide: guide,
+                        child: SizedBox(
+                          width: 120,
+                          height: 52,
+                          child: Center(
+                            child: TextButton(
+                              key: const ValueKey<String>('stable-next-button'),
+                              onPressed: guide.next,
+                              child: const Text('Next'),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+              ),
+            ),
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'edge',
+                placement: SpotlightGuidePlacement.right,
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                targetAnchorPosition: const SpotlightGuideAnchorPosition.start(
+                  12,
+                ),
+                margin: const EdgeInsets.all(18),
+                minWidth: 180,
+                maxWidth: 300,
+                gap: 10,
+                hintBuilder:
+                    (BuildContext context, SpotlightGuideStepContext guide) {
+                      return SpotlightGuideBubbleHint(
+                        guide: guide,
+                        pointer: const SpotlightGuideHintPointer(
+                          size: Size(32, 48),
+                          targetGap: 4,
+                          child: SizedBox(
+                            key: ValueKey<String>('stable-edge-pointer'),
+                            width: 32,
+                            height: 48,
+                            child: ColoredBox(color: Colors.yellow),
+                          ),
+                        ),
+                        child: const SizedBox(width: 112, height: 72),
+                      );
+                    },
+              ),
+            ),
+          ],
+        ),
+      );
+
+      controller.showPortal();
+      await pumpGuide(tester);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('stable-next-button')).hitTestable(),
+      );
+
+      final List<_PointerVisibleGeometry> visibleFrames =
+          <_PointerVisibleGeometry>[];
+      final List<String> frameDebug = <String>[];
+      for (int frame = 0; frame < 90 && visibleFrames.length < 4; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        final Finder pointerFinder = find.byKey(
+          const ValueKey<String>('stable-edge-pointer'),
+        );
+        if (pointerFinder.evaluate().isEmpty ||
+            _hintOpacityFor(tester, pointerFinder) < 1) {
+          continue;
+        }
+        final _PointerVisibleGeometry geometry = _pointerVisibleGeometry(
+          tester,
+          pointerFinder,
+        );
+        visibleFrames.add(geometry);
+        frameDebug.add(
+          'frame=$frame scroll=${scrollController.offset} '
+          'pointer=${geometry.pointer} bubble=${geometry.bubble} '
+          'anchor=${geometry.anchorDirection}/${geometry.anchorOffset}',
+        );
+      }
+
+      expect(scrollController.offset, greaterThan(0));
+      expect(visibleFrames, hasLength(4));
+      final _PointerVisibleGeometry first = visibleFrames.first;
+      for (final _PointerVisibleGeometry frame in visibleFrames.skip(1)) {
+        _expectRectsNearlyEqual(frame.pointer, first.pointer, frameDebug);
+        _expectRectsNearlyEqual(frame.bubble, first.bubble, frameDebug);
+        expect(
+          frame.anchorDirection,
+          first.anchorDirection,
+          reason: 'anchor direction should not change after the hint appears',
+        );
+        expect(
+          frame.anchorOffset,
+          moreOrLessEquals(first.anchorOffset, epsilon: 0.5),
+          reason: 'anchor offset should not shift after the hint appears',
+        );
+      }
+    },
+  );
 }
 
 class _PointerChainCase {
@@ -3056,6 +3225,76 @@ double _bubbleAnchorGlobalAxis(
     SpotlightGuideIndicatorDirection.right =>
       bubbleRect.top + anchorGeometry.offset,
   };
+}
+
+class _PointerVisibleGeometry {
+  const _PointerVisibleGeometry({
+    required this.pointer,
+    required this.bubble,
+    required this.anchorDirection,
+    required this.anchorOffset,
+  });
+
+  final Rect pointer;
+  final Rect bubble;
+  final SpotlightGuideIndicatorDirection anchorDirection;
+  final double anchorOffset;
+}
+
+_PointerVisibleGeometry _pointerVisibleGeometry(
+  WidgetTester tester,
+  Finder pointerFinder,
+) {
+  final SpotlightGuideAnchorGeometry anchorGeometry = _bubbleAnchorGeometry(
+    tester,
+  );
+  return _PointerVisibleGeometry(
+    pointer: tester.getRect(pointerFinder),
+    bubble: tester.getRect(find.byType(SpotlightGuideBubble)),
+    anchorDirection: anchorGeometry.direction,
+    anchorOffset: anchorGeometry.offset,
+  );
+}
+
+double _hintOpacityFor(WidgetTester tester, Finder finder) {
+  final Iterable<Element> opacityElements = find
+      .ancestor(of: finder, matching: find.byType(Opacity))
+      .evaluate();
+  for (final Element element in opacityElements) {
+    final Opacity opacity = element.widget as Opacity;
+    if (opacity.opacity == 0 || opacity.opacity == 1) {
+      return opacity.opacity;
+    }
+  }
+  return 1;
+}
+
+void _expectRectsNearlyEqual(
+  Rect actual,
+  Rect expected, [
+  List<String> debug = const <String>[],
+]) {
+  final String reason = debug.join('\n');
+  expect(
+    actual.left,
+    moreOrLessEquals(expected.left, epsilon: 0.5),
+    reason: reason,
+  );
+  expect(
+    actual.top,
+    moreOrLessEquals(expected.top, epsilon: 0.5),
+    reason: reason,
+  );
+  expect(
+    actual.right,
+    moreOrLessEquals(expected.right, epsilon: 0.5),
+    reason: reason,
+  );
+  expect(
+    actual.bottom,
+    moreOrLessEquals(expected.bottom, epsilon: 0.5),
+    reason: reason,
+  );
 }
 
 double _normalizeRotation(double radians) {

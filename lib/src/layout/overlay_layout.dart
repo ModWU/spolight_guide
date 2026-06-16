@@ -32,7 +32,9 @@ class _SpotlightGuideOverlayLayout extends StatefulWidget {
 /// Keeps measured hint sizes and rebuilds when step geometry changes.
 class _SpotlightGuideOverlayLayoutState
     extends State<_SpotlightGuideOverlayLayout> {
-  static const int _maxHiddenMeasurePasses = 4;
+  static const int _minHiddenMeasurePassesBeforeVisible = 3;
+  static const int _maxHiddenMeasurePasses = 24;
+  static const double _measureTolerance = 0.5;
 
   final Map<int, Size> _hintSizes = <int, Size>{};
   final Set<int> _visibleHintItems = <int>{};
@@ -134,51 +136,48 @@ class _SpotlightGuideOverlayLayoutState
             ),
           ),
           for (final _SpotlightGuideRenderedItem renderedItem in renderedItems)
-            if (_visibleHintItems.contains(renderedItem.overlayItem.itemIndex))
-              Positioned(
-                left: renderedItem.layout.rect.left,
-                top: renderedItem.layout.rect.top,
-                child: ConstrainedBox(
-                  constraints: renderedItem.layout.measureConstraints,
-                  child: renderedItem.overlayItem.item.hintBuilder(
-                    context,
-                    renderedItem.contextInfo,
-                  ),
-                ),
-              ),
-          for (final _SpotlightGuideRenderedItem renderedItem in renderedItems)
             Positioned(
-              left: 0,
-              top: 0,
-              child: Offstage(
-                child: ConstrainedBox(
-                  constraints: renderedItem.layout.measureConstraints,
-                  child: _MeasuredSize(
-                    key: _hintMeasureKey(
-                      renderedItem.overlayItem,
-                      _hintSizes[renderedItem.overlayItem.itemIndex],
-                    ),
-                    onChanged: (Size size) {
-                      _handleHintSizeChanged(
-                        renderedItem.overlayItem.itemIndex,
-                        _hintSizes[renderedItem.overlayItem.itemIndex],
-                        size,
-                      );
-                    },
-                    // This measures arbitrary user-built hint widgets before
-                    // exposing their final geometry through StepContext. Unlike
-                    // BubbleHint's internal pointer layout, this cannot move
-                    // fully into a render object without taking widget building
-                    // away from hintBuilder.
-                    child: renderedItem.overlayItem.item.hintBuilder(
-                      context,
-                      renderedItem.contextInfo,
-                    ),
-                  ),
-                ),
-              ),
+              left: renderedItem.layout.rect.left,
+              top: renderedItem.layout.rect.top,
+              child: _buildMeasuredHint(context, renderedItem),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMeasuredHint(
+    BuildContext context,
+    _SpotlightGuideRenderedItem renderedItem,
+  ) {
+    final int itemIndex = renderedItem.overlayItem.itemIndex;
+    final bool visible = _visibleHintItems.contains(itemIndex);
+    return IgnorePointer(
+      ignoring: !visible,
+      child: ExcludeSemantics(
+        excluding: !visible,
+        child: Opacity(
+          opacity: visible ? 1 : 0,
+          alwaysIncludeSemantics: visible,
+          child: ConstrainedBox(
+            constraints: renderedItem.layout.measureConstraints,
+            child: _MeasuredSize(
+              key: _hintMeasureKey(renderedItem.overlayItem),
+              notifyAlways: !visible,
+              onChanged: (Size size) {
+                _handleHintSizeChanged(itemIndex, _hintSizes[itemIndex], size);
+              },
+              // Keep one user-built hint tree alive: it is transparent while
+              // measuring and becomes visible only after the overlay has stable
+              // geometry. This avoids remounting stateful hints on the first
+              // painted frame.
+              child: renderedItem.overlayItem.item.hintBuilder(
+                context,
+                renderedItem.contextInfo,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -237,11 +236,24 @@ class _SpotlightGuideOverlayLayoutState
     }
     final Size? currentSize = _hintSizes[itemIndex];
     final bool alreadyVisible = _visibleHintItems.contains(itemIndex);
-    final bool measuredCurrentLayout = currentSize == measuredWithSize;
+    final bool measuredCurrentLayout = _sizesNearlyEqual(
+      currentSize,
+      measuredWithSize,
+    );
     final bool stableForCurrentLayout =
-        currentSize == size && measuredCurrentLayout;
+        _sizesNearlyEqual(currentSize, size) && measuredCurrentLayout;
+    if (alreadyVisible && !measuredCurrentLayout) {
+      return;
+    }
     if (stableForCurrentLayout) {
       if (alreadyVisible) {
+        return;
+      }
+      final int hiddenPasses = (_hiddenMeasurePasses[itemIndex] ?? 0) + 1;
+      if (hiddenPasses < _minHiddenMeasurePassesBeforeVisible) {
+        setState(() {
+          _hiddenMeasurePasses[itemIndex] = hiddenPasses;
+        });
         return;
       }
       setState(() {
@@ -251,7 +263,7 @@ class _SpotlightGuideOverlayLayoutState
       return;
     }
 
-    if (currentSize == size) {
+    if (_sizesNearlyEqual(currentSize, size)) {
       return;
     }
 
@@ -270,6 +282,14 @@ class _SpotlightGuideOverlayLayoutState
     });
   }
 
+  bool _sizesNearlyEqual(Size? a, Size? b) {
+    if (a == null || b == null) {
+      return a == b;
+    }
+    return (a.width - b.width).abs() <= _measureTolerance &&
+        (a.height - b.height).abs() <= _measureTolerance;
+  }
+
   void _retainHintSizesForCurrentItems() {
     final Set<int> currentItemIndices = widget.items
         .map((_SpotlightGuideOverlayItem item) => item.itemIndex)
@@ -285,11 +305,10 @@ class _SpotlightGuideOverlayLayoutState
     );
   }
 
-  Key _hintMeasureKey(_SpotlightGuideOverlayItem overlayItem, Size? hintSize) {
+  Key _hintMeasureKey(_SpotlightGuideOverlayItem overlayItem) {
     return ValueKey<String>(
       '${widget.index}:${overlayItem.itemIndex}:'
-      '${identityHashCode(overlayItem.item)}:'
-      '${hintSize?.width}:${hintSize?.height}',
+      '${identityHashCode(overlayItem.item)}',
     );
   }
 }

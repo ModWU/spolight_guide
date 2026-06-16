@@ -483,7 +483,7 @@ void main() {
       Offset? firstVisibleTopLeft;
       for (int i = 0; i < 8; i += 1) {
         await tester.pump();
-        if (tester.any(child)) {
+        if (tester.any(child) && _hintOpacityFor(tester, child) == 1) {
           firstVisibleTopLeft = tester.getTopLeft(child);
           break;
         }
@@ -733,6 +733,19 @@ SpotlightGuideAnchoredDecoration _effectiveBubbleDecoration(
 
 SpotlightGuideBubbleDecoration _bubbleDecoration(WidgetTester tester) {
   return _effectiveBubbleDecoration(tester) as SpotlightGuideBubbleDecoration;
+}
+
+double _hintOpacityFor(WidgetTester tester, Finder finder) {
+  final Iterable<Element> opacityElements = find
+      .ancestor(of: finder, matching: find.byType(Opacity))
+      .evaluate();
+  for (final Element element in opacityElements) {
+    final Opacity opacity = element.widget as Opacity;
+    if (opacity.opacity == 0 || opacity.opacity == 1) {
+      return opacity.opacity;
+    }
+  }
+  return 1;
 }
 
 class _EdgeAnchorCase {
