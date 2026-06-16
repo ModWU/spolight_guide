@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:spotlight_guide/spotlight_guide.dart';
 import 'package:spotlight_guide_example/src/spotlight_guide_example_app.dart';
 
 void main() {
@@ -14,11 +15,51 @@ void main() {
   });
 
   testWidgets('capture basic guide frame', (WidgetTester tester) async {
-    await _pumpScenario(tester, 'Basic', waitFor: find.text('Basic target'));
+    await _pumpScenario(
+      tester,
+      'Basic guide',
+      waitFor: find.text('Basic target'),
+    );
     await _capture(tester, 'basic_01.png');
     await tester.tap(find.text('Next').hitTestable());
     await tester.pumpAndSettle();
     await _capture(tester, 'basic_02.png');
+    await _hideGuide(tester);
+  });
+
+  testWidgets('capture pointer hint frame', (WidgetTester tester) async {
+    await _pumpScenario(
+      tester,
+      'Pointer hint',
+      waitFor: find.byType(SpotlightGuideTapPointer),
+    );
+    await _capture(tester, 'pointer_hint_01.png');
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Top pointer'));
+    await _capture(tester, 'pointer_hint_02.png');
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Custom pointer widget'));
+    await _capture(tester, 'pointer_hint_03.png');
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Edge anchored pointer'));
+    await _capture(tester, 'pointer_hint_04.png');
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Auto side pointer'));
+    await _capture(tester, 'pointer_hint_05.png');
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Direct target anchor'));
+    await _capture(tester, 'pointer_hint_06.png');
+
     await _hideGuide(tester);
   });
 
@@ -39,13 +80,13 @@ void main() {
       waitFor: find.text('Already visible.'),
     );
     await _capture(tester, 'same_step_scroll_01.png');
-    await _pumpFor(tester, const Duration(milliseconds: 900));
-    for (int i = 2; i <= 15; i++) {
+    await _pumpFor(tester, const Duration(milliseconds: 760));
+    for (int i = 2; i <= 21; i++) {
       await _capture(tester, _numberedFrame('same_step_scroll', i));
       await _pumpFor(tester, const Duration(milliseconds: 45));
     }
     await _pumpUntilFound(tester, find.text('Offscreen'));
-    await _capture(tester, 'same_step_scroll_16.png');
+    await _capture(tester, 'same_step_scroll_22.png');
     await _hideGuide(tester);
   });
 
@@ -155,6 +196,20 @@ void main() {
       waitFor: find.text('Portal steps'),
     );
     await _capture(tester, 'controller_01.png');
+    await _hideGuide(tester);
+  });
+
+  testWidgets('capture dynamic steps frames', (WidgetTester tester) async {
+    await _pumpScenario(
+      tester,
+      'Dynamic steps',
+      waitFor: find.text('Always present'),
+    );
+    await _capture(tester, 'dynamic_steps_01.png');
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Optional server target'));
+    await _capture(tester, 'dynamic_steps_02.png');
     await _hideGuide(tester);
   });
 

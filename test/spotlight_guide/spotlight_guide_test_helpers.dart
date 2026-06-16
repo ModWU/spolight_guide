@@ -292,13 +292,14 @@ void recordAutoScrollItemIndex(
   indices.add(context.itemIndex);
 }
 
-/// Advances the fake-async clock by [interval] and settles animations.
+/// Advances the fake-async clock by exactly [interval], then refreshes layout
+/// frames without letting the next timer interval fire.
 Future<void> pumpAutoScrollInterval(
   WidgetTester tester, {
   Duration interval = kAutoScrollTestInterval,
 }) async {
   await tester.pump(interval);
-  await tester.pumpAndSettle();
+  await pumpGuideFrames(tester);
 }
 
 /// Builds two mounted targets far apart on one scroll axis.

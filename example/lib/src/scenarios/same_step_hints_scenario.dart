@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spotlight_guide/spotlight_guide.dart';
 
 import '../guide_target_ids.dart';
+import '../widgets/guide_hint.dart';
 
 List<SpotlightGuideStep> buildSameStepHintsScenario() {
   return <SpotlightGuideStep>[
@@ -30,6 +31,7 @@ SpotlightGuideStepItem _item({
   return SpotlightGuideStepItem(
     targetId: targetId,
     placement: SpotlightGuidePlacement.bottom,
+    margin: kExampleGuideMargin,
     maxWidth: 118,
     hintBuilder: (context, guide) {
       return SpotlightGuideBubbleHint(

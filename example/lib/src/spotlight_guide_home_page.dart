@@ -9,6 +9,7 @@ import 'pages/custom_anchor_page.dart';
 import 'pages/dynamic_steps_page.dart';
 import 'pages/large_group_page.dart';
 import 'pages/lazy_target_page.dart';
+import 'pages/pointer_hint_page.dart';
 import 'pages/same_step_hints_page.dart';
 import 'pages/same_step_scroll_page.dart';
 import 'pages/side_anchor_page.dart';
@@ -30,13 +31,32 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
   late final List<_ScenarioEntry> _entries = <_ScenarioEntry>[
     _ScenarioEntry(
       targetId: homeBasicId,
-      title: 'Basic',
-      subtitle: 'Two simple steps over visible targets.',
+      title: 'Basic guide',
+      subtitle: 'Start with a ready-to-use text hint.',
       icon: Icons.play_arrow,
       pageBuilder: (BuildContext context) => const BasicScenarioPage(),
-      guideTitle: 'Basic guide',
+      guideTitle: 'Start simple',
+      guideMessage: 'Use the built-in text hint for the smallest happy path.',
+    ),
+    _ScenarioEntry(
+      targetId: homePointerHintId,
+      title: 'Pointer hint',
+      subtitle: 'Add a tap pointer without image assets.',
+      icon: Icons.touch_app,
+      pageBuilder: (BuildContext context) => const PointerHintPage(),
+      guideTitle: 'Pointer hint',
       guideMessage:
-          'Start with the smallest happy path: one target, then next.',
+          'Use SpotlightGuideTapPointer, or swap in your own image widget.',
+    ),
+    _ScenarioEntry(
+      targetId: homeBarrierDismissId,
+      title: 'Barrier dismiss',
+      subtitle: 'Close from empty-space taps at controlled times.',
+      icon: Icons.touch_app,
+      pageBuilder: (BuildContext context) => const BarrierDismissPage(),
+      guideTitle: 'Barrier dismiss',
+      guideMessage:
+          'Compare default, complete-only and anytime outside-tap closing.',
     ),
     _ScenarioEntry(
       targetId: homeSameStepHintsId,
@@ -67,26 +87,6 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
       guideTitle: 'Lazy target reveal',
       guideMessage:
           'Use onReveal when a lazy list row must be built before it can be highlighted.',
-    ),
-    _ScenarioEntry(
-      targetId: homeBarrierDismissId,
-      title: 'Barrier dismiss',
-      subtitle: 'Close from empty-space taps at controlled times.',
-      icon: Icons.touch_app,
-      pageBuilder: (BuildContext context) => const BarrierDismissPage(),
-      guideTitle: 'Barrier dismiss',
-      guideMessage:
-          'Compare default, complete-only and anytime outside-tap closing.',
-    ),
-    _ScenarioEntry(
-      targetId: homeDynamicStepsId,
-      title: 'Dynamic steps',
-      subtitle: 'Skip optional targets and reset safely.',
-      icon: Icons.rule,
-      pageBuilder: (BuildContext context) => const DynamicStepsPage(),
-      guideTitle: 'Dynamic steps',
-      guideMessage:
-          'This scenario covers server-driven targets and runtime target availability.',
     ),
     _ScenarioEntry(
       targetId: homeSideAnchorsId,
@@ -127,6 +127,16 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
       guideTitle: 'Custom anchor',
       guideMessage:
           'This scene demonstrates anchor offsets and custom bubble decoration.',
+    ),
+    _ScenarioEntry(
+      targetId: homeDynamicStepsId,
+      title: 'Dynamic steps',
+      subtitle: 'Skip optional targets and reset safely.',
+      icon: Icons.rule,
+      pageBuilder: (BuildContext context) => const DynamicStepsPage(),
+      guideTitle: 'Dynamic steps',
+      guideMessage:
+          'This scenario covers server-driven targets and runtime target availability.',
     ),
     _ScenarioEntry(
       targetId: homeControllerApiId,
@@ -202,6 +212,7 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
             SpotlightGuideStepItem(
               targetId: entry.targetId,
               placement: SpotlightGuidePlacement.verticalAuto,
+              margin: kExampleGuideMargin,
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.all(4),
                 shape: SpotlightGuideRoundedRectTargetShape(

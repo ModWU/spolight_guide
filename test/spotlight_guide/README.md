@@ -31,17 +31,26 @@ spotlight_guide_layout_test.dart
   measurement reset.
 
 spotlight_guide_pointer_test.dart
-  Pointer image alignment for every side, pointer-to-arrow start/end semantics,
-  top-placed pointer below the bubble, direct arrow anchoring when no pointer
-  is supplied.
+  Visual pointer alignment for every side, semantic start/end placement in RTL,
+  pointer paint layer ordering, pointer anchor-mode behavior, pointer-to-target
+  start/end semantics, pointer-center bubble anchoring, top-placed pointer
+  below the bubble, and direct arrow anchoring when no pointer is supplied.
 
 spotlight_guide_hint_test.dart
   Built-in bubble sizing and arrow-side padding, bubble hint border/arrow-tip
-  inheritance from the guide context, border override precedence, spotlight
-  hole de-duplication, oversized hole clipping, overlapping/nested hole union,
-  barrier blur style, barrier absorbing target taps by default,
-  allowTargetInteraction passing taps through to the highlighted widget, and
-  pass-through covering only the target rect and not its padding.
+  inheritance from the guide context, border override precedence, path anchor
+  direction exposure, bubble child tap hit testing, proxy decoration, and path
+  anchor connection geometry.
+
+spotlight_guide_barrier_test.dart
+  Barrier style inheritance and overrides, spotlight-hole de-duplication,
+  overlapping/nested hole union, oversized hole clipping, barrier absorbing
+  target taps by default, allowTargetInteraction pass-through, and pass-through
+  covering only the target rect and not its padding.
+
+spotlight_guide_target_decoration_test.dart
+  Target decoration shape cutting, target paint context shape resolution,
+  glow layer clearing, and outside-only layered ring painting.
 
 spotlight_guide_auto_scroll_test.dart
   Zero interval, three-item index sequencing, finish/next/reset cancellation,
@@ -90,12 +99,14 @@ spotlight_guide_test_helpers.dart
 
 - Changing `SpotlightGuideStepItem`, `targetId`, `targetIds`, or `targetKey`: run targets and reveal tests.
 - Changing placement or constraints: run layout tests.
-- Changing pointer, bubble body offset, or arrow anchor math: run pointer and layout tests.
+- Changing pointer or arrow anchor math: run pointer and layout tests.
 - Changing built-in hint widgets, the bubble decoration, or the connected arrow painter: run hint and pointer tests.
+- Changing target decoration rings, glow, shadow, dashed outlines, or shapes: run target decoration and barrier tests.
+- Changing barrier color, blur, hole clipping, or target pass-through: run barrier tests.
 - Changing reveal, scroll, lazy-list handling, or same-step multi-item behavior: run reveal and auto-scroll tests.
 - Changing controller or hot-reload-like state behavior: run controller tests.
 
-The full folder currently contains 140 widget tests.
+The full folder currently contains focused widget tests split by feature area.
 
 Before changing guide code, also read:
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spotlight_guide/spotlight_guide.dart';
 
 import '../guide_target_ids.dart';
+import '../widgets/guide_hint.dart';
 
 const Size _anchorShapeSize = Size(56, 42);
 const double _anchorVisualHalfExtent = 24;
@@ -14,6 +15,7 @@ List<SpotlightGuideStep> buildCustomAnchorScenario() {
         placement: SpotlightGuidePlacement.bottom,
         targetAnchorPosition: const SpotlightGuideAnchorPosition.center(),
         decoration: _anchorDecoration(_CustomAnchorStyle.droplet),
+        margin: kExampleGuideMargin,
         maxWidth: 360,
         hintBuilder: (context, guide) {
           return _CustomAnchorDemoHint(guide: guide);

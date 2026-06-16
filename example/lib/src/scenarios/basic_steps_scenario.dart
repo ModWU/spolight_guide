@@ -33,6 +33,7 @@ SpotlightGuideStepItem _item({
   return SpotlightGuideStepItem(
     targetId: targetId,
     placement: placement,
+    margin: kExampleGuideMargin,
     maxWidth: 310,
     hintBuilder: (context, guide) {
       return buildGuideHint(guide: guide, title: title, message: message);

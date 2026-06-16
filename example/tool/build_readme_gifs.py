@@ -20,15 +20,17 @@ def main() -> None:
         ],
         duration=1350,
     )
+    build_pointer_hint_gif()
+    build_same_step_hints_gif()
     build_gif(
         "same_step_scroll.gif",
         [
             *[
                 (f"same_step_scroll_{index:02}.png", "Same-step auto scroll")
-                for index in range(1, 16)
+                for index in range(1, 22)
             ],
             *[
-                ("same_step_scroll_16.png", "Hint appears after scroll settles")
+                ("same_step_scroll_22.png", "Hint appears after scroll settles")
                 for _ in range(4)
             ],
         ],
@@ -68,6 +70,15 @@ def main() -> None:
         ],
         duration=1250,
     )
+    build_gif(
+        "dynamic_steps.gif",
+        [
+            ("dynamic_steps_01.png", "Runtime step 1"),
+            ("dynamic_steps_02.png", "Optional target step"),
+        ],
+        duration=1250,
+    )
+    build_controller_api_gif()
     build_gif(
         "target_decoration.gif",
         [
@@ -167,6 +178,107 @@ def build_barrier_dismiss_gif() -> None:
         )
     )
     save_gif("barrier_dismiss.gif", rendered, duration=130)
+
+
+def build_pointer_hint_gif() -> None:
+    rendered = []
+    rendered.extend(
+        hold_frames(
+            "pointer_hint_01.png",
+            "Pointer, bubble and target chain",
+            count=4,
+        )
+    )
+    rendered.extend(
+        hold_frames(
+            "pointer_hint_02.png",
+            "Pointer follows the resolved side",
+            count=4,
+        )
+    )
+    rendered.extend(
+        hold_frames(
+            "pointer_hint_03.png",
+            "Use any widget as a pointer",
+            count=4,
+        )
+    )
+    rendered.extend(
+        hold_frames(
+            "pointer_hint_04.png",
+            "Move the bubble anchor on the pointer",
+            count=4,
+        )
+    )
+    rendered.extend(
+        hold_frames(
+            "pointer_hint_05.png",
+            "Auto side adapts to available space",
+            count=4,
+        )
+    )
+    rendered.extend(
+        hold_frames(
+            "pointer_hint_06.png",
+            "Decorative pointer, target anchor",
+            count=4,
+        )
+    )
+    save_gif("pointer_hint.gif", rendered, duration=900)
+
+
+def build_same_step_hints_gif() -> None:
+    rendered = []
+    rendered.extend(
+        hold_frames(
+            "same_step_hints_01.png",
+            "Several hints in one step",
+            count=5,
+        )
+    )
+    rendered.extend(
+        touch_frames(
+            "same_step_hints_01.png",
+            "All hints share one step",
+            x=34,
+            y=760,
+        )
+    )
+    rendered.extend(
+        hold_frames(
+            "same_step_hints_01.png",
+            "Use targetIds or multiple items",
+            count=4,
+        )
+    )
+    save_gif("same_step_hints.gif", rendered, duration=130)
+
+
+def build_controller_api_gif() -> None:
+    rendered = []
+    rendered.extend(
+        hold_frames(
+            "controller_01.png",
+            "External controller API",
+            count=5,
+        )
+    )
+    rendered.extend(
+        touch_frames(
+            "controller_01.png",
+            "Drive the guide from buttons",
+            x=315,
+            y=705,
+        )
+    )
+    rendered.extend(
+        hold_frames(
+            "controller_01.png",
+            "showPortal and showSteps",
+            count=4,
+        )
+    )
+    save_gif("controller_api.gif", rendered, duration=130)
 
 
 def hold_frames(file_name: str, caption: str, *, count: int) -> list[Image.Image]:

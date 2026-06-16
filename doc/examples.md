@@ -1,5 +1,104 @@
 # Spotlight Guide Examples
 
+## Quick Text Hint
+
+Use `SpotlightGuideTextHint` for ordinary title/message guides. It provides
+progress text and Back/Next/Done buttons, while still using the same placement
+and decoration rules as fully custom hints.
+
+```dart
+SpotlightGuideStep.item(
+  SpotlightGuideStepItem(
+    targetId: 'more-button',
+    hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
+      return SpotlightGuideTextHint(
+        guide: guide,
+        title: 'More actions',
+        message: 'Open this menu for advanced options.',
+      );
+    },
+  ),
+)
+```
+
+Hide the built-in actions when outside-tap behavior or a target interaction
+should complete the flow instead:
+
+```dart
+SpotlightGuideTextHint(
+  guide: guide,
+  title: 'Tap outside to close',
+  message: 'This hint has no buttons.',
+  showActions: false,
+)
+```
+
+## Built-In Tap Pointer
+
+Use `SpotlightGuideHintPointer` when the guide needs a visual cue between the
+target and bubble. The pointer child can be anything: `SpotlightGuideTapPointer`
+for a simple built-in tap cue, `Image.asset`, a Lottie animation, an icon badge,
+or custom paint.
+
+With the default pointer chain, the pointer touches the target side and `gap`
+is the signed distance from the pointer's far edge to the bubble anchor tip. If
+the bubble uses `SpotlightGuideNoAnchor`, the hint edge is treated as that tip.
+Use `SpotlightGuideHintPointer.targetGap` when the pointer itself should move
+away from or back toward the target. Custom pointers can omit `size` to use
+their child layout size, or provide `size` when an asset needs a stable slot.
+Use `visualOffset` only when the pointer asset needs a tiny paint-only nudge;
+the anchor chain remains aligned to the unmoved pointer layout slot.
+
+When the pointer artwork has direction, use `builder` instead of hard-coding a
+side. The original `child` is still passed in, and the builder receives the
+resolved `SpotlightGuidePointerContext`.
+
+```dart
+SpotlightGuideStepItem(
+  targetId: 'more-button',
+  gap: 10,
+  decoration: const SpotlightGuideBubbleDecoration(
+    anchor: SpotlightGuideNoAnchor(),
+  ),
+  hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
+    return SpotlightGuideTextHint(
+      guide: guide,
+      title: 'Tap here',
+      message: 'The pointer aligns with the resolved target anchor.',
+      pointer: SpotlightGuideHintPointer.tap(
+        visualOffset: SpotlightGuidePointerOffset.directional(end: 2),
+        builder: (
+          BuildContext context,
+          SpotlightGuidePointerContext pointer,
+          Widget child,
+        ) {
+          return Transform.rotate(
+            angle: pointer.rotationToTarget(),
+            child: child,
+          );
+        },
+      ),
+    );
+  },
+)
+```
+
+If your pointer asset does not naturally point up, describe that source pose
+instead of writing a placement switch. `up()` is the default source pose;
+`upRight()` describes a northeast-facing asset, and `upRight(0)` is identical to
+`upRight()`. The angle example below assumes `import 'dart:math' as math;`; the
+final rotation still resolves against the current target side, so opposite
+sides mirror the turn automatically.
+
+```dart
+Transform.rotate(
+  angle: pointer.rotationToTarget(
+    from: SpotlightGuidePointerDirection.right(math.pi / 2),
+  ),
+  child: child,
+)
+```
+
 ## Saving More Button Guide
 
 This mirrors the saving page pattern: the real more button is highlighted by the barrier hole, while the pointer image and bubble are custom guide UI.
@@ -13,7 +112,6 @@ SpotlightGuidePortal(
       SpotlightGuideStepItem(
         targetId: SavingGuideTargets.more,
         placement: SpotlightGuidePlacement.bottom,
-        targetAnchorPosition: const SpotlightGuideAnchorPosition.end(-8),
         decoration: const SpotlightGuideBubbleDecoration(
           borderRadius: 8,
           anchor: SpotlightGuideTriangleAnchor(
@@ -24,10 +122,12 @@ SpotlightGuidePortal(
         hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
           return SpotlightGuideBubbleHint(
             guide: guide,
-            pointer: Image.asset('assets/guide_hand.png'),
-            pointerSize: const Size(70, 54),
-            pointerAnchorPosition: const SpotlightGuideAnchorPosition.end(14),
-            bubbleBodyOffset: 100,
+            pointer: SpotlightGuideHintPointer(
+              child: Image.asset('assets/guide_pointer.png'),
+              size: const Size(70, 54),
+              pointerAnchorPosition: const SpotlightGuideAnchorPosition.end(14),
+              bubbleOffset: 100,
+            ),
             child: TextButton(
               onPressed: guide.finish,
               child: const Text('I know'),

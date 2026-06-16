@@ -2,6 +2,18 @@
 
 This file records the current component contract for maintainers.
 
+## 0.1.5
+
+- Added `SpotlightGuideTextHint`, a ready-to-use title/message/progress/action
+  hint for simple onboarding flows.
+- Added `SpotlightGuideTapPointer`, a built-in pointer widget for lightweight
+  tap cues without requiring an image asset.
+- Reordered the example app from simple usage toward advanced scenarios and
+  added a dedicated pointer hint scenario.
+- Expanded README visuals so core feature sections include direct GIF previews.
+- Updated documentation for built-in hint types, pointer usage, and the
+  recommended example flow.
+
 ## 0.1.4
 
 - Replaced `SpotlightGuideStepItem.targetPadding` and `targetRadius` with

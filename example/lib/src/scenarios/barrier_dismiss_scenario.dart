@@ -88,6 +88,7 @@ SpotlightGuideStepItem _buttonItem({
   return SpotlightGuideStepItem(
     targetId: targetId,
     placement: SpotlightGuidePlacement.verticalAuto,
+    margin: kExampleGuideMargin,
     maxWidth: 320,
     hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
       return buildGuideHint(guide: guide, title: title, message: message);
@@ -103,37 +104,14 @@ SpotlightGuideStepItem _passiveItem({
   return SpotlightGuideStepItem(
     targetId: targetId,
     placement: SpotlightGuidePlacement.verticalAuto,
+    margin: kExampleGuideMargin,
     maxWidth: 320,
     hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
-      return SpotlightGuideBubbleHint(
+      return SpotlightGuideTextHint(
         guide: guide,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                'Step ${guide.index + 1}/${guide.total}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(message),
-            ],
-          ),
-        ),
+        title: title,
+        message: message,
+        showActions: false,
       );
     },
   );

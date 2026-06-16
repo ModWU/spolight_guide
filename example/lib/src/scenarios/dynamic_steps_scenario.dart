@@ -44,6 +44,7 @@ SpotlightGuideStepItem _item({
     targetId: targetId,
     placement: placement,
     missingTargetBehavior: missingTargetBehavior,
+    margin: kExampleGuideMargin,
     maxWidth: 310,
     hintBuilder: (context, guide) {
       return buildGuideHint(guide: guide, title: title, message: message);

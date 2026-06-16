@@ -126,15 +126,37 @@ flutter test --no-pub test/spotlight_guide/spotlight_guide_layout_test.dart
 Remember the anchor chain:
 
 ```text
-targetAnchorPosition -> pointer visual anchor -> pointerAnchorPosition -> bubble anchor
+SpotlightGuideHintPointer.pointerAnchorPosition -> targetGap -> pointer layout slot -> targetAnchorPosition -> gap -> bubble anchor tip
 ```
 
-If there is no pointer, `pointerAnchorPosition` has no effect and `targetAnchorPosition` points directly to the bubble anchor.
+If there is no pointer, `SpotlightGuideHintPointer.pointerAnchorPosition` is not used and `targetAnchorPosition` resolves on the target directly.
+
+With the default pointer chain, `pointerAnchorPosition` chooses which point
+inside the pointer attaches to the target. `targetAnchorPosition` then chooses
+which point inside the pointer the bubble anchor attaches to. The pointer
+touches the target side and `SpotlightGuideStepItem.gap` is the
+pointer-to-bubble-anchor distance. Use `SpotlightGuideHintPointer.targetGap`
+for the target-to-pointer distance: positive values move the pointer away from
+the target, negative values pull it back toward the target, and zero keeps it
+touching. If the bubble has no anchor, the hint edge is treated as the anchor
+tip. Without a pointer, `gap` is still the target-to-bubble distance.
+
+If only the pointer artwork needs a tiny nudge, use
+`SpotlightGuideHintPointer.visualOffset`. It moves only the pointer child paint,
+so it should not be used to fix target, pointer, or bubble anchor alignment. Use
+`SpotlightGuidePointerOffset.directional` when the horizontal nudge should
+mirror in RTL.
+
+If a pointer is present but should not become part of the anchor chain, set
+`SpotlightGuideHintPointer(anchorMode: SpotlightGuidePointerAnchorMode.target,
+...)`. The pointer still renders, but the bubble anchor stays aligned directly
+with the target and `gap` stays the target-to-bubble distance.
 
 Related tests:
 
 ```sh
 flutter test --no-pub test/spotlight_guide/spotlight_guide_pointer_test.dart
+flutter test --no-pub test/spotlight_guide/spotlight_guide_safe_area_test.dart
 ```
 
 ## Repeated Target ID Picks The Wrong Anchor

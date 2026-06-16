@@ -13,6 +13,7 @@ List<SpotlightGuideStep> buildLazyTargetRevealScenario({
       SpotlightGuideStepItem(
         targetId: lazyHistoryId,
         placement: SpotlightGuidePlacement.verticalAuto,
+        margin: kExampleGuideMargin,
         maxWidth: 320,
         onReveal: (SpotlightGuideRevealContext context) async {
           await context.scrollToOffset(

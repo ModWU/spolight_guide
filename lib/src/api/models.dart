@@ -825,9 +825,9 @@ enum SpotlightGuideAnchor { center, start, end }
 
 /// Describes where an anchor point should be resolved on one axis.
 ///
-/// Use this for both the target-to-anchor relationship
-/// ([SpotlightGuideStepItem.targetAnchorPosition]) and the pointer-to-anchor
-/// relationship ([SpotlightGuideBubbleHint.pointerAnchorPosition]).
+/// Use this for both the bubble-anchor relationship
+/// ([SpotlightGuideStepItem.targetAnchorPosition]) and the pointer-to-target
+/// contact relationship ([SpotlightGuideHintPointer.pointerAnchorPosition]).
 ///
 /// The [offset] value is intentionally signed. For [center], a positive
 /// horizontal offset moves toward the semantic end in LTR and toward the
@@ -1092,13 +1092,22 @@ class SpotlightGuideStepItem {
   /// Preferred side used to place this hint around the target.
   final SpotlightGuidePlacement placement;
 
-  /// Anchor on the layout rect that the pointer or bubble anchor should point to.
+  /// Anchor point used by the bubble anchor.
   ///
-  /// That rect is the [anchorTargetId] target or
-  /// [SpotlightGuideTarget.anchorId] target when used, the [targetId] rect, the
-  /// [targetKey] rect, or the union of all [targetIds] when no anchor is set.
-  /// Repeated ids resolve as target groups, so this rect may also be a group's
-  /// union rect. It is not applied separately to every highlighted id.
+  /// Without a pointer, this resolves on the layout rect that the bubble anchor
+  /// should point to. That rect is the [anchorTargetId] target or
+  /// [SpotlightGuideTarget.anchorId] target when used, the [targetId] rect,
+  /// the [targetKey] rect, or the union of all [targetIds] when no anchor is
+  /// set. Repeated ids resolve as target groups, so this rect may also be a
+  /// group's union rect. It is not applied separately to every highlighted id.
+  ///
+  /// When a [SpotlightGuideBubbleHint] pointer participates in the default
+  /// pointer anchor chain, this resolves on the pointer instead. In that case
+  /// [SpotlightGuideHintPointer.pointerAnchorPosition] controls where the
+  /// pointer touches the target, while this value controls where the bubble
+  /// anchor attaches to the pointer. For example, `center(4)` keeps the pointer
+  /// contact stable and offsets the bubble anchor 4 logical pixels from the
+  /// pointer center.
   ///
   /// For top/bottom placements this resolves on the horizontal axis. For
   /// left/right placements this resolves on the vertical axis.
@@ -1131,14 +1140,19 @@ class SpotlightGuideStepItem {
   /// neighbouring control is not hit by accident.
   final bool allowTargetInteraction;
 
-  /// Signed main-axis distance between the target and the hint.
+  /// Signed main-axis distance from the target to the first visual guide piece.
+  ///
+  /// When a [SpotlightGuideBubbleHint.pointer] participates in the anchor chain
+  /// with [SpotlightGuidePointerAnchorMode.pointer], the pointer touches the
+  /// target side and this is the pointer-to-bubble-anchor distance. Without
+  /// such a pointer, this is the target-to-hint distance.
   ///
   /// The sign follows the final resolved placement, including auto and semantic
-  /// placements. Positive values move the hint away from the target: down for
-  /// [SpotlightGuidePlacement.bottom], up for [SpotlightGuidePlacement.top],
-  /// left for [SpotlightGuidePlacement.left], and right for
-  /// [SpotlightGuidePlacement.right]. Negative values move the hint in the
-  /// opposite direction, back toward or across the target.
+  /// placements. Positive values move the first guide piece away from the
+  /// target: down for [SpotlightGuidePlacement.bottom], up for
+  /// [SpotlightGuidePlacement.top], left for [SpotlightGuidePlacement.left],
+  /// and right for [SpotlightGuidePlacement.right]. Negative values move it in
+  /// the opposite direction, back toward or across the target.
   final double gap;
 
   /// Screen edge margin used by hint placement.
@@ -1279,8 +1293,10 @@ class SpotlightGuideStepContext {
     required this.targetRects,
     required this.stepTargetRects,
     required this.targetAnchorPoint,
+    this.targetAnchorPosition = const SpotlightGuideAnchorPosition.center(),
     required this.overlaySize,
     required this.hintRect,
+    required this.margin,
     required this.placement,
     required this.indicatorDirection,
     required this.indicatorOffset,
@@ -1320,14 +1336,25 @@ class SpotlightGuideStepContext {
   /// All target rects kept visible in the current step.
   final List<Rect> stepTargetRects;
 
-  /// Global overlay point that the pointer or visual anchor should align with.
+  /// Global overlay point where the pointer or visual anchor should aim.
   final Offset targetAnchorPoint;
+
+  /// Anchor position requested by the current step item.
+  ///
+  /// Built-in bubble hints use this to resolve the bubble anchor against the
+  /// pointer when a pointer participates in the default anchor chain. Without a
+  /// pointer, [targetAnchorPoint] already contains this position resolved
+  /// against the target.
+  final SpotlightGuideAnchorPosition targetAnchorPosition;
 
   /// Size of the overlay used by the guide.
   final Size overlaySize;
 
   /// Resolved hint rect in overlay coordinates.
   final Rect hintRect;
+
+  /// Resolved screen edge margin used by hint placement and safety checks.
+  final EdgeInsets margin;
 
   /// Final physical placement after resolving auto placement and semantic
   /// [SpotlightGuidePlacement.start]/[SpotlightGuidePlacement.end] options.
@@ -1356,9 +1383,9 @@ class SpotlightGuideStepContext {
 
   /// Main-axis distance configured by [SpotlightGuideStepItem.gap].
   ///
-  /// The default layout uses this as the distance between the target and hint
-  /// rect. [SpotlightGuideBubbleHint] also uses it as the default distance
-  /// between an optional pointer and the bubble body.
+  /// Built-in hint widgets treat this as the active anchor-chain distance:
+  /// pointer to bubble anchor when a pointer participates in the chain, or
+  /// target to hint when no such pointer exists.
   final double gap;
 
   /// Decoration configured on the current [SpotlightGuideStepItem].

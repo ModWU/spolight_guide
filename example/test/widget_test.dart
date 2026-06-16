@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotlight_guide/spotlight_guide.dart';
@@ -5,9 +7,11 @@ import 'package:spotlight_guide_example/src/guide_target_ids.dart';
 import 'package:spotlight_guide_example/src/pages/side_anchor_page.dart';
 import 'package:spotlight_guide_example/src/scenarios/custom_anchor_scenario.dart';
 import 'package:spotlight_guide_example/src/scenarios/lazy_target_reveal_scenario.dart';
+import 'package:spotlight_guide_example/src/scenarios/pointer_hint_scenario.dart';
 import 'package:spotlight_guide_example/src/scenarios/side_anchor_scenario.dart';
 import 'package:spotlight_guide_example/src/scenarios/target_decoration_scenario.dart';
 import 'package:spotlight_guide_example/src/spotlight_guide_example_app.dart';
+import 'package:spotlight_guide_example/src/widgets/guide_hint.dart';
 
 void main() {
   test('lazy target scenario uses automatic vertical placement', () {
@@ -46,6 +50,46 @@ void main() {
           SpotlightGuidePlacement.horizontalAuto,
         ),
       ),
+    );
+  });
+
+  test('pointer hint scenario uses the built-in tap pointer', () {
+    final List<SpotlightGuideStep> steps = buildPointerHintScenario();
+
+    expect(steps, hasLength(greaterThanOrEqualTo(5)));
+    expect(
+      steps.map((SpotlightGuideStep step) => step.items.single.targetId),
+      containsAll(<String>[
+        pointerLeftOfTargetId,
+        pointerAboveTargetId,
+        pointerCustomAssetId,
+        pointerEdgeAnchorId,
+        pointerAutoSideId,
+        pointerDirectAnchorId,
+      ]),
+    );
+    expect(
+      steps.map((SpotlightGuideStep step) => step.items.single.placement),
+      containsAll(<SpotlightGuidePlacement>[
+        SpotlightGuidePlacement.left,
+        SpotlightGuidePlacement.top,
+        SpotlightGuidePlacement.verticalAuto,
+        SpotlightGuidePlacement.right,
+        SpotlightGuidePlacement.horizontalAuto,
+      ]),
+    );
+    expect(
+      steps[2].items.single.placement,
+      SpotlightGuidePlacement.verticalAuto,
+    );
+    expect(steps.last.items.single.targetId, pointerDirectAnchorId);
+    expect(
+      steps.last.items.single.placement,
+      SpotlightGuidePlacement.verticalAuto,
+    );
+    expect(
+      steps.first.items.single.targetAnchorPosition.anchor,
+      SpotlightGuideAnchor.center,
     );
   });
 
@@ -166,7 +210,7 @@ void main() {
 
     expect(find.text('Spotlight Guide Examples'), findsOneWidget);
     expect(find.text('Basic guide'), findsOneWidget);
-    expect(find.text('Basic'), findsOneWidget);
+    expect(find.text('Pointer hint'), findsOneWidget);
     expect(find.text('Same-step hints'), findsOneWidget);
     expect(find.text('Same-step scroll'), findsOneWidget);
     expect(find.text('Lazy target'), findsOneWidget);
@@ -177,6 +221,218 @@ void main() {
     expect(find.text('Large group'), findsOneWidget);
     expect(find.text('Custom anchor'), findsOneWidget);
     expect(find.text('Controller API'), findsOneWidget);
+  });
+
+  testWidgets('pointer hint page shows the built-in pointer', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const SpotlightGuideExampleApp());
+    await tester.pumpAndSettle();
+
+    await _finishCurrentGuide(tester);
+    await _openScenario(tester, 'Pointer hint');
+
+    expect(find.text('Pointer hint'), findsWidgets);
+    expect(find.byType(SpotlightGuideTapPointer), findsOneWidget);
+    expect(find.byType(SpotlightGuideTextHint), findsOneWidget);
+    expect(find.byType(SpotlightGuideBubbleHint), findsOneWidget);
+    expect(find.text('Right-pointing pointer'), findsOneWidget);
+    expect(find.text('Target'), findsOneWidget);
+    expect(find.text('Pointer'), findsOneWidget);
+
+    final Rect pointerRect = tester.getRect(
+      find.byKey(const ValueKey<String>('right-pointing-pointer-slot')),
+    );
+    final Rect handRect = tester.getRect(find.byType(SpotlightGuideTapPointer));
+    final Rect connectorRect = tester.getRect(
+      find.byKey(const ValueKey<String>('right-pointing-pointer-connector')),
+    );
+    final Rect targetRect = tester.getRect(
+      find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is SpotlightGuideTarget &&
+            widget.id == pointerLeftOfTargetId,
+      ),
+    );
+    final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
+    final dynamic bubble = tester.renderObject(
+      find.byType(SpotlightGuideBubble),
+    );
+    final SpotlightGuideBubbleDecoration bubbleDecoration =
+        bubble.effectiveDecoration as SpotlightGuideBubbleDecoration;
+    final SpotlightGuideAnchorGeometry anchorGeometry =
+        bubbleDecoration.effectiveAnchorGeometry!;
+    final double safeInset = bubbleDecoration.anchorSafeInset;
+    const double pointerHandSize = 64;
+
+    expect(
+      handRect.center.dy,
+      moreOrLessEquals(targetRect.center.dy, epsilon: 8),
+      reason:
+          'pointer=$pointerRect hand=$handRect target=$targetRect '
+          'bubble=$bubbleRect',
+    );
+    expect(handRect.right, lessThan(targetRect.left));
+    expect(
+      connectorRect.center.dx,
+      moreOrLessEquals(pointerRect.center.dx, epsilon: 0.5),
+    );
+    expect(
+      connectorRect.top,
+      moreOrLessEquals(pointerRect.top + pointerHandSize, epsilon: 0.5),
+    );
+    expect(bubbleRect.top, greaterThanOrEqualTo(pointerRect.bottom - 0.5));
+    expect(bubbleRect.top, greaterThanOrEqualTo(targetRect.bottom - 0.5));
+    expect(anchorGeometry.direction, SpotlightGuideIndicatorDirection.up);
+    expect(anchorGeometry.offset, greaterThanOrEqualTo(safeInset));
+    expect(
+      anchorGeometry.offset,
+      lessThanOrEqualTo(bubbleRect.width - safeInset),
+    );
+    expect(
+      bubbleRect.left + anchorGeometry.offset,
+      moreOrLessEquals(pointerRect.center.dx, epsilon: 1),
+    );
+    expect(bubbleRect.top, greaterThanOrEqualTo(connectorRect.bottom - 0.5));
+    expect(
+      _tapPointerRotation(tester),
+      moreOrLessEquals(math.pi / 2, epsilon: 0.001),
+    );
+
+    await tester.tap(find.text('Next').hitTestable());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Top pointer'), findsOneWidget);
+    final SpotlightGuideTapPointer topPointer = tester.widget(
+      find.byType(SpotlightGuideTapPointer),
+    );
+    expect(topPointer.color, const Color(0xFFFFFFFF));
+    expect(topPointer.ringColor, const Color(0xBFFFFFFF));
+    expect(
+      _tapPointerRotation(tester),
+      moreOrLessEquals(math.pi, epsilon: 0.001),
+    );
+  });
+
+  testWidgets('pointer hint page keeps every pointer close to its target', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const SpotlightGuideExampleApp());
+    await tester.pumpAndSettle();
+
+    await _finishCurrentGuide(tester);
+    await _openScenario(tester, 'Pointer hint');
+
+    const List<String> titles = <String>[
+      'Right-pointing pointer',
+      'Top pointer',
+      'Custom pointer widget',
+      'Edge anchored pointer',
+      'Auto side pointer',
+      'Direct target anchor',
+    ];
+
+    for (int index = 0; index < titles.length; index += 1) {
+      final SpotlightGuideTextHint hint = tester.widget(
+        find.byType(SpotlightGuideTextHint),
+      );
+      expect(hint.title, titles[index]);
+      expect(hint.pointer?.targetGap, 4);
+
+      if (index < titles.length - 1) {
+        await tester.tap(find.text('Next').hitTestable());
+        await tester.pumpAndSettle();
+      }
+    }
+  });
+
+  testWidgets('pointer hint tap pointers rotate from the built-in hand pose', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const SpotlightGuideExampleApp());
+    await tester.pumpAndSettle();
+
+    await _finishCurrentGuide(tester);
+    await _openScenario(tester, 'Pointer hint');
+
+    const Map<String, double> expectedRotations = <String, double>{
+      'Right-pointing pointer': math.pi / 2,
+      'Top pointer': math.pi,
+      'Edge anchored pointer': -math.pi / 2,
+      'Auto side pointer': -math.pi / 2,
+      'Direct target anchor': math.pi,
+    };
+
+    for (int index = 0; index < 6; index += 1) {
+      final SpotlightGuideTextHint hint = tester.widget(
+        find.byType(SpotlightGuideTextHint),
+      );
+      final double? expectedRotation = expectedRotations[hint.title];
+      if (expectedRotation != null) {
+        expect(
+          _tapPointerRotation(tester),
+          moreOrLessEquals(expectedRotation, epsilon: 0.001),
+          reason: hint.title,
+        );
+      }
+
+      if (index < 5) {
+        await tester.tap(find.text('Next').hitTestable());
+        await tester.pumpAndSettle();
+      }
+    }
+  });
+
+  testWidgets('pointer edge anchor bubble stays inside phone margin', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(const SpotlightGuideExampleApp());
+    await tester.pumpAndSettle();
+
+    await _finishCurrentGuide(tester);
+    await _openScenario(tester, 'Pointer hint');
+    for (int i = 0; i < 3; i++) {
+      await tester.tap(find.text('Next').hitTestable());
+      await tester.pumpAndSettle();
+    }
+
+    final SpotlightGuideTextHint hint = tester.widget(
+      find.byType(SpotlightGuideTextHint),
+    );
+    expect(hint.title, 'Edge anchored pointer');
+
+    final Rect pointerRect = tester.getRect(
+      find.byType(SpotlightGuideTapPointer),
+    );
+    final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
+    final dynamic bubble = tester.renderObject(
+      find.byType(SpotlightGuideBubble),
+    );
+    final SpotlightGuideBubbleDecoration bubbleDecoration =
+        bubble.effectiveDecoration as SpotlightGuideBubbleDecoration;
+    final SpotlightGuideAnchorGeometry anchorGeometry =
+        bubbleDecoration.effectiveAnchorGeometry!;
+
+    expect(
+      bubbleRect.left,
+      greaterThanOrEqualTo(kExampleGuideMargin.left - 0.5),
+    );
+    expect(
+      bubbleRect.right,
+      lessThanOrEqualTo(430 - kExampleGuideMargin.right + 0.5),
+    );
+    expect(
+      bubbleRect.top + anchorGeometry.offset,
+      moreOrLessEquals(pointerRect.top + 12, epsilon: 1),
+    );
+    expect(anchorGeometry.direction, SpotlightGuideIndicatorDirection.left);
   });
 
   testWidgets('side anchor page target cards do not overflow on tall phones', (
@@ -209,7 +465,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Start with the smallest happy path: one target, then next.'),
+      find.text('Use the built-in text hint for the smallest happy path.'),
       findsOneWidget,
     );
 
@@ -217,7 +473,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Start with the smallest happy path: one target, then next.'),
+      find.text('Use the built-in text hint for the smallest happy path.'),
       findsNothing,
     );
   });
@@ -360,4 +616,15 @@ Future<void> _finishCurrentGuide(WidgetTester tester) async {
     await tester.tap(next);
     await tester.pumpAndSettle();
   }
+}
+
+double _tapPointerRotation(WidgetTester tester) {
+  final Transform transform = tester.widget(
+    find.byWidgetPredicate(
+      (Widget widget) =>
+          widget is Transform && widget.child is SpotlightGuideTapPointer,
+    ),
+  );
+  final List<double> storage = transform.transform.storage;
+  return math.atan2(storage[1], storage[0]);
 }

@@ -21,6 +21,7 @@ List<SpotlightGuideStep> buildTargetDecorationScenario() {
           ],
         ),
         gap: 18,
+        margin: kExampleGuideMargin,
         hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
           return buildGuideHint(
             guide: guide,
@@ -49,6 +50,7 @@ List<SpotlightGuideStep> buildTargetDecorationScenario() {
           ],
         ),
         gap: 18,
+        margin: kExampleGuideMargin,
         hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
           return buildGuideHint(
             guide: guide,
@@ -75,6 +77,7 @@ List<SpotlightGuideStep> buildTargetDecorationScenario() {
             SpotlightGuideTargetRingLayer(color: Color(0xFFFFC107), width: 3),
           ],
         ),
+        margin: kExampleGuideMargin,
         hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
           return buildGuideHint(
             guide: guide,
@@ -106,6 +109,7 @@ List<SpotlightGuideStep> buildTargetDecorationScenario() {
           ],
         ),
         gap: 16,
+        margin: kExampleGuideMargin,
         hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
           return buildGuideHint(
             guide: guide,

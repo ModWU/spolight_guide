@@ -17,6 +17,7 @@ List<SpotlightGuideStep> buildLargeGroupAnchorScenario() {
           ),
         ),
         placement: SpotlightGuidePlacement.verticalAuto,
+        margin: kExampleGuideMargin,
         revealOptions: const SpotlightGuideRevealOptions(
           scrollTargetPolicy: SpotlightGuideRevealScrollTargetPolicy
               .anchorTargetWhenHighlightedAreaCannotFit,

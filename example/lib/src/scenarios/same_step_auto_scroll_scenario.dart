@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spotlight_guide/spotlight_guide.dart';
 
 import '../guide_target_ids.dart';
+import '../widgets/guide_hint.dart';
 
 List<SpotlightGuideStep> buildSameStepAutoScrollScenario({
   required SpotlightGuideAutoScrollItemCallback onAutoScrollItemChanged,
@@ -43,6 +44,11 @@ SpotlightGuideStepItem _item({
     key: key,
     targetId: targetId,
     placement: placement,
+    margin: kExampleGuideMargin,
+    revealOptions: const SpotlightGuideRevealOptions(
+      duration: Duration(milliseconds: 720),
+      curve: Curves.easeOutCubic,
+    ),
     maxWidth: 190,
     hintBuilder: (context, guide) {
       return SpotlightGuideBubbleHint(
