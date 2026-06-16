@@ -2,6 +2,12 @@
 
 This file records the current component contract for maintainers.
 
+## Unreleased
+
+- Stabilized visible guides across Flutter hot reload/reassemble and parent
+  rebuilds, including in-flight step preparation, so stale async preparation can
+  no longer hide or corrupt the newer visible step.
+
 ## 0.1.5
 
 - Added `SpotlightGuideTextHint`, a ready-to-use title/message/progress/action

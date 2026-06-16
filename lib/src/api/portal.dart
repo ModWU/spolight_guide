@@ -292,6 +292,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     if (_stepSource.updatePortalSteps(widget.steps)) {
       _clearTargetFilteredSteps();
       if (_isGuideShowing &&
+          !_preparing &&
           _sameStepAvailabilitySignatures(previousSourceSteps, _sourceSteps)) {
         _refreshTargetFilteredStepsForAvailability();
         _index = _effectiveIndex;
@@ -304,12 +305,62 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   }
 
   @override
+  void reassemble() {
+    super.reassemble();
+    _restartVisibleGuideAfterReassemble();
+  }
+
+  @override
   void dispose() {
     _cancelAutoScroll();
     _stopOverlayMotionRefresh();
     _controller._detach(this);
     _targets.clear();
     super.dispose();
+  }
+
+  void _restartVisibleGuideAfterReassemble() {
+    final bool wasShowing = _isGuideShowing;
+    if (!wasShowing) {
+      _clearTargetFilteredSteps();
+      _maybeAutoStart();
+      return;
+    }
+    if (_preparing && _stepChangePrepareToken == _prepareToken) {
+      _clearTargetFilteredSteps();
+      return;
+    }
+
+    _cancelAutoScroll();
+    _stopOverlayMotionRefresh();
+    _clearTargetFilteredSteps();
+    _prepareToken++;
+    _preparing = false;
+    _waitingForRouteTransition = false;
+    _autoScrollItemIndexNotified = null;
+    _index = _effectiveIndex;
+    _controller._syncFromState(this);
+    final int restartToken = _prepareToken;
+
+    void restartCurrentStep() {
+      if (!mounted || restartToken != _prepareToken) {
+        return;
+      }
+      if (!_canShowGuide) {
+        _hideGuide(notifyFinish: false);
+        return;
+      }
+      _prepareAndShow(restart: true);
+    }
+
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        restartCurrentStep();
+      });
+    } else {
+      restartCurrentStep();
+    }
   }
 
   void _maybeAutoStart() {
@@ -488,6 +539,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   }
 
   int _prepareToken = 0;
+  int? _stepChangePrepareToken;
 
   Future<void> _prepareAndShow({bool restart = false}) async {
     if (restart) {
@@ -1345,10 +1397,9 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     if (mounted && token == _prepareToken) {
       return true;
     }
-    _preparing = false;
-    _waitingForRouteTransition = false;
-    _hideOverlay();
-    _controller._syncFromState(this);
+    // A stale async preparation may complete after a newer step/reassemble
+    // has already started or finished. It must not mutate state or hide the
+    // overlay owned by the newer token.
     return false;
   }
 
@@ -1571,6 +1622,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     _prepareToken++;
     _preparing = false;
     _waitingForRouteTransition = false;
+    final int restartToken = _prepareToken;
 
     if (_steps.isEmpty) {
       _hideOverlay();
@@ -1599,10 +1651,11 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _steps.isEmpty) {
+      if (!mounted || restartToken != _prepareToken || _steps.isEmpty) {
         return;
       }
       _prepareAndShow(restart: true);
+      _stepChangePrepareToken = _prepareToken;
     });
   }
 

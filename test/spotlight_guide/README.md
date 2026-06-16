@@ -90,6 +90,15 @@ spotlight_guide_controller_test.dart
   state callback coverage, async onStepWillShow, error reporting, controller
   replacement.
 
+spotlight_guide_hot_reload_test.dart
+  Hot-reload-like parent rebuild behavior while a guide is visible: active
+  index preservation, first-step property changes, no duplicate final step
+  after Next, auto-start/internal-controller rebuilds, runtime steps staying
+  separate from portal steps, in-flight preparation cancellation, reassemble
+  and parent-rebuild ordering, current item layout changes, pointer swaps,
+  target geometry/id changes, barrier changes, RTL rebuilds, step-list shrink,
+  and missing-target behavior changes.
+
 spotlight_guide_test_helpers.dart
   Shared app shell, target builders, grouped target reveal fixtures, scroll
   fixtures, hint builders, case classes, and pump helper.
@@ -104,7 +113,9 @@ spotlight_guide_test_helpers.dart
 - Changing target decoration rings, glow, shadow, dashed outlines, or shapes: run target decoration and barrier tests.
 - Changing barrier color, blur, hole clipping, or target pass-through: run barrier tests.
 - Changing reveal, scroll, lazy-list handling, or same-step multi-item behavior: run reveal and auto-scroll tests.
-- Changing controller or hot-reload-like state behavior: run controller tests.
+- Changing controller behavior: run controller tests.
+- Changing hot-reload-like rebuild, runtime step source, active index, or
+  visible-step update behavior: run hot reload and controller tests.
 
 The full folder currently contains focused widget tests split by feature area.
 
