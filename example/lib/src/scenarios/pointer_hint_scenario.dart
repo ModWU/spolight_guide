@@ -38,11 +38,11 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
     ),
     _pointerStep(
       targetId: pointerEdgeAnchorId,
-    placement: SpotlightGuidePlacement.right,
-    title: 'Edge anchored pointer',
-    message:
-        'Move the bubble anchor toward the pointer edge while the pointer '
-        'stays centered on the target.',
+      placement: SpotlightGuidePlacement.right,
+      title: 'Edge anchored pointer',
+      message:
+          'Move the bubble anchor toward the pointer edge while the pointer '
+          'stays centered on the target.',
       targetAnchorPosition: const SpotlightGuideAnchorPosition.start(12),
       pointer: const SpotlightGuideHintPointer(
         builder: _buildDirectionalTapPointer,

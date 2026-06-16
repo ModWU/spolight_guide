@@ -789,6 +789,239 @@ void main() {
     }
   });
 
+  testWidgets(
+    'default reveal realigns a visible target when fixed hint needs space',
+    (tester) async {
+      final SpotlightGuidePortalController controller =
+          SpotlightGuidePortalController();
+      final ScrollController scrollController = ScrollController();
+      final Map<String, SpotlightGuideStepContext> contexts =
+          <String, SpotlightGuideStepContext>{};
+      addTearDown(scrollController.dispose);
+
+      await tester.pumpWidget(
+        guideApp(
+          controller: controller,
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: const SizedBox(
+              height: 1200,
+              child: Stack(
+                children: <Widget>[
+                  Positioned(
+                    left: 40,
+                    top: 300,
+                    child: SpotlightGuideTarget(
+                      id: 'visible-top-target',
+                      child: SizedBox(
+                        width: 100,
+                        height: 50,
+                        child: ColoredBox(color: Colors.red),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'visible-top-target',
+                placement: SpotlightGuidePlacement.top,
+                revealOptions: const SpotlightGuideRevealOptions(
+                  duration: Duration.zero,
+                ),
+                hintBuilder: sizedHint('visible-top-hint', 180, 140, contexts),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      scrollController.jumpTo(260);
+      await tester.pump();
+
+      controller.reset();
+      await pumpGuide(tester);
+
+      final SpotlightGuideStepContext guide = contexts['visible-top-hint']!;
+      expect(scrollController.offset, lessThan(260));
+      expect(guide.placement, SpotlightGuidePlacement.top);
+      expect(guide.hintRect.top, greaterThanOrEqualTo(guide.margin.top));
+      expect(guide.hintRect.bottom, lessThanOrEqualTo(guide.targetRect.top));
+    },
+  );
+
+  testWidgets(
+    'previous realigns visible target when the previous hint needs space',
+    (tester) async {
+      final SpotlightGuidePortalController controller =
+          SpotlightGuidePortalController();
+      final ScrollController scrollController = ScrollController();
+      final Map<String, SpotlightGuideStepContext> contexts =
+          <String, SpotlightGuideStepContext>{};
+      addTearDown(scrollController.dispose);
+
+      await tester.pumpWidget(
+        guideApp(
+          controller: controller,
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: const SizedBox(
+              height: 1200,
+              child: Stack(
+                children: <Widget>[
+                  Positioned(
+                    left: 40,
+                    top: 300,
+                    child: SpotlightGuideTarget(
+                      id: 'previous-top-target',
+                      child: SizedBox(
+                        width: 100,
+                        height: 50,
+                        child: ColoredBox(color: Colors.red),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 40,
+                    top: 780,
+                    child: SpotlightGuideTarget(
+                      id: 'later-target',
+                      child: SizedBox(
+                        width: 100,
+                        height: 50,
+                        child: ColoredBox(color: Colors.blue),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'previous-top-target',
+                placement: SpotlightGuidePlacement.top,
+                revealOptions: const SpotlightGuideRevealOptions(
+                  duration: Duration.zero,
+                ),
+                hintBuilder: sizedHint('previous-top-hint', 180, 140, contexts),
+              ),
+            ),
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'later-target',
+                placement: SpotlightGuidePlacement.bottom,
+                revealOptions: const SpotlightGuideRevealOptions(
+                  duration: Duration.zero,
+                ),
+                hintBuilder: hint('later-hint', contexts),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      controller.showPortal(index: 1);
+      await pumpGuide(tester);
+      scrollController.jumpTo(260);
+      await tester.pump();
+
+      controller.previous();
+      await pumpGuide(tester);
+
+      final SpotlightGuideStepContext guide = contexts['previous-top-hint']!;
+      expect(scrollController.offset, lessThan(260));
+      expect(guide.placement, SpotlightGuidePlacement.top);
+      expect(guide.hintRect.top, greaterThanOrEqualTo(guide.margin.top));
+      expect(guide.hintRect.bottom, lessThanOrEqualTo(guide.targetRect.top));
+    },
+  );
+
+  testWidgets(
+    'default reveal handles nested scrollables before showing the hint',
+    (tester) async {
+      final SpotlightGuidePortalController controller =
+          SpotlightGuidePortalController();
+      final ScrollController outerController = ScrollController();
+      final ScrollController innerController = ScrollController();
+      final Map<String, SpotlightGuideStepContext> contexts =
+          <String, SpotlightGuideStepContext>{};
+      addTearDown(outerController.dispose);
+      addTearDown(innerController.dispose);
+
+      await tester.pumpWidget(
+        guideApp(
+          controller: controller,
+          child: SingleChildScrollView(
+            controller: outerController,
+            child: SizedBox(
+              height: 1200,
+              child: Column(
+                children: <Widget>[
+                  const SizedBox(height: 260),
+                  SizedBox(
+                    height: 220,
+                    child: SingleChildScrollView(
+                      controller: innerController,
+                      child: const SizedBox(
+                        height: 900,
+                        child: Stack(
+                          children: <Widget>[
+                            Positioned(
+                              left: 40,
+                              top: 300,
+                              child: SpotlightGuideTarget(
+                                id: 'nested-visible-target',
+                                child: SizedBox(
+                                  width: 100,
+                                  height: 50,
+                                  child: ColoredBox(color: Colors.red),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 720),
+                ],
+              ),
+            ),
+          ),
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'nested-visible-target',
+                placement: SpotlightGuidePlacement.top,
+                revealOptions: const SpotlightGuideRevealOptions(
+                  duration: Duration.zero,
+                ),
+                hintBuilder: sizedHint('nested-hint', 180, 140, contexts),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      outerController.jumpTo(220);
+      innerController.jumpTo(260);
+      await tester.pump();
+
+      controller.reset();
+      await pumpGuide(tester);
+
+      final SpotlightGuideStepContext guide = contexts['nested-hint']!;
+      expect(innerController.offset, lessThan(260));
+      expect(guide.hintRect.top, greaterThanOrEqualTo(guide.margin.top));
+      expect(guide.hintRect.bottom, lessThanOrEqualTo(guide.targetRect.top));
+    },
+  );
+
   testWidgets('same-step auto scroll reveals hidden vertical items', (
     tester,
   ) async {

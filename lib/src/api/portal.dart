@@ -699,12 +699,12 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     if (_hasHiddenAutoScrollItem(step)) {
       return true;
     }
-    return _itemNeedsReveal(step.items.first);
+    return _itemNeedsReveal(step, step.items.first);
   }
 
   bool _needsFocusedAutoScrollPresentation(SpotlightGuideStep step) {
     final SpotlightGuideStepAutoScrollOptions options = step.autoScrollOptions;
-    if (_itemNeedsReveal(step.items.first)) {
+    if (_itemNeedsReveal(step, step.items.first)) {
       return true;
     }
     for (int itemIndex = 1; itemIndex < step.items.length; itemIndex++) {
@@ -718,14 +718,14 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         }
         continue;
       }
-      if (!options.onlyWhenNeeded || !_isItemFullyVisible(item)) {
+      if (!options.onlyWhenNeeded || !_isItemRevealSatisfied(step, item)) {
         return true;
       }
     }
     return false;
   }
 
-  bool _itemNeedsReveal(SpotlightGuideStepItem item) {
+  bool _itemNeedsReveal(SpotlightGuideStep step, SpotlightGuideStepItem item) {
     if (item.highlightsWholePortalChild) {
       return false;
     }
@@ -735,7 +735,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     if (targetContexts.isEmpty) {
       return item.onReveal != null;
     }
-    return !_isItemFullyVisible(item);
+    return !_isItemRevealSatisfied(step, item);
   }
 
   void _notifyAutoScrollItemChanged(SpotlightGuideStep step, int itemIndex) {
@@ -823,7 +823,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         }
         continue;
       }
-      if (!options.onlyWhenNeeded || !_isItemFullyVisible(item)) {
+      if (!options.onlyWhenNeeded || !_isItemRevealSatisfied(step, item)) {
         return true;
       }
     }
@@ -866,7 +866,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
           !_isAutoScrollActive(autoScrollToken)) {
         return;
       }
-      if (options.onlyWhenNeeded && _isItemFullyVisible(item)) {
+      if (options.onlyWhenNeeded && _isItemRevealSatisfied(step, item)) {
         _focusAutoScrollItem(itemIndex);
         await _waitForEndOfFrame(token);
         _notifyAutoScrollItemChanged(step, itemIndex);
@@ -950,8 +950,14 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       return false;
     }
     bool didScroll = false;
+    final TextDirection textDirection = Directionality.of(context);
+    final bool forceScroll = !_revealScrollStrategy.isItemRevealSatisfied(
+      item,
+      revealOptions,
+      textDirection,
+    );
     final List<BuildContext> targetContexts = _revealScrollStrategy
-        .revealContextsForItem(item, revealOptions);
+        .revealContextsForItem(item, revealOptions, textDirection);
     for (final BuildContext targetContext in targetContexts) {
       if (!_isSamePreparingStep(token, stepIndex)) {
         return didScroll;
@@ -962,6 +968,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       final bool scrolled = await _scrollTargetIntoView(
         targetContext,
         revealOptions,
+        forceScroll,
       );
       didScroll = scrolled || didScroll;
       if (scrolled) {
@@ -977,6 +984,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   Future<bool> _scrollTargetIntoView(
     BuildContext targetContext,
     SpotlightGuideRevealOptions revealOptions,
+    bool forceScroll,
   ) async {
     if (!targetContext.mounted) {
       return false;
@@ -984,6 +992,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     if (!_revealScrollStrategy.shouldScrollTargetIntoView(
       targetContext,
       revealOptions,
+      forceScroll,
     )) {
       return false;
     }
@@ -1118,37 +1127,17 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         _effectiveIndex == stepIndex;
   }
 
-  bool _isItemFullyVisible(SpotlightGuideStepItem item) {
-    final Rect? viewport = _overlayViewportRect();
-    if (viewport == null) {
-      return false;
-    }
-    final List<BuildContext> targetContexts = _targetResolver.contextsForItem(
+  bool _isItemRevealSatisfied(
+    SpotlightGuideStep step,
+    SpotlightGuideStepItem item,
+  ) {
+    final SpotlightGuideRevealOptions revealOptions =
+        item.revealOptions ?? step.revealOptions;
+    return _revealScrollStrategy.isItemRevealSatisfied(
       item,
+      revealOptions,
+      Directionality.of(context),
     );
-    if (targetContexts.isEmpty) {
-      return false;
-    }
-    for (final BuildContext targetContext in targetContexts) {
-      final Rect? rect = _targetResolver.rectForContext(targetContext);
-      if (rect == null || !_viewportContainsRect(viewport, rect)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /// Edge-inclusive containment test.
-  ///
-  /// [Rect.contains] excludes the right and bottom edges, so a target flush to
-  /// the viewport's bottom or right edge would be treated as not fully visible.
-  /// That triggered spurious same-step auto scroll and left a pending timer.
-  bool _viewportContainsRect(Rect viewport, Rect rect) {
-    const double tolerance = 0.5;
-    return rect.left >= viewport.left - tolerance &&
-        rect.top >= viewport.top - tolerance &&
-        rect.right <= viewport.right + tolerance &&
-        rect.bottom <= viewport.bottom + tolerance;
   }
 
   /// Whether [rect] overlaps the visible [viewport] by more than a hairline.

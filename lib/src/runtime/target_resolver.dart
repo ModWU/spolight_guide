@@ -121,6 +121,54 @@ class _SpotlightGuideTargetResolver {
     );
   }
 
+  Rect? visibleRectForContext(BuildContext? targetContext) {
+    final RenderObject? targetObject;
+    final RenderObject? overlayObject;
+    try {
+      targetObject = targetContext?.findRenderObject();
+      overlayObject = Overlay.of(portalContext).context.findRenderObject();
+    } catch (_) {
+      return null;
+    }
+    if (targetObject is! RenderBox ||
+        overlayObject is! RenderBox ||
+        !targetObject.attached ||
+        !overlayObject.attached ||
+        !targetObject.hasSize ||
+        !overlayObject.hasSize) {
+      return null;
+    }
+
+    Rect visibleRect = MatrixUtils.transformRect(
+      targetObject.getTransformTo(overlayObject),
+      Offset.zero & targetObject.size,
+    ).intersect(Offset.zero & overlayObject.size);
+    final Set<RenderObject> visitedViewports = <RenderObject>{};
+    targetContext?.visitAncestorElements((Element element) {
+      final RenderObject? renderObject = element.renderObject;
+      if (renderObject is RenderBox &&
+          renderObject is RenderAbstractViewport &&
+          renderObject.attached &&
+          renderObject.hasSize &&
+          visitedViewports.add(renderObject)) {
+        final Rect viewportRect = MatrixUtils.transformRect(
+          renderObject.getTransformTo(overlayObject),
+          Offset.zero & renderObject.size,
+        );
+        visibleRect = visibleRect.intersect(viewportRect);
+      }
+      return !visibleRect.isEmpty &&
+          visibleRect.width > 0 &&
+          visibleRect.height > 0;
+    });
+    if (visibleRect.isEmpty ||
+        visibleRect.width <= 0 ||
+        visibleRect.height <= 0) {
+      return null;
+    }
+    return visibleRect;
+  }
+
   List<BuildContext> anchorContextsForItem(SpotlightGuideStepItem item) {
     final Object? anchorTargetId = item.anchorTargetId;
     if (anchorTargetId == null || item.targetKey != null) {
