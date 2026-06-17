@@ -479,6 +479,18 @@ Future<void> pumpGuide(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Returns the barrier clip path used by the overlay blur layer.
+Path barrierClipPath(WidgetTester tester, Size overlaySize) {
+  final Iterable<ClipPath> clips = tester.widgetList<ClipPath>(
+    find.byType(ClipPath),
+  );
+  final ClipPath barrierClip = clips.firstWhere(
+    (ClipPath clip) =>
+        clip.clipper?.runtimeType.toString() == '_SpotlightBarrierClipper',
+  );
+  return barrierClip.clipper!.getClip(overlaySize);
+}
+
 /// Test widget used to prove toggling [SpotlightGuidePortal.enabled] does not
 /// recreate the child subtree.
 class CountingTargetStack extends StatefulWidget {

@@ -336,7 +336,7 @@ void main() {
         find.byType(SpotlightGuideTextHint),
       );
       expect(hint.title, titles[index]);
-      expect(hint.pointer?.targetGap, 4);
+      expect(hint.guide.pointer?.targetGap, 4);
 
       if (index < titles.length - 1) {
         await tester.tap(find.text('Next').hitTestable());

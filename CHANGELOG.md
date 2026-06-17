@@ -2,6 +2,41 @@
 
 This file records the current component contract for maintainers.
 
+## 0.2.0
+
+- Moved pointer configuration to `SpotlightGuideStepItem.pointer` so reveal
+  scrolling, auto placement, and safe-area layout can reserve pointer geometry
+  before `hintBuilder` runs.
+- Removed hint-level pointer parameters from `SpotlightGuideBubbleHint` and
+  `SpotlightGuideTextHint`; built-in hints now read the item pointer from
+  `SpotlightGuideStepContext.pointer`.
+- Added render-level paint readiness support for custom async hint visuals via
+  `SpotlightGuidePaintGate`, keeping target holes and hints hidden together
+  until the rendered hint subtree is ready.
+
+Migration from 0.1.x:
+
+```dart
+// Before
+SpotlightGuideTextHint(
+  guide: guide,
+  title: 'Tap here',
+  pointer: SpotlightGuideHintPointer.tap(),
+)
+
+// After
+SpotlightGuideStepItem(
+  targetId: 'button',
+  pointer: const SpotlightGuideHintPointer.tap(),
+  hintBuilder: (context, guide) {
+    return SpotlightGuideTextHint(
+      guide: guide,
+      title: 'Tap here',
+    );
+  },
+)
+```
+
 ## 0.1.6
 
 - Stabilized visible guides across Flutter hot reload/reassemble and parent

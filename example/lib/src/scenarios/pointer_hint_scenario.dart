@@ -103,7 +103,9 @@ SpotlightGuideStep _leftTargetPointerStep() {
       builder: _buildConnectedTapPointer,
       child: _whiteTapPointer,
       size: Size(_ConnectedTapPointer.size, _ConnectedTapPointer.height),
-      pointerAnchorPosition: SpotlightGuideAnchorPosition.start(_ConnectedTapPointer.size / 2),
+      pointerAnchorPosition: SpotlightGuideAnchorPosition.start(
+        _ConnectedTapPointer.size / 2,
+      ),
       bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
       targetGap: _pointerTargetGap,
     ),
@@ -118,7 +120,8 @@ SpotlightGuideStep _pointerStep({
   required String title,
   required String message,
   required SpotlightGuideHintPointer pointer,
-  SpotlightGuideAnchorPosition targetAnchorPosition = const SpotlightGuideAnchorPosition.center(),
+  SpotlightGuideAnchorPosition targetAnchorPosition =
+      const SpotlightGuideAnchorPosition.center(),
   SpotlightGuideRevealOptions? revealOptions,
   double gap = 10,
   bool showProgress = true,
@@ -131,8 +134,15 @@ SpotlightGuideStep _pointerStep({
       targetDecoration: _pointerTargetDecoration,
       decoration: const SpotlightGuideBubbleDecoration(
         borderRadius: 10,
-        boxShadow: <BoxShadow>[BoxShadow(color: Color(0x33000000), blurRadius: 18, offset: Offset(0, 8))],
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
       ),
+      pointer: pointer,
       margin: kExampleGuideMargin,
       gap: gap,
       minWidth: 180,
@@ -143,7 +153,6 @@ SpotlightGuideStep _pointerStep({
           guide: guide,
           title: title,
           message: message,
-          pointer: pointer,
           showProgress: showProgress,
         );
       },
@@ -153,14 +162,21 @@ SpotlightGuideStep _pointerStep({
 
 const double _pointerTargetGap = 4;
 
-const SpotlightGuideTargetDecoration _pointerTargetDecoration = SpotlightGuideTargetDecoration(
-  padding: EdgeInsets.all(6),
-  shape: SpotlightGuideRoundedRectTargetShape(borderRadius: BorderRadius.all(Radius.circular(14))),
-  layers: <SpotlightGuideTargetLayer>[
-    SpotlightGuideTargetGlowLayer(color: Color(0x40FFFFFF), blurRadius: 14, spreadRadius: 2),
-    SpotlightGuideTargetRingLayer(color: Color(0xE6FFFFFF), width: 2),
-  ],
-);
+const SpotlightGuideTargetDecoration _pointerTargetDecoration =
+    SpotlightGuideTargetDecoration(
+      padding: EdgeInsets.all(6),
+      shape: SpotlightGuideRoundedRectTargetShape(
+        borderRadius: BorderRadius.all(Radius.circular(14)),
+      ),
+      layers: <SpotlightGuideTargetLayer>[
+        SpotlightGuideTargetGlowLayer(
+          color: Color(0x40FFFFFF),
+          blurRadius: 14,
+          spreadRadius: 2,
+        ),
+        SpotlightGuideTargetRingLayer(color: Color(0xE6FFFFFF), width: 2),
+      ],
+    );
 
 const SpotlightGuideTapPointer _whiteTapPointer = SpotlightGuideTapPointer(
   color: Color(0xFFFFFFFF),
@@ -168,11 +184,19 @@ const SpotlightGuideTapPointer _whiteTapPointer = SpotlightGuideTapPointer(
   ringColor: Color(0xBFFFFFFF),
 );
 
-Widget _buildDirectionalTapPointer(BuildContext context, SpotlightGuidePointerContext pointer, Widget child) {
+Widget _buildDirectionalTapPointer(
+  BuildContext context,
+  SpotlightGuidePointerContext pointer,
+  Widget child,
+) {
   return Transform.rotate(angle: _tapPointerAngle(pointer), child: child);
 }
 
-Widget _buildConnectedTapPointer(BuildContext context, SpotlightGuidePointerContext pointer, Widget child) {
+Widget _buildConnectedTapPointer(
+  BuildContext context,
+  SpotlightGuidePointerContext pointer,
+  Widget child,
+) {
   return _ConnectedTapPointer(pointer: pointer, child: child);
 }
 
@@ -203,7 +227,10 @@ class _ConnectedTapPointer extends StatelessWidget {
             left: 0,
             width: size,
             height: size,
-            child: Transform.rotate(angle: _tapPointerAngle(pointer), child: child),
+            child: Transform.rotate(
+              angle: _tapPointerAngle(pointer),
+              child: child,
+            ),
           ),
           Positioned(
             top: size,
@@ -214,7 +241,12 @@ class _ConnectedTapPointer extends StatelessWidget {
               decoration: BoxDecoration(
                 color: connectorColor,
                 borderRadius: BorderRadius.circular(_connectorWidth),
-                boxShadow: <BoxShadow>[BoxShadow(color: connectorColor.withValues(alpha: 0.28), blurRadius: 6)],
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: connectorColor.withValues(alpha: 0.28),
+                    blurRadius: 6,
+                  ),
+                ],
               ),
             ),
           ),
@@ -225,7 +257,9 @@ class _ConnectedTapPointer extends StatelessWidget {
 }
 
 double _tapPointerAngle(SpotlightGuidePointerContext pointer) {
-  return pointer.rotationToTarget(from: SpotlightGuideTapPointer.naturalDirection);
+  return pointer.rotationToTarget(
+    from: SpotlightGuideTapPointer.naturalDirection,
+  );
 }
 
 class _CustomPointerBadge extends StatelessWidget {
@@ -239,9 +273,21 @@ class _CustomPointerBadge extends StatelessWidget {
         color: scheme.tertiaryContainer,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: scheme.tertiary.withValues(alpha: 0.35)),
-        boxShadow: const <BoxShadow>[BoxShadow(color: Color(0x33000000), blurRadius: 10, offset: Offset(0, 5))],
+        boxShadow: const <BoxShadow>[
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
-      child: Center(child: Icon(Icons.ads_click_rounded, color: scheme.onTertiaryContainer, size: 26)),
+      child: Center(
+        child: Icon(
+          Icons.ads_click_rounded,
+          color: scheme.onTertiaryContainer,
+          size: 26,
+        ),
+      ),
     );
   }
 }

@@ -34,7 +34,14 @@ spotlight_guide_pointer_test.dart
   Visual pointer alignment for every side, semantic start/end placement in RTL,
   pointer paint layer ordering, pointer anchor-mode behavior, pointer-to-target
   start/end semantics, pointer-center bubble anchoring, top-placed pointer
-  below the bubble, and direct arrow anchoring when no pointer is supplied.
+  below the bubble, natural-size pointer readiness, stable explicit pointer
+  slots, and direct arrow anchoring when no pointer is supplied.
+
+spotlight_guide_readiness_test.dart
+  Render-level paint readiness for custom hints, SpotlightGuidePaintGate,
+  same-step multi-hint synchronization, non-empty natural child size gating,
+  target pass-through gating, and pixel verification that target holes stay
+  covered until hints are ready.
 
 spotlight_guide_hint_test.dart
   Built-in bubble sizing and arrow-side padding, bubble hint border/arrow-tip
@@ -116,6 +123,8 @@ spotlight_guide_test_helpers.dart
 - Changing `SpotlightGuideStepItem`, `targetId`, `targetIds`, or `targetKey`: run targets and reveal tests.
 - Changing placement or constraints: run direction and layout tests.
 - Changing pointer or arrow anchor math: run direction, pointer, and layout tests.
+- Changing first-frame hint visibility, async image/animation hint content, or
+  target-hole reveal timing: run readiness, pointer, and barrier tests.
 - Changing semantic start/end, RTL behavior, pointer bubble placement, pointer
   direction, visual offset, or signed gap direction semantics: run direction,
   pointer, layout, and safe-area tests.

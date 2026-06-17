@@ -1,6 +1,6 @@
 part of '../../spotlight_guide.dart';
 
-/// Paint order used for [SpotlightGuideBubbleHint.pointer].
+/// Paint order used for [SpotlightGuideStepItem.pointer].
 enum SpotlightGuidePointerLayer {
   /// Paint the pointer below the bubble so pointer lines do not cover content.
   belowBubble,
@@ -88,6 +88,18 @@ class SpotlightGuidePointerDirection {
   }
 }
 
+double? _pointerTargetLayoutGap(SpotlightGuideHintPointer? pointer) {
+  if (pointer == null ||
+      pointer.anchorMode != SpotlightGuidePointerAnchorMode.pointer) {
+    return null;
+  }
+  return _finiteOrZero(pointer.targetGap);
+}
+
+double _stepTargetLayoutGap(SpotlightGuideStepItem item) {
+  return _pointerTargetLayoutGap(item.pointer) ?? _finiteOrZero(item.gap);
+}
+
 /// How a pointer participates in bubble-anchor layout.
 enum SpotlightGuidePointerAnchorMode {
   /// The default target -> pointer -> bubble chain.
@@ -105,7 +117,7 @@ enum SpotlightGuidePointerAnchorMode {
   target,
 }
 
-/// Where the bubble body sits relative to [SpotlightGuideBubbleHint.pointer].
+/// Where the bubble body sits relative to [SpotlightGuideStepItem.pointer].
 ///
 /// This does not choose where the pointer sits around the target. That remains
 /// the job of [SpotlightGuideStepItem.placement]. This enum only chooses the
@@ -342,6 +354,12 @@ class SpotlightGuidePointerOffset {
 /// If a custom pointer image has transparent padding or a painted tip that is
 /// not on the widget edge, wrap or size that pointer widget so its layout edge
 /// represents the desired visual contact point.
+///
+/// For image or animation pointers, prefer [size] or an otherwise tight child
+/// layout so the pointer reserves a stable slot before the asset decodes. If
+/// [size] is omitted, [SpotlightGuideBubbleHint] uses the child's laid-out size
+/// and reports transient zero-size pointer frames as not paint-ready, so the
+/// overlay can reveal target holes and hints together from a stable layout.
 class SpotlightGuideHintPointer {
   const SpotlightGuideHintPointer({
     required this.child,
@@ -384,7 +402,8 @@ class SpotlightGuideHintPointer {
   ///
   /// When null, the pointer child is laid out with loose constraints and its
   /// own size is used. Provide a size when a pointer asset should reserve a
-  /// stable visual slot regardless of the child's intrinsic dimensions.
+  /// stable visual slot regardless of the child's intrinsic dimensions or image
+  /// decode timing.
   final Size? size;
 
   /// Anchor inside [child] that aligns with the resolved target anchor.
@@ -432,18 +451,18 @@ class SpotlightGuideHintPointer {
 /// optional visual pointer.
 ///
 /// Without a pointer, the step item's target anchor resolves the indicator
-/// position on the target. When [pointer] participates in the default pointer
-/// chain, [SpotlightGuideHintPointer.pointerAnchorPosition] chooses which
-/// point inside the pointer aligns to the target, and
-/// [SpotlightGuideStepItem.targetAnchorPosition] chooses which point inside
-/// the pointer the bubble anchor aligns to.
+/// position on the target. When [SpotlightGuideStepItem.pointer] participates
+/// in the default pointer chain,
+/// [SpotlightGuideHintPointer.pointerAnchorPosition] chooses which point inside
+/// the pointer aligns to the target, and
+/// [SpotlightGuideStepItem.targetAnchorPosition] chooses which point inside the
+/// pointer the bubble anchor aligns to.
 class SpotlightGuideBubbleHint extends StatelessWidget {
   const SpotlightGuideBubbleHint({
     super.key,
     required this.guide,
     required this.child,
     this.decoration,
-    this.pointer,
     this.clipBehavior = Clip.antiAlias,
   });
 
@@ -460,15 +479,12 @@ class SpotlightGuideBubbleHint extends StatelessWidget {
   /// same anchor size.
   final SpotlightGuideAnchoredDecoration? decoration;
 
-  /// Optional visual pointer configuration.
-  final SpotlightGuideHintPointer? pointer;
-
   /// Clip behavior applied to the bubble body content.
   final Clip clipBehavior;
 
   @override
   Widget build(BuildContext context) {
-    final SpotlightGuideHintPointer? pointer = this.pointer;
+    final SpotlightGuideHintPointer? pointer = guide.pointer;
     final TextDirection textDirection = Directionality.of(context);
     final Widget? pointerChild = pointer?._buildChild(
       context,
@@ -572,6 +588,24 @@ SpotlightGuideIndicatorDirection _pointerBubbleAnchorDirection(
   };
 }
 
+SpotlightGuidePointerBubblePlacement _resolvePointerLayoutBubblePlacement({
+  required SpotlightGuideHintPointer pointer,
+  required TextDirection textDirection,
+  required SpotlightGuideIndicatorDirection targetDirection,
+}) {
+  final SpotlightGuidePointerBubblePlacement placement =
+      _resolvePointerBubblePlacement(pointer, textDirection);
+  if (placement == SpotlightGuidePointerBubblePlacement.alongPlacement) {
+    return placement;
+  }
+  final SpotlightGuideIndicatorDirection anchorDirection =
+      _pointerBubbleAnchorDirection(targetDirection, placement);
+  if (anchorDirection == targetDirection) {
+    return SpotlightGuidePointerBubblePlacement.alongPlacement;
+  }
+  return placement;
+}
+
 SpotlightGuideIndicatorDirection _oppositeDirection(
   SpotlightGuideIndicatorDirection direction,
 ) {
@@ -640,7 +674,8 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
         RenderBoxContainerDefaultsMixin<
           RenderBox,
           _SpotlightGuideBubbleHintParentData
-        > {
+        >
+    implements _SpotlightGuideHintLayoutParticipant {
   _RenderSpotlightGuideBubbleHint({
     required SpotlightGuideStepContext guide,
     required SpotlightGuideAnchoredDecoration decoration,
@@ -667,6 +702,7 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
   ///
   /// This keeps the built-in bubble renderer on the same final geometry as the
   /// public guide object without waiting for a post-frame rebuild.
+  @override
   void useLayoutGuide(SpotlightGuideStepContext value) {
     _guide._absorbLayout(value);
     markNeedsLayout();
@@ -716,6 +752,7 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
   Offset _pointerPaintOffset = Offset.zero;
   Offset _layoutOffsetCorrection = Offset.zero;
   Rect _paintBounds = Rect.zero;
+  bool _paintReady = true;
 
   RenderBox? get _bubbleChild => firstChild;
 
@@ -743,6 +780,7 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     }
 
     final Size? pointerSize = _layoutPointer();
+    _paintReady = _resolvePaintReadiness(pointerSize);
     _BubbleHintBubbleLayout bubbleLayout = _layoutBubble(
       _guide.indicatorOffset,
       pointerSize: pointerSize,
@@ -1200,11 +1238,16 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     return _pointer?.anchorMode == SpotlightGuidePointerAnchorMode.pointer;
   }
 
+  @override
   double? get targetLayoutGap {
     return _pointerAffectsBubble ? _pointerTargetGap : null;
   }
 
+  @override
   Offset get layoutOffsetCorrection => _layoutOffsetCorrection;
+
+  @override
+  bool get isPaintReady => _paintReady;
 
   double get _pointerAnchorGap {
     return _finiteOrZero(_guide.gap);
@@ -1340,26 +1383,16 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     );
   }
 
-  SpotlightGuidePointerBubblePlacement get _resolvedBubblePlacement {
+  SpotlightGuidePointerBubblePlacement get _layoutBubblePlacement {
     final SpotlightGuideHintPointer? pointer = _pointer;
     if (pointer == null) {
       return SpotlightGuidePointerBubblePlacement.alongPlacement;
     }
-    return _resolvePointerBubblePlacement(pointer, _textDirection);
-  }
-
-  SpotlightGuidePointerBubblePlacement get _layoutBubblePlacement {
-    final SpotlightGuidePointerBubblePlacement placement =
-        _resolvedBubblePlacement;
-    if (placement == SpotlightGuidePointerBubblePlacement.alongPlacement) {
-      return placement;
-    }
-    final SpotlightGuideIndicatorDirection anchorDirection =
-        _pointerBubbleAnchorDirection(_guide.indicatorDirection, placement);
-    if (anchorDirection == _guide.indicatorDirection) {
-      return SpotlightGuidePointerBubblePlacement.alongPlacement;
-    }
-    return placement;
+    return _resolvePointerLayoutBubblePlacement(
+      pointer: pointer,
+      textDirection: _textDirection,
+      targetDirection: _guide.indicatorDirection,
+    );
   }
 
   SpotlightGuideIndicatorDirection get _anchorDirection {
@@ -1453,6 +1486,20 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     return pointer.size;
   }
 
+  bool _resolvePaintReadiness(Size? pointerSize) {
+    if (_pointerChild == null || _pointer == null || _pointer!.size != null) {
+      return true;
+    }
+    if (pointerSize == null) {
+      return true;
+    }
+    // Width-only images can report a transient zero height before decoding.
+    return pointerSize.width.isFinite &&
+        pointerSize.height.isFinite &&
+        pointerSize.width > 0 &&
+        pointerSize.height > 0;
+  }
+
   _BubbleHintBubbleLayout _layoutBubble(
     double indicatorOffset, {
     required Size? pointerSize,
@@ -1494,6 +1541,9 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     if (bubble == null) {
       return;
     }
+    if (!_paintReady) {
+      return;
+    }
     final SpotlightGuidePointerLayer layer =
         _pointer?.layer ?? SpotlightGuidePointerLayer.belowBubble;
     if (pointer != null && layer == SpotlightGuidePointerLayer.belowBubble) {
@@ -1507,6 +1557,9 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
 
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (!_paintReady) {
+      return false;
+    }
     if (!size.contains(position) && !_paintBounds.contains(position)) {
       return false;
     }

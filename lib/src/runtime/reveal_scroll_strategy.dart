@@ -189,13 +189,15 @@ class _SpotlightGuideRevealScrollStrategy {
       margin: margin,
       hintSize: null,
       textDirection: textDirection,
-      layoutGap: null,
+      layoutGap: _stepTargetLayoutGap(item),
     );
+    final double layoutGap = _stepTargetLayoutGap(item);
     final double reserve = _estimatedHintMainAxisExtent(
       viewport: viewport,
       margin: margin,
       item: item,
       placement: placement,
+      textDirection: textDirection,
     );
     final double start = math.max(
       visibleViewport.top,
@@ -215,13 +217,13 @@ class _SpotlightGuideRevealScrollStrategy {
     );
     return switch (placement) {
       SpotlightGuidePlacement.top =>
-        targetRect.top - _finiteOrZero(item.gap) - reserve >= start,
+        targetRect.top - layoutGap - reserve >= start,
       SpotlightGuidePlacement.bottom =>
-        targetRect.bottom + _finiteOrZero(item.gap) + reserve <= end,
+        targetRect.bottom + layoutGap + reserve <= end,
       SpotlightGuidePlacement.left =>
-        targetRect.left - _finiteOrZero(item.gap) - reserve >= left,
+        targetRect.left - layoutGap - reserve >= left,
       SpotlightGuidePlacement.right =>
-        targetRect.right + _finiteOrZero(item.gap) + reserve <= right,
+        targetRect.right + layoutGap + reserve <= right,
       SpotlightGuidePlacement.auto ||
       SpotlightGuidePlacement.verticalAuto ||
       SpotlightGuidePlacement.horizontalAuto ||
@@ -237,6 +239,7 @@ class _SpotlightGuideRevealScrollStrategy {
     required EdgeInsets margin,
     required SpotlightGuideStepItem item,
     required SpotlightGuidePlacement placement,
+    required TextDirection textDirection,
   }) {
     final bool vertical =
         placement == SpotlightGuidePlacement.top ||
@@ -256,10 +259,74 @@ class _SpotlightGuideRevealScrollStrategy {
         configuredMax == null || configuredMax.isInfinite
         ? available
         : math.min(configuredMax, available);
-    return math.min(
+    final double bubbleReserve = math.min(
       math.max(configuredMin ?? 0, fallback),
       math.max(0, effectiveMax),
     );
+    return _estimatedPointerAwareMainAxisExtent(
+      bubbleReserve: bubbleReserve,
+      item: item,
+      placement: placement,
+      textDirection: textDirection,
+      vertical: vertical,
+    );
+  }
+
+  double _estimatedPointerAwareMainAxisExtent({
+    required double bubbleReserve,
+    required SpotlightGuideStepItem item,
+    required SpotlightGuidePlacement placement,
+    required TextDirection textDirection,
+    required bool vertical,
+  }) {
+    final SpotlightGuideHintPointer? pointer = item.pointer;
+    if (pointer == null ||
+        pointer.anchorMode != SpotlightGuidePointerAnchorMode.pointer ||
+        pointer.size == null) {
+      return bubbleReserve;
+    }
+
+    final Size pointerSize = _finiteSizeOrZero(pointer.size!);
+    final double pointerExtent = vertical
+        ? pointerSize.height
+        : pointerSize.width;
+    if (pointerExtent <= 0) {
+      return bubbleReserve;
+    }
+
+    final SpotlightGuideIndicatorDirection
+    targetDirection = switch (placement) {
+      SpotlightGuidePlacement.bottom => SpotlightGuideIndicatorDirection.up,
+      SpotlightGuidePlacement.top => SpotlightGuideIndicatorDirection.down,
+      SpotlightGuidePlacement.left => SpotlightGuideIndicatorDirection.right,
+      SpotlightGuidePlacement.right => SpotlightGuideIndicatorDirection.left,
+      SpotlightGuidePlacement.auto ||
+      SpotlightGuidePlacement.verticalAuto ||
+      SpotlightGuidePlacement.horizontalAuto ||
+      SpotlightGuidePlacement.start ||
+      SpotlightGuidePlacement.end => throw StateError(
+        'placements must be resolved before pointer reserve checks',
+      ),
+    };
+    final SpotlightGuidePointerBubblePlacement bubblePlacement =
+        _resolvePointerLayoutBubblePlacement(
+          pointer: pointer,
+          textDirection: textDirection,
+          targetDirection: targetDirection,
+        );
+    if (bubblePlacement ==
+        SpotlightGuidePointerBubblePlacement.alongPlacement) {
+      final double pointerToBubbleGap = _finiteOrZero(item.gap);
+      return math.max(
+        bubbleReserve,
+        math.max(
+          pointerExtent,
+          pointerExtent + pointerToBubbleGap + bubbleReserve,
+        ),
+      );
+    }
+
+    return math.max(bubbleReserve, pointerExtent);
   }
 
   bool _shouldRevealAnchorTarget(

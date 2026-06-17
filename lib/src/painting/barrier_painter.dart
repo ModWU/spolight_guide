@@ -7,27 +7,65 @@ class _SpotlightBarrierPainter extends CustomPainter {
     required this.color,
     required this.textDirection,
     required this.devicePixelRatio,
-  });
+    required this.readiness,
+  }) : super(repaint: readiness);
 
   final List<_SpotlightGuideTargetHole> targetHoles;
   final Color color;
   final TextDirection textDirection;
   final double devicePixelRatio;
+  final _SpotlightGuideOverlayReadiness readiness;
 
   @override
   void paint(Canvas canvas, Size size) {
     final Rect bounds = Offset.zero & size;
+    final List<_SpotlightGuideTargetHole> visibleTargetHoles = readiness.isReady
+        ? targetHoles
+        : const <_SpotlightGuideTargetHole>[];
+
+    if (visibleTargetHoles.isEmpty) {
+      canvas.drawRect(bounds, Paint()..color = color);
+      return;
+    }
+
+    if (!_needsTargetHoleClearingLayer(visibleTargetHoles)) {
+      canvas.drawPath(
+        _spotlightBarrierPath(
+          size,
+          visibleTargetHoles,
+          textDirection,
+          devicePixelRatio,
+        ),
+        Paint()..color = color,
+      );
+      _paintTargetRingLayers(
+        canvas,
+        _collectTargetRingLayers(
+          size,
+          visibleTargetHoles,
+          textDirection,
+          devicePixelRatio,
+        ),
+      );
+      return;
+    }
+
     canvas.saveLayer(bounds, Paint());
     canvas.drawRect(bounds, Paint()..color = color);
     final List<_DeferredTargetRingLayer> deferredRingLayers =
         _paintTargetDecorations(
           canvas,
           size,
-          targetHoles,
+          visibleTargetHoles,
           textDirection,
           devicePixelRatio,
         );
-    _clearTargetHoles(canvas, targetHoles, textDirection, devicePixelRatio);
+    _clearTargetHoles(
+      canvas,
+      visibleTargetHoles,
+      textDirection,
+      devicePixelRatio,
+    );
     _paintTargetRingLayers(canvas, deferredRingLayers);
     canvas.restore();
   }
@@ -37,7 +75,8 @@ class _SpotlightBarrierPainter extends CustomPainter {
     return !_sameTargetHoles(oldDelegate.targetHoles, targetHoles) ||
         oldDelegate.color != color ||
         oldDelegate.textDirection != textDirection ||
-        oldDelegate.devicePixelRatio != devicePixelRatio;
+        oldDelegate.devicePixelRatio != devicePixelRatio ||
+        oldDelegate.readiness != readiness;
   }
 }
 
@@ -47,17 +86,19 @@ class _SpotlightBarrierClipper extends CustomClipper<Path> {
     this.targetHoles,
     this.textDirection,
     this.devicePixelRatio,
-  );
+    this.readiness,
+  ) : super(reclip: readiness);
 
   final List<_SpotlightGuideTargetHole> targetHoles;
   final TextDirection textDirection;
   final double devicePixelRatio;
+  final _SpotlightGuideOverlayReadiness readiness;
 
   @override
   Path getClip(Size size) {
     return _spotlightBarrierPath(
       size,
-      targetHoles,
+      readiness.isReady ? targetHoles : const <_SpotlightGuideTargetHole>[],
       textDirection,
       devicePixelRatio,
     );
@@ -67,8 +108,55 @@ class _SpotlightBarrierClipper extends CustomClipper<Path> {
   bool shouldReclip(covariant _SpotlightBarrierClipper oldClipper) {
     return !_sameTargetHoles(oldClipper.targetHoles, targetHoles) ||
         oldClipper.textDirection != textDirection ||
-        oldClipper.devicePixelRatio != devicePixelRatio;
+        oldClipper.devicePixelRatio != devicePixelRatio ||
+        oldClipper.readiness != readiness;
   }
+}
+
+bool _needsTargetHoleClearingLayer(
+  List<_SpotlightGuideTargetHole> targetHoles,
+) {
+  for (final _SpotlightGuideTargetHole targetHole in targetHoles) {
+    for (final SpotlightGuideTargetLayer layer
+        in targetHole.decoration.layers) {
+      if (layer is! SpotlightGuideTargetRingLayer) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+List<_DeferredTargetRingLayer> _collectTargetRingLayers(
+  Size size,
+  List<_SpotlightGuideTargetHole> targetHoles,
+  TextDirection textDirection,
+  double devicePixelRatio,
+) {
+  final List<_DeferredTargetRingLayer> ringLayers =
+      <_DeferredTargetRingLayer>[];
+  for (final _SpotlightGuideTargetHole targetHole in targetHoles) {
+    final SpotlightGuideTargetDecoration decoration = targetHole.decoration;
+    if (decoration.layers.isEmpty) {
+      continue;
+    }
+    final SpotlightGuideTargetPaintContext context =
+        SpotlightGuideTargetPaintContext(
+          rect: targetHole.rect,
+          overlaySize: size,
+          textDirection: textDirection,
+          shape: decoration.shape,
+          devicePixelRatio: devicePixelRatio,
+        );
+    for (final SpotlightGuideTargetLayer layer in decoration.layers) {
+      if (layer is SpotlightGuideTargetRingLayer) {
+        ringLayers.add(
+          _DeferredTargetRingLayer(context: context, layer: layer),
+        );
+      }
+    }
+  }
+  return ringLayers;
 }
 
 List<_DeferredTargetRingLayer> _paintTargetDecorations(
@@ -196,14 +284,16 @@ Path _targetHolePath(
 class _SpotlightBarrierRegion extends SingleChildRenderObjectWidget {
   const _SpotlightBarrierRegion({
     required this.interactiveHoles,
+    required this.readiness,
     required super.child,
   });
 
   final List<Rect> interactiveHoles;
+  final _SpotlightGuideOverlayReadiness readiness;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _RenderSpotlightBarrierRegion(interactiveHoles);
+    return _RenderSpotlightBarrierRegion(interactiveHoles, readiness);
   }
 
   @override
@@ -211,13 +301,15 @@ class _SpotlightBarrierRegion extends SingleChildRenderObjectWidget {
     BuildContext context,
     covariant _RenderSpotlightBarrierRegion renderObject,
   ) {
-    renderObject.interactiveHoles = interactiveHoles;
+    renderObject
+      ..interactiveHoles = interactiveHoles
+      ..readiness = readiness;
   }
 }
 
 /// Render object backing [_SpotlightBarrierRegion].
 class _RenderSpotlightBarrierRegion extends RenderProxyBox {
-  _RenderSpotlightBarrierRegion(this._interactiveHoles);
+  _RenderSpotlightBarrierRegion(this._interactiveHoles, this._readiness);
 
   List<Rect> _interactiveHoles;
 
@@ -228,14 +320,48 @@ class _RenderSpotlightBarrierRegion extends RenderProxyBox {
     _interactiveHoles = value;
   }
 
+  _SpotlightGuideOverlayReadiness _readiness;
+
+  set readiness(_SpotlightGuideOverlayReadiness value) {
+    if (_readiness == value) {
+      return;
+    }
+    if (attached) {
+      _readiness.removeListener(_handleReadinessChanged);
+    }
+    _readiness = value;
+    if (attached) {
+      _readiness.addListener(_handleReadinessChanged);
+    }
+    markNeedsPaint();
+  }
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _readiness.addListener(_handleReadinessChanged);
+  }
+
+  @override
+  void detach() {
+    _readiness.removeListener(_handleReadinessChanged);
+    super.detach();
+  }
+
+  void _handleReadinessChanged() {
+    markNeedsPaint();
+  }
+
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
     if (!(Offset.zero & size).contains(position)) {
       return false;
     }
-    for (final Rect hole in _interactiveHoles) {
-      if (hole.contains(position)) {
-        return false;
+    if (_readiness.isReady) {
+      for (final Rect hole in _interactiveHoles) {
+        if (hole.contains(position)) {
+          return false;
+        }
       }
     }
     result.add(BoxHitTestEntry(this, position));

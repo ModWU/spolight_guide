@@ -1318,11 +1318,11 @@ SpotlightGuideStep _pointerStep({
       ),
       targetAnchorPosition: targetAnchorPosition,
       gap: gap,
+      pointer: pointer,
       hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
         contexts[label] = guide;
         return SpotlightGuideBubbleHint(
           guide: guide,
-          pointer: pointer,
           child: SizedBox(
             width: 90,
             height: 42,

@@ -6,7 +6,9 @@ part of '../../spotlight_guide.dart';
 /// anchor direction, anchor offset and the active
 /// [SpotlightGuidePortalController]. Most callers pass it directly to
 /// [SpotlightGuideBubbleHint], but it can also be used to build a completely
-/// custom hint UI.
+/// custom hint UI. When custom hint content contains async image or animation
+/// layout that should be ready before the target hole appears, wrap that
+/// content with [SpotlightGuidePaintGate].
 ///
 /// Example:
 ///
@@ -878,7 +880,7 @@ class SpotlightGuideAnchorPosition {
 /// Describes one hint bubble shown inside a [SpotlightGuideStep].
 ///
 /// One step item means one [hintBuilder] result: a single bubble (and optional
-/// [SpotlightGuideBubbleHint.pointer] image). A [SpotlightGuideStep] may contain
+/// [SpotlightGuideStepItem.pointer] image). A [SpotlightGuideStep] may contain
 /// several items when the same step should show several bubbles at once.
 ///
 /// **Choosing how many items to use**
@@ -892,7 +894,7 @@ class SpotlightGuideAnchorPosition {
 /// - Use **one item with [targetIds]** when one sentence should light several
 ///   nearby related widgets together (for example a button plus its caption).
 ///   Every id in [targetIds] gets a spotlight hole, but the bubble anchor and
-///   optional [SpotlightGuideBubbleHint.pointer] still form **one** pointing
+///   optional [SpotlightGuideStepItem.pointer] still form **one** pointing
 ///   chain. Set [anchorTargetId] to the id or
 ///   [SpotlightGuideTarget.anchorId] the hand or anchor should aim at; the
 ///   other ids are only co-highlighted. When no anchor is set, placement uses
@@ -961,6 +963,7 @@ class SpotlightGuideStepItem {
     this.placement = SpotlightGuidePlacement.verticalAuto,
     this.targetAnchorPosition = const SpotlightGuideAnchorPosition.center(),
     this.decoration = const SpotlightGuideBubbleDecoration(),
+    this.pointer,
     this.targetDecoration = const SpotlightGuideTargetDecoration(),
     this.allowTargetInteraction = false,
     this.gap = 8,
@@ -989,7 +992,9 @@ class SpotlightGuideStepItem {
   /// Builds this item's visual hint.
   ///
   /// The builder may return [SpotlightGuideBubbleHint],
-  /// [SpotlightGuideBubble], an image-based hint, or any custom widget.
+  /// [SpotlightGuideBubble], an image-based hint, or any custom widget. Use
+  /// [SpotlightGuidePaintGate] inside custom widgets when async visual content
+  /// should delay the target hole and hint until the same stable frame.
   final SpotlightGuideHintBuilder hintBuilder;
 
   /// Optional stable label for analytics, copy lookup, or configuration.
@@ -1043,7 +1048,7 @@ class SpotlightGuideStepItem {
   /// Highlights several registered targets at once for this single hint bubble.
   ///
   /// The barrier opens one hole per id, but bubble placement, the anchor, and an
-  /// optional [SpotlightGuideBubbleHint.pointer] still use **one** anchor only.
+  /// optional [pointer] still use **one** anchor only.
   /// Prefer this when several widgets belong to the same message (label plus
   /// field, button plus helper text). Prefer multiple step items when each
   /// widget needs different copy or its own pointer.
@@ -1059,8 +1064,8 @@ class SpotlightGuideStepItem {
   /// Mutually exclusive with [targetId].
   final List<Object>? targetIds;
 
-  /// Chooses which [SpotlightGuideTarget.id] the bubble anchor and
-  /// [SpotlightGuideBubbleHint.pointer] align to.
+  /// Chooses which [SpotlightGuideTarget.id] the bubble anchor and [pointer]
+  /// align to.
   ///
   /// Usually one of the ids listed in [targetIds] (or [targetId] when only one
   /// id is highlighted). It may also match [SpotlightGuideTarget.anchorId] on a
@@ -1127,6 +1132,17 @@ class SpotlightGuideStepItem {
   /// custom hint builders may ignore it or pass it to [SpotlightGuideBubble].
   final SpotlightGuideAnchoredDecoration decoration;
 
+  /// Optional visual pointer used by built-in hint widgets.
+  ///
+  /// Keep pointer configuration here instead of inside the hint widget so the
+  /// portal can reserve the target-to-pointer gap and pointer size before
+  /// reveal scrolling, auto placement, and safe-area checks run.
+  ///
+  /// [SpotlightGuideBubbleHint] and [SpotlightGuideTextHint] use this pointer
+  /// automatically through [SpotlightGuideStepContext.pointer]. A fully custom
+  /// hint can also read that context field and compose the pointer manually.
+  final SpotlightGuideHintPointer? pointer;
+
   /// Visual decoration for the spotlight target hole.
   ///
   /// The decoration owns the hole padding, shape and optional paint layers such
@@ -1149,10 +1165,10 @@ class SpotlightGuideStepItem {
 
   /// Signed main-axis distance from the target to the first visual guide piece.
   ///
-  /// When a [SpotlightGuideBubbleHint.pointer] participates in the anchor chain
-  /// with [SpotlightGuidePointerAnchorMode.pointer], the pointer touches the
-  /// target side and this is the pointer-to-bubble-anchor distance. Without
-  /// such a pointer, this is the target-to-hint distance.
+  /// When [pointer] participates in the anchor chain with
+  /// [SpotlightGuidePointerAnchorMode.pointer], the pointer touches the target
+  /// side and this is the pointer-to-bubble-anchor distance. Without such a
+  /// pointer, this is the target-to-hint distance.
   ///
   /// The sign follows the final resolved placement, including auto and semantic
   /// placements. Positive values move the first guide piece away from the
@@ -1313,6 +1329,7 @@ class SpotlightGuideStepContext {
     required this.contentSize,
     required this.gap,
     required this.decoration,
+    this.pointer,
     required this.indicatorSize,
     required this.anchorConnectionHalfExtent,
     required this.controller,
@@ -1406,6 +1423,9 @@ class SpotlightGuideStepContext {
   /// Decoration configured on the current [SpotlightGuideStepItem].
   SpotlightGuideAnchoredDecoration decoration;
 
+  /// Pointer configured on the current [SpotlightGuideStepItem], if any.
+  SpotlightGuideHintPointer? pointer;
+
   /// Preferred visual anchor size used by layout on the axis perpendicular to
   /// the bubble edge.
   Size indicatorSize;
@@ -1442,6 +1462,7 @@ class SpotlightGuideStepContext {
     contentSize = other.contentSize;
     gap = other.gap;
     decoration = other.decoration;
+    pointer = other.pointer;
     indicatorSize = other.indicatorSize;
     anchorConnectionHalfExtent = other.anchorConnectionHalfExtent;
     controller = other.controller;

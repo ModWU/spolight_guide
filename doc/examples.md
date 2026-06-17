@@ -49,6 +49,51 @@ their child layout size, or provide `size` when an asset needs a stable slot.
 Use `visualOffset` only when the pointer asset needs a tiny paint-only nudge;
 the anchor chain remains aligned to the unmoved pointer layout slot.
 
+Configure pointers on `SpotlightGuideStepItem.pointer`. The portal can then
+reserve pointer `targetGap`, fixed pointer `size`, and pointer-to-bubble `gap`
+before automatic reveal scrolling decides whether the hint can fit.
+
+When migrating from `0.1.x`, move `pointer:` from `SpotlightGuideBubbleHint` or
+`SpotlightGuideTextHint` to the surrounding `SpotlightGuideStepItem`.
+
+For image pointers, use a stable slot. Flutter images that only specify width
+or height can change layout after the image decodes, so set
+`SpotlightGuideHintPointer.size` and give the image matching dimensions, or wrap
+the image in another tight layout when the dimensions are known. If the asset is
+much larger than its display size, pass `cacheWidth` and `cacheHeight` to
+`Image` so Flutter decodes a more appropriate bitmap size.
+Without `size`, the pointer still uses its natural child layout, but automatic
+reveal scrolling cannot reserve the final pointer extent until the hint has
+rendered.
+
+```dart
+SpotlightGuideHintPointer(
+  size: const Size(68, 103),
+  child: Image.asset(
+    'assets/guide_pointer.png',
+    width: 68,
+    height: 103,
+    cacheWidth: 136,
+    cacheHeight: 206,
+    fit: BoxFit.contain,
+  ),
+)
+```
+
+When the height should remain natural, wrap the image in
+`SpotlightGuidePaintGate(requireNonEmptySize: true)`. The guide keeps the target
+hole and hint hidden until that child has a non-empty laid-out size:
+
+```dart
+SpotlightGuidePaintGate(
+  requireNonEmptySize: true,
+  child: Image.asset(
+    'assets/guide_pointer.png',
+    width: 68,
+  ),
+)
+```
+
 When the pointer artwork has direction, use `builder` instead of hard-coding a
 side. The original `child` is still passed in, and the builder receives the
 resolved `SpotlightGuidePointerContext`.
@@ -57,6 +102,19 @@ resolved `SpotlightGuidePointerContext`.
 SpotlightGuideStepItem(
   targetId: 'more-button',
   gap: 10,
+  pointer: SpotlightGuideHintPointer.tap(
+    visualOffset: SpotlightGuidePointerOffset.directional(end: 2),
+    builder: (
+      BuildContext context,
+      SpotlightGuidePointerContext pointer,
+      Widget child,
+    ) {
+      return Transform.rotate(
+        angle: pointer.rotationToTarget(),
+        child: child,
+      );
+    },
+  ),
   decoration: const SpotlightGuideBubbleDecoration(
     anchor: SpotlightGuideNoAnchor(),
   ),
@@ -65,19 +123,6 @@ SpotlightGuideStepItem(
       guide: guide,
       title: 'Tap here',
       message: 'The pointer aligns with the resolved target anchor.',
-      pointer: SpotlightGuideHintPointer.tap(
-        visualOffset: SpotlightGuidePointerOffset.directional(end: 2),
-        builder: (
-          BuildContext context,
-          SpotlightGuidePointerContext pointer,
-          Widget child,
-        ) {
-          return Transform.rotate(
-            angle: pointer.rotationToTarget(),
-            child: child,
-          );
-        },
-      ),
     );
   },
 )
@@ -119,15 +164,15 @@ SpotlightGuidePortal(
             tipArcAngle: 0.35,
           ),
         ),
+        pointer: SpotlightGuideHintPointer(
+          child: Image.asset('assets/guide_pointer.png'),
+          size: const Size(70, 54),
+          pointerAnchorPosition: const SpotlightGuideAnchorPosition.end(14),
+          bubbleOffset: 100,
+        ),
         hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {
           return SpotlightGuideBubbleHint(
             guide: guide,
-            pointer: SpotlightGuideHintPointer(
-              child: Image.asset('assets/guide_pointer.png'),
-              size: const Size(70, 54),
-              pointerAnchorPosition: const SpotlightGuideAnchorPosition.end(14),
-              bubbleOffset: 100,
-            ),
             child: TextButton(
               onPressed: guide.finish,
               child: const Text('I know'),

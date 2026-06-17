@@ -95,6 +95,25 @@ void main() {
                     gap: gap,
                     minWidth: 96,
                     maxWidth: 140,
+                    pointer: SpotlightGuideHintPointer(
+                      size: pointerSize,
+                      bubblePlacement: bubblePlacement,
+                      child: SizedBox(
+                        key: pointerKey,
+                        width: pointerSize.width,
+                        height: pointerSize.height,
+                        child: const ColoredBox(color: Colors.yellow),
+                      ),
+                      builder:
+                          (
+                            BuildContext context,
+                            SpotlightGuidePointerContext pointer,
+                            Widget child,
+                          ) {
+                            pointerContexts.add(pointer);
+                            return child;
+                          },
+                    ),
                     hintBuilder:
                         (
                           BuildContext context,
@@ -103,25 +122,6 @@ void main() {
                           contexts[label] = guide;
                           return SpotlightGuideBubbleHint(
                             guide: guide,
-                            pointer: SpotlightGuideHintPointer(
-                              size: pointerSize,
-                              bubblePlacement: bubblePlacement,
-                              child: SizedBox(
-                                key: pointerKey,
-                                width: pointerSize.width,
-                                height: pointerSize.height,
-                                child: const ColoredBox(color: Colors.yellow),
-                              ),
-                              builder:
-                                  (
-                                    BuildContext context,
-                                    SpotlightGuidePointerContext pointer,
-                                    Widget child,
-                                  ) {
-                                    pointerContexts.add(pointer);
-                                    return child;
-                                  },
-                            ),
                             child: const SizedBox(width: 96, height: 42),
                           );
                         },
@@ -288,6 +288,20 @@ void main() {
                     gap: gap,
                     minWidth: 96,
                     maxWidth: 140,
+                    pointer: SpotlightGuideHintPointer(
+                      size: const Size(32, 32),
+                      bubblePlacement: bubblePlacement,
+                      child: SizedBox(key: pointerKey, width: 32, height: 32),
+                      builder:
+                          (
+                            BuildContext context,
+                            SpotlightGuidePointerContext pointer,
+                            Widget child,
+                          ) {
+                            pointerContexts.add(pointer);
+                            return child;
+                          },
+                    ),
                     hintBuilder:
                         (
                           BuildContext context,
@@ -296,24 +310,6 @@ void main() {
                           contexts[label] = guide;
                           return SpotlightGuideBubbleHint(
                             guide: guide,
-                            pointer: SpotlightGuideHintPointer(
-                              size: const Size(32, 32),
-                              bubblePlacement: bubblePlacement,
-                              child: SizedBox(
-                                key: pointerKey,
-                                width: 32,
-                                height: 32,
-                              ),
-                              builder:
-                                  (
-                                    BuildContext context,
-                                    SpotlightGuidePointerContext pointer,
-                                    Widget child,
-                                  ) {
-                                    pointerContexts.add(pointer);
-                                    return child;
-                                  },
-                            ),
                             child: const SizedBox(width: 96, height: 42),
                           );
                         },
@@ -468,6 +464,25 @@ void main() {
                     gap: gap,
                     minWidth: 96,
                     maxWidth: 140,
+                    pointer: SpotlightGuideHintPointer(
+                      size: pointerSize,
+                      anchorMode: SpotlightGuidePointerAnchorMode.target,
+                      bubblePlacement: bubblePlacement,
+                      child: SizedBox(
+                        key: pointerKey,
+                        width: pointerSize.width,
+                        height: pointerSize.height,
+                      ),
+                      builder:
+                          (
+                            BuildContext context,
+                            SpotlightGuidePointerContext pointer,
+                            Widget child,
+                          ) {
+                            pointerContexts.add(pointer);
+                            return child;
+                          },
+                    ),
                     hintBuilder:
                         (
                           BuildContext context,
@@ -476,26 +491,6 @@ void main() {
                           contexts[label] = guide;
                           return SpotlightGuideBubbleHint(
                             guide: guide,
-                            pointer: SpotlightGuideHintPointer(
-                              size: pointerSize,
-                              anchorMode:
-                                  SpotlightGuidePointerAnchorMode.target,
-                              bubblePlacement: bubblePlacement,
-                              child: SizedBox(
-                                key: pointerKey,
-                                width: pointerSize.width,
-                                height: pointerSize.height,
-                              ),
-                              builder:
-                                  (
-                                    BuildContext context,
-                                    SpotlightGuidePointerContext pointer,
-                                    Widget child,
-                                  ) {
-                                    pointerContexts.add(pointer);
-                                    return child;
-                                  },
-                            ),
                             child: const SizedBox(width: 96, height: 42),
                           );
                         },
@@ -769,20 +764,20 @@ void main() {
                     color: bubbleColor,
                     borderRadius: 4,
                   ),
+                  pointer: SpotlightGuideHintPointer(
+                    size: const Size(32, 32),
+                    bubblePlacement: testCase.bubblePlacement,
+                    child: SizedBox(
+                      key: pointerKey,
+                      width: 32,
+                      height: 32,
+                      child: const ColoredBox(color: pointerColor),
+                    ),
+                  ),
                   hintBuilder:
                       (BuildContext context, SpotlightGuideStepContext guide) {
                         return SpotlightGuideBubbleHint(
                           guide: guide,
-                          pointer: SpotlightGuideHintPointer(
-                            size: const Size(32, 32),
-                            bubblePlacement: testCase.bubblePlacement,
-                            child: SizedBox(
-                              key: pointerKey,
-                              width: 32,
-                              height: 32,
-                              child: const ColoredBox(color: pointerColor),
-                            ),
-                          ),
                           child: const SizedBox(width: 96, height: 42),
                         );
                       },
@@ -866,6 +861,11 @@ void main() {
                       gap: 10,
                       minWidth: 96,
                       maxWidth: 140,
+                      pointer: SpotlightGuideHintPointer(
+                        size: const Size(40, 28),
+                        pointerAnchorPosition: pointerAnchor,
+                        child: SizedBox(key: pointerKey, width: 40, height: 28),
+                      ),
                       hintBuilder:
                           (
                             BuildContext context,
@@ -874,15 +874,6 @@ void main() {
                             contexts[label] = guide;
                             return SpotlightGuideBubbleHint(
                               guide: guide,
-                              pointer: SpotlightGuideHintPointer(
-                                size: const Size(40, 28),
-                                pointerAnchorPosition: pointerAnchor,
-                                child: SizedBox(
-                                  key: pointerKey,
-                                  width: 40,
-                                  height: 28,
-                                ),
-                              ),
                               child: const SizedBox(width: 96, height: 42),
                             );
                           },
@@ -991,6 +982,11 @@ void main() {
                       gap: gap,
                       minWidth: 96,
                       maxWidth: 140,
+                      pointer: SpotlightGuideHintPointer(
+                        size: const Size(32, 32),
+                        targetGap: targetGap,
+                        child: SizedBox(key: pointerKey, width: 32, height: 32),
+                      ),
                       hintBuilder:
                           (
                             BuildContext context,
@@ -999,15 +995,6 @@ void main() {
                             contexts[label] = guide;
                             return SpotlightGuideBubbleHint(
                               guide: guide,
-                              pointer: SpotlightGuideHintPointer(
-                                size: const Size(32, 32),
-                                targetGap: targetGap,
-                                child: SizedBox(
-                                  key: pointerKey,
-                                  width: 32,
-                                  height: 32,
-                                ),
-                              ),
                               child: const SizedBox(width: 96, height: 42),
                             );
                           },

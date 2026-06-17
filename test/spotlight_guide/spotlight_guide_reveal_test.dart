@@ -141,6 +141,93 @@ void main() {
     );
   });
 
+  testWidgets('default reveal reserves item-level pointer space', (
+    tester,
+  ) async {
+    final SpotlightGuidePortalController controller =
+        SpotlightGuidePortalController();
+    final ScrollController scrollController = ScrollController();
+    final Map<String, SpotlightGuideStepContext> contexts =
+        <String, SpotlightGuideStepContext>{};
+    addTearDown(scrollController.dispose);
+
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        child: SingleChildScrollView(
+          controller: scrollController,
+          child: const SizedBox(
+            height: 1200,
+            child: Stack(
+              children: <Widget>[
+                Positioned(
+                  left: 40,
+                  top: 330,
+                  child: SpotlightGuideTarget(
+                    id: 'pointer-space-target',
+                    child: SizedBox(
+                      width: 100,
+                      height: 50,
+                      child: ColoredBox(color: Colors.red),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep.item(
+            SpotlightGuideStepItem(
+              targetId: 'pointer-space-target',
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
+              placement: SpotlightGuidePlacement.bottom,
+              gap: 24,
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(56, 96),
+                targetGap: 12,
+                child: SizedBox(
+                  key: ValueKey<String>('item-level-pointer'),
+                  width: 56,
+                  height: 96,
+                ),
+              ),
+              revealOptions: const SpotlightGuideRevealOptions(
+                duration: Duration.zero,
+                alignment: 0.5,
+              ),
+              hintBuilder:
+                  (BuildContext context, SpotlightGuideStepContext guide) {
+                    contexts['pointer-space'] = guide;
+                    return SpotlightGuideBubbleHint(
+                      guide: guide,
+                      child: const SizedBox(width: 180, height: 120),
+                    );
+                  },
+            ),
+          ),
+        ],
+      ),
+    );
+
+    controller.reset();
+    await pumpGuide(tester);
+
+    final SpotlightGuideStepContext guide = contexts['pointer-space']!;
+    expect(scrollController.offset, greaterThan(0));
+    expect(
+      find.byKey(const ValueKey<String>('item-level-pointer')),
+      findsOneWidget,
+    );
+    expect(guide.pointer, isNotNull);
+    expect(
+      guide.hintRect.bottom,
+      lessThanOrEqualTo(guide.overlaySize.height - guide.margin.bottom + 0.5),
+    );
+  });
+
   testWidgets('always reveal policy can realign a visible target', (
     tester,
   ) async {

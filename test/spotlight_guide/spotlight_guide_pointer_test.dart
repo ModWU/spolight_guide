@@ -161,30 +161,23 @@ void main() {
                   targetDecoration: const SpotlightGuideTargetDecoration(
                     padding: EdgeInsets.zero,
                   ),
+                  pointer: SpotlightGuideHintPointer(
+                    size: const Size(28, 28),
+                    child: SizedBox(key: childKey, width: 28, height: 28),
+                    builder:
+                        (
+                          BuildContext context,
+                          SpotlightGuidePointerContext pointer,
+                          Widget child,
+                        ) {
+                          pointerContexts.add(pointer);
+                          return KeyedSubtree(key: builderKey, child: child);
+                        },
+                  ),
                   hintBuilder:
                       (BuildContext context, SpotlightGuideStepContext guide) {
                         return SpotlightGuideBubbleHint(
                           guide: guide,
-                          pointer: SpotlightGuideHintPointer(
-                            size: const Size(28, 28),
-                            child: SizedBox(
-                              key: childKey,
-                              width: 28,
-                              height: 28,
-                            ),
-                            builder:
-                                (
-                                  BuildContext context,
-                                  SpotlightGuidePointerContext pointer,
-                                  Widget child,
-                                ) {
-                                  pointerContexts.add(pointer);
-                                  return KeyedSubtree(
-                                    key: builderKey,
-                                    child: child,
-                                  );
-                                },
-                          ),
                           child: const SizedBox(width: 92, height: 44),
                         );
                       },
@@ -288,23 +281,23 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
+                pointer: SpotlightGuideHintPointer(
+                  size: const Size(28, 28),
+                  child: const SizedBox(width: 28, height: 28),
+                  builder:
+                      (
+                        BuildContext context,
+                        SpotlightGuidePointerContext pointer,
+                        Widget child,
+                      ) {
+                        contexts[testCase.placement] = pointer;
+                        return child;
+                      },
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: const Size(28, 28),
-                          child: const SizedBox(width: 28, height: 28),
-                          builder:
-                              (
-                                BuildContext context,
-                                SpotlightGuidePointerContext pointer,
-                                Widget child,
-                              ) {
-                                contexts[testCase.placement] = pointer;
-                                return child;
-                              },
-                        ),
                         child: const SizedBox(width: 92, height: 44),
                       );
                     },
@@ -420,23 +413,23 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
+                pointer: SpotlightGuideHintPointer(
+                  size: const Size(28, 28),
+                  child: const SizedBox(width: 28, height: 28),
+                  builder:
+                      (
+                        BuildContext context,
+                        SpotlightGuidePointerContext pointer,
+                        Widget child,
+                      ) {
+                        pointerContexts.add(pointer);
+                        return child;
+                      },
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: const Size(28, 28),
-                          child: const SizedBox(width: 28, height: 28),
-                          builder:
-                              (
-                                BuildContext context,
-                                SpotlightGuidePointerContext pointer,
-                                Widget child,
-                              ) {
-                                pointerContexts.add(pointer);
-                                return child;
-                              },
-                        ),
                         child: const SizedBox(width: 92, height: 44),
                       );
                     },
@@ -477,25 +470,24 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
+                pointer: SpotlightGuideHintPointer(
+                  size: const Size(28, 28),
+                  bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                  child: const SizedBox(width: 28, height: 28),
+                  builder:
+                      (
+                        BuildContext context,
+                        SpotlightGuidePointerContext pointer,
+                        Widget child,
+                      ) {
+                        pointerContexts.add(pointer);
+                        return child;
+                      },
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: const Size(28, 28),
-                          bubblePlacement:
-                              SpotlightGuidePointerBubblePlacement.bottom,
-                          child: const SizedBox(width: 28, height: 28),
-                          builder:
-                              (
-                                BuildContext context,
-                                SpotlightGuidePointerContext pointer,
-                                Widget child,
-                              ) {
-                                pointerContexts.add(pointer);
-                                return child;
-                              },
-                        ),
                         child: const SizedBox(width: 92, height: 44),
                       );
                     },
@@ -543,12 +535,12 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
+              pointer: const SpotlightGuideHintPointer.tap(),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     return SpotlightGuideTextHint(
                       guide: guide,
                       title: 'Pointer title',
-                      pointer: const SpotlightGuideHintPointer.tap(),
                     );
                   },
             ),
@@ -586,19 +578,19 @@ void main() {
               decoration: const SpotlightGuideBubbleDecoration(
                 border: BorderSide(color: Color(0xFF112233), width: 3),
               ),
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(24, 24),
+                child: SizedBox(
+                  key: ValueKey<String>('pointer-on-border'),
+                  width: 24,
+                  height: 24,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        size: Size(24, 24),
-                        child: SizedBox(
-                          key: ValueKey<String>('pointer-on-border'),
-                          width: 24,
-                          height: 24,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 100, height: 40),
                     );
                   },
@@ -635,19 +627,19 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
               ),
+              pointer: const SpotlightGuideHintPointer(
+                layer: SpotlightGuidePointerLayer.aboveBubble,
+                size: Size(24, 24),
+                child: SizedBox(
+                  key: ValueKey<String>('above-bubble-pointer'),
+                  width: 24,
+                  height: 24,
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        layer: SpotlightGuidePointerLayer.aboveBubble,
-                        size: Size(24, 24),
-                        child: SizedBox(
-                          key: ValueKey<String>('above-bubble-pointer'),
-                          width: 24,
-                          height: 24,
-                        ),
-                      ),
                       child: const SizedBox(width: 100, height: 40),
                     );
                   },
@@ -723,20 +715,20 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: gap,
+                pointer: SpotlightGuideHintPointer(
+                  size: testCase.pointerSize,
+                  child: SizedBox(
+                    key: pointerKey,
+                    width: testCase.pointerSize.width,
+                    height: testCase.pointerSize.height,
+                    child: const ColoredBox(color: Colors.yellow),
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       contexts[testCase.label] = guide;
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: testCase.pointerSize,
-                          child: SizedBox(
-                            key: pointerKey,
-                            width: testCase.pointerSize.width,
-                            height: testCase.pointerSize.height,
-                            child: const ColoredBox(color: Colors.yellow),
-                          ),
-                        ),
                         child: const SizedBox(width: 92, height: 44),
                       );
                     },
@@ -880,6 +872,16 @@ void main() {
                       padding: EdgeInsets.zero,
                     ),
                     gap: 10,
+                    pointer: SpotlightGuideHintPointer(
+                      size: testCase.pointerSize,
+                      pointerAnchorPosition: pointerAnchor,
+                      child: SizedBox(
+                        key: pointerKey,
+                        width: testCase.pointerSize.width,
+                        height: testCase.pointerSize.height,
+                        child: const ColoredBox(color: Colors.yellow),
+                      ),
+                    ),
                     hintBuilder:
                         (
                           BuildContext context,
@@ -888,16 +890,6 @@ void main() {
                           contexts[label] = guide;
                           return SpotlightGuideBubbleHint(
                             guide: guide,
-                            pointer: SpotlightGuideHintPointer(
-                              size: testCase.pointerSize,
-                              pointerAnchorPosition: pointerAnchor,
-                              child: SizedBox(
-                                key: pointerKey,
-                                width: testCase.pointerSize.width,
-                                height: testCase.pointerSize.height,
-                                child: const ColoredBox(color: Colors.yellow),
-                              ),
-                            ),
                             child: const SizedBox(width: 92, height: 44),
                           );
                         },
@@ -973,19 +965,19 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 0,
+              pointer: const SpotlightGuideHintPointer(
+                child: SizedBox(
+                  key: ValueKey<String>('auto-size-pointer'),
+                  width: 34,
+                  height: 22,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['auto-size'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        child: SizedBox(
-                          key: ValueKey<String>('auto-size-pointer'),
-                          width: 34,
-                          height: 22,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 100, height: 40),
                     );
                   },
@@ -1006,6 +998,168 @@ void main() {
     expect(
       pointerRect.center.dx,
       moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
+    );
+  });
+
+  testWidgets(
+    'natural pointer size changes are hidden until the layout is stable',
+    (tester) async {
+      bool pointerLoaded = false;
+      final Map<String, SpotlightGuideStepContext> contexts =
+          <String, SpotlightGuideStepContext>{};
+
+      Widget buildApp() {
+        return guideApp(
+          barrier: const SpotlightGuideBarrierStyle(blurSigma: 1),
+          child: singleTargetStack(
+            id: 'a',
+            left: 320,
+            top: 120,
+            width: 100,
+            height: 60,
+          ),
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'a',
+                placement: SpotlightGuidePlacement.bottom,
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                pointer: SpotlightGuideHintPointer(
+                  child: SizedBox(
+                    key: const ValueKey<String>('unstable-natural-pointer'),
+                    width: 68,
+                    height: pointerLoaded ? 102 : 0,
+                    child: const ColoredBox(color: Colors.orange),
+                  ),
+                ),
+                hintBuilder:
+                    (BuildContext context, SpotlightGuideStepContext guide) {
+                      contexts['unstable-natural'] = guide;
+                      return SpotlightGuideBubbleHint(
+                        guide: guide,
+                        child: const SizedBox(
+                          key: ValueKey<String>('unstable-natural-hint'),
+                          width: 180,
+                          height: 72,
+                          child: ColoredBox(color: Colors.white),
+                        ),
+                      );
+                    },
+              ),
+            ),
+          ],
+        );
+      }
+
+      await tester.pumpWidget(buildApp());
+      await pumpGuide(tester);
+      expect(
+        find
+            .byKey(const ValueKey<String>('unstable-natural-hint'))
+            .hitTestable(),
+        findsNothing,
+      );
+      expect(
+        barrierClipPath(
+          tester,
+          contexts['unstable-natural']!.overlaySize,
+        ).contains(contexts['unstable-natural']!.targetRect.center),
+        isTrue,
+        reason:
+            'The target hole should not be exposed before the hint is ready.',
+      );
+
+      pointerLoaded = true;
+      await tester.pumpWidget(buildApp());
+      await tester.pump();
+      expect(
+        find
+            .byKey(const ValueKey<String>('unstable-natural-hint'))
+            .hitTestable(),
+        findsOneWidget,
+      );
+      expect(
+        barrierClipPath(
+          tester,
+          contexts['unstable-natural']!.overlaySize,
+        ).contains(contexts['unstable-natural']!.targetRect.center),
+        isFalse,
+        reason: 'The target hole and hint should appear together once stable.',
+      );
+    },
+  );
+
+  testWidgets('explicit pointer size keeps the bubble visible while the child '
+      'has a transient zero natural size', (tester) async {
+    bool pointerLoaded = false;
+
+    Widget buildApp() {
+      return guideApp(
+        child: singleTargetStack(
+          id: 'a',
+          left: 320,
+          top: 120,
+          width: 100,
+          height: 60,
+        ),
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep.item(
+            SpotlightGuideStepItem(
+              targetId: 'a',
+              placement: SpotlightGuidePlacement.bottom,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
+              pointer: SpotlightGuideHintPointer(
+                size: const Size(68, 102),
+                child: SizedBox(
+                  key: const ValueKey<String>('stable-slot-pointer'),
+                  width: 68,
+                  height: pointerLoaded ? 102 : 0,
+                  child: const ColoredBox(color: Colors.orange),
+                ),
+              ),
+              hintBuilder:
+                  (BuildContext context, SpotlightGuideStepContext guide) {
+                    return SpotlightGuideBubbleHint(
+                      guide: guide,
+                      child: const SizedBox(
+                        key: ValueKey<String>('stable-slot-hint'),
+                        width: 180,
+                        height: 72,
+                        child: ColoredBox(color: Colors.white),
+                      ),
+                    );
+                  },
+            ),
+          ),
+        ],
+      );
+    }
+
+    await tester.pumpWidget(buildApp());
+    await pumpGuide(tester);
+    expect(
+      find.byKey(const ValueKey<String>('stable-slot-hint')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey<String>('stable-slot-pointer'))),
+      const Size(68, 102),
+    );
+
+    pointerLoaded = true;
+    await tester.pumpWidget(buildApp());
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey<String>('stable-slot-hint')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey<String>('stable-slot-pointer'))),
+      const Size(68, 102),
     );
   });
 
@@ -1069,6 +1223,16 @@ void main() {
                       padding: EdgeInsets.zero,
                     ),
                     gap: pointerToBubbleGap,
+                    pointer: SpotlightGuideHintPointer(
+                      targetGap: targetGap,
+                      size: testCase.pointerSize,
+                      child: SizedBox(
+                        key: pointerKey,
+                        width: testCase.pointerSize.width,
+                        height: testCase.pointerSize.height,
+                        child: const ColoredBox(color: Colors.yellow),
+                      ),
+                    ),
                     hintBuilder:
                         (
                           BuildContext context,
@@ -1077,16 +1241,6 @@ void main() {
                           contexts[label] = guide;
                           return SpotlightGuideBubbleHint(
                             guide: guide,
-                            pointer: SpotlightGuideHintPointer(
-                              targetGap: targetGap,
-                              size: testCase.pointerSize,
-                              child: SizedBox(
-                                key: pointerKey,
-                                width: testCase.pointerSize.width,
-                                height: testCase.pointerSize.height,
-                                child: const ColoredBox(color: Colors.yellow),
-                              ),
-                            ),
                             child: const SizedBox(width: 92, height: 44),
                           );
                         },
@@ -1234,20 +1388,20 @@ void main() {
                   targetDecoration: const SpotlightGuideTargetDecoration(
                     padding: EdgeInsets.zero,
                   ),
+                  pointer: SpotlightGuideHintPointer(
+                    size: const Size(28, 40),
+                    child: SizedBox(
+                      key: pointerKey,
+                      width: 28,
+                      height: 40,
+                      child: const ColoredBox(color: Colors.yellow),
+                    ),
+                  ),
                   hintBuilder:
                       (BuildContext context, SpotlightGuideStepContext guide) {
                         contexts[label] = guide;
                         return SpotlightGuideBubbleHint(
                           guide: guide,
-                          pointer: SpotlightGuideHintPointer(
-                            size: const Size(28, 40),
-                            child: SizedBox(
-                              key: pointerKey,
-                              width: 28,
-                              height: 40,
-                              child: const ColoredBox(color: Colors.yellow),
-                            ),
-                          ),
                           child: const SizedBox(width: 90, height: 40),
                         );
                       },
@@ -1305,21 +1459,21 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 16,
+              pointer: const SpotlightGuideHintPointer(
+                anchorMode: SpotlightGuidePointerAnchorMode.target,
+                size: Size(36, 36),
+                child: SizedBox(
+                  key: ValueKey<String>('decorative-pointer'),
+                  width: 36,
+                  height: 36,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['decorative'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        anchorMode: SpotlightGuidePointerAnchorMode.target,
-                        size: Size(36, 36),
-                        child: SizedBox(
-                          key: ValueKey<String>('decorative-pointer'),
-                          width: 36,
-                          height: 36,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(
                         key: ValueKey<String>('direct-bubble-child'),
                         width: 100,
@@ -1412,20 +1566,20 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: gap,
+                pointer: SpotlightGuideHintPointer(
+                  size: testCase.pointerSize,
+                  child: SizedBox(
+                    key: pointerKey,
+                    width: testCase.pointerSize.width,
+                    height: testCase.pointerSize.height,
+                    child: const ColoredBox(color: Colors.yellow),
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       contexts[testCase.label] = guide;
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: testCase.pointerSize,
-                          child: SizedBox(
-                            key: pointerKey,
-                            width: testCase.pointerSize.width,
-                            height: testCase.pointerSize.height,
-                            child: const ColoredBox(color: Colors.yellow),
-                          ),
-                        ),
                         child: const SizedBox(width: 92, height: 44),
                       );
                     },
@@ -1511,23 +1665,22 @@ void main() {
                 gap: gap,
                 minWidth: 180,
                 maxWidth: 300,
+                pointer: SpotlightGuideHintPointer(
+                  size: const Size(128, 144),
+                  pointerAnchorPosition:
+                      const SpotlightGuideAnchorPosition.end(),
+                  bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                  child: SizedBox(
+                    key: pointerKey,
+                    width: 128,
+                    height: 144,
+                    child: const ColoredBox(color: Colors.yellow),
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: const Size(128, 144),
-                          pointerAnchorPosition:
-                              const SpotlightGuideAnchorPosition.end(),
-                          bubblePlacement:
-                              SpotlightGuidePointerBubblePlacement.bottom,
-                          child: SizedBox(
-                            key: pointerKey,
-                            width: 128,
-                            height: 144,
-                            child: const ColoredBox(color: Colors.yellow),
-                          ),
-                        ),
                         child: const SizedBox(width: 300, height: 48),
                       );
                     },
@@ -1580,20 +1733,20 @@ void main() {
                 anchor: SpotlightGuideNoAnchor(),
               ),
               gap: gap,
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(40, 24),
+                child: SizedBox(
+                  key: ValueKey<String>('no-anchor-pointer'),
+                  width: 40,
+                  height: 24,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['no-anchor-pointer-gap'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        size: Size(40, 24),
-                        child: SizedBox(
-                          key: ValueKey<String>('no-anchor-pointer'),
-                          width: 40,
-                          height: 24,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 100, height: 40),
                     );
                   },
@@ -1681,21 +1834,21 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: gap,
+                pointer: SpotlightGuideHintPointer(
+                  size: testCase.pointerSize,
+                  visualOffset: visualOffset,
+                  child: SizedBox(
+                    key: pointerKey,
+                    width: testCase.pointerSize.width,
+                    height: testCase.pointerSize.height,
+                    child: const ColoredBox(color: Colors.yellow),
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       contexts[testCase.label] = guide;
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: testCase.pointerSize,
-                          visualOffset: visualOffset,
-                          child: SizedBox(
-                            key: pointerKey,
-                            width: testCase.pointerSize.width,
-                            height: testCase.pointerSize.height,
-                            child: const ColoredBox(color: Colors.yellow),
-                          ),
-                        ),
                         child: const SizedBox(width: 92, height: 44),
                       );
                     },
@@ -1835,24 +1988,24 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 0,
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(40, 24),
+                visualOffset: SpotlightGuidePointerOffset.directional(
+                  end: 6,
+                  up: 3,
+                ),
+                child: SizedBox(
+                  key: ValueKey<String>('rtl-visual-offset-pointer'),
+                  width: 40,
+                  height: 24,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['rtl-visual-offset'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        size: Size(40, 24),
-                        visualOffset: SpotlightGuidePointerOffset.directional(
-                          end: 6,
-                          up: 3,
-                        ),
-                        child: SizedBox(
-                          key: ValueKey<String>('rtl-visual-offset-pointer'),
-                          width: 40,
-                          height: 24,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 100, height: 40),
                     );
                   },
@@ -1960,21 +2113,21 @@ void main() {
                     padding: EdgeInsets.zero,
                   ),
                   gap: gap,
+                  pointer: SpotlightGuideHintPointer(
+                    size: testCase.pointerSize,
+                    bubblePlacement: testCase.bubblePlacement,
+                    child: SizedBox(
+                      key: pointerKey,
+                      width: testCase.pointerSize.width,
+                      height: testCase.pointerSize.height,
+                      child: const ColoredBox(color: Colors.yellow),
+                    ),
+                  ),
                   hintBuilder:
                       (BuildContext context, SpotlightGuideStepContext guide) {
                         contexts[testCase.label] = guide;
                         return SpotlightGuideBubbleHint(
                           guide: guide,
-                          pointer: SpotlightGuideHintPointer(
-                            size: testCase.pointerSize,
-                            bubblePlacement: testCase.bubblePlacement,
-                            child: SizedBox(
-                              key: pointerKey,
-                              width: testCase.pointerSize.width,
-                              height: testCase.pointerSize.height,
-                              child: const ColoredBox(color: Colors.yellow),
-                            ),
-                          ),
                           child: const SizedBox(width: 96, height: 42),
                         );
                       },
@@ -2146,19 +2299,19 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: gap,
+                pointer: SpotlightGuideHintPointer(
+                  size: testCase.pointerSize,
+                  bubblePlacement: bubblePlacement,
+                  child: SizedBox(
+                    key: pointerKey,
+                    width: testCase.pointerSize.width,
+                    height: testCase.pointerSize.height,
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: testCase.pointerSize,
-                          bubblePlacement: bubblePlacement,
-                          child: SizedBox(
-                            key: pointerKey,
-                            width: testCase.pointerSize.width,
-                            height: testCase.pointerSize.height,
-                          ),
-                        ),
                         child: const SizedBox(width: 112, height: 56),
                       );
                     },
@@ -2224,22 +2377,21 @@ void main() {
               margin: const EdgeInsets.all(16),
               minWidth: 180,
               maxWidth: 300,
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(88, 42),
+                targetGap: 4,
+                bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                child: SizedBox(
+                  key: ValueKey<String>('explicit-bottom-pointer'),
+                  width: 88,
+                  height: 42,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        size: Size(88, 42),
-                        targetGap: 4,
-                        bubblePlacement:
-                            SpotlightGuidePointerBubblePlacement.bottom,
-                        child: SizedBox(
-                          key: ValueKey<String>('explicit-bottom-pointer'),
-                          width: 88,
-                          height: 42,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: SizedBox(
                         width: 260,
                         height: 260,
@@ -2357,21 +2509,21 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: 8,
+                pointer: SpotlightGuideHintPointer(
+                  size: const Size(34, 34),
+                  bubblePlacement: testCase.bubblePlacement,
+                  child: SizedBox(
+                    key: pointerKey,
+                    width: 34,
+                    height: 34,
+                    child: const ColoredBox(color: Colors.yellow),
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       contexts[testCase.label] = guide;
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: const Size(34, 34),
-                          bubblePlacement: testCase.bubblePlacement,
-                          child: SizedBox(
-                            key: pointerKey,
-                            width: 34,
-                            height: 34,
-                            child: const ColoredBox(color: Colors.yellow),
-                          ),
-                        ),
                         child: const SizedBox(width: 96, height: 42),
                       );
                     },
@@ -2453,24 +2605,23 @@ void main() {
                     padding: EdgeInsets.zero,
                   ),
                   targetAnchorPosition: testCase.pointerAnchorPosition,
+                  pointer: SpotlightGuideHintPointer(
+                    size: const Size(40, 24),
+                    pointerAnchorPosition: testCase.pointerAnchorPosition,
+                    bubblePlacement:
+                        SpotlightGuidePointerBubblePlacement.bottom,
+                    child: SizedBox(
+                      key: pointerKey,
+                      width: 40,
+                      height: 24,
+                      child: const ColoredBox(color: Colors.yellow),
+                    ),
+                  ),
                   hintBuilder:
                       (BuildContext context, SpotlightGuideStepContext guide) {
                         contexts[testCase.label] = guide;
                         return SpotlightGuideBubbleHint(
                           guide: guide,
-                          pointer: SpotlightGuideHintPointer(
-                            size: const Size(40, 24),
-                            pointerAnchorPosition:
-                                testCase.pointerAnchorPosition,
-                            bubblePlacement:
-                                SpotlightGuidePointerBubblePlacement.bottom,
-                            child: SizedBox(
-                              key: pointerKey,
-                              width: 40,
-                              height: 24,
-                              child: const ColoredBox(color: Colors.yellow),
-                            ),
-                          ),
                           child: const SizedBox(width: 96, height: 42),
                         );
                       },
@@ -2585,20 +2736,20 @@ void main() {
                   ),
                   targetAnchorPosition: testCase.anchorPosition,
                   gap: 10,
+                  pointer: SpotlightGuideHintPointer(
+                    size: const Size(40, 28),
+                    child: SizedBox(
+                      key: pointerKey,
+                      width: 40,
+                      height: 28,
+                      child: const ColoredBox(color: Colors.yellow),
+                    ),
+                  ),
                   hintBuilder:
                       (BuildContext context, SpotlightGuideStepContext guide) {
                         contexts[testCase.label] = guide;
                         return SpotlightGuideBubbleHint(
                           guide: guide,
-                          pointer: SpotlightGuideHintPointer(
-                            size: const Size(40, 28),
-                            child: SizedBox(
-                              key: pointerKey,
-                              width: 40,
-                              height: 28,
-                              child: const ColoredBox(color: Colors.yellow),
-                            ),
-                          ),
                           child: const SizedBox(width: 110, height: 44),
                         );
                       },
@@ -2674,24 +2825,22 @@ void main() {
               decoration: const SpotlightGuideBubbleDecoration(
                 borderRadius: 28,
               ),
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(40, 24),
+                pointerAnchorPosition: SpotlightGuideAnchorPosition.start(),
+                bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                child: SizedBox(
+                  key: ValueKey<String>('safe-pointer'),
+                  width: 40,
+                  height: 24,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['safe-pointer'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        size: Size(40, 24),
-                        pointerAnchorPosition:
-                            SpotlightGuideAnchorPosition.start(),
-                        bubblePlacement:
-                            SpotlightGuidePointerBubblePlacement.bottom,
-                        child: SizedBox(
-                          key: ValueKey<String>('safe-pointer'),
-                          width: 40,
-                          height: 24,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 24, height: 24),
                     );
                   },
@@ -2754,23 +2903,22 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 14,
+              pointer: const SpotlightGuideHintPointer(
+                anchorMode: SpotlightGuidePointerAnchorMode.target,
+                bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                size: Size(36, 24),
+                child: SizedBox(
+                  key: ValueKey<String>('target-mode-pointer'),
+                  width: 36,
+                  height: 24,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['target-anchor-mode'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        anchorMode: SpotlightGuidePointerAnchorMode.target,
-                        bubblePlacement:
-                            SpotlightGuidePointerBubblePlacement.bottom,
-                        size: Size(36, 24),
-                        child: SizedBox(
-                          key: ValueKey<String>('target-mode-pointer'),
-                          width: 36,
-                          height: 24,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 100, height: 40),
                     );
                   },
@@ -2823,20 +2971,20 @@ void main() {
               ),
               gap: 0,
               targetAnchorPosition: const SpotlightGuideAnchorPosition.center(),
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(40, 24),
+                child: SizedBox(
+                  key: ValueKey<String>('pointer'),
+                  width: 40,
+                  height: 24,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['pointer'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        size: Size(40, 24),
-                        child: SizedBox(
-                          key: ValueKey<String>('pointer'),
-                          width: 40,
-                          height: 24,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 100, height: 40),
                     );
                   },
@@ -2901,20 +3049,20 @@ void main() {
                 gap: 0,
                 targetAnchorPosition:
                     const SpotlightGuideAnchorPosition.center(),
+                pointer: SpotlightGuideHintPointer(
+                  size: const Size(24, 40),
+                  child: SizedBox(
+                    key: pointerKey,
+                    width: 24,
+                    height: 40,
+                    child: const ColoredBox(color: Colors.yellow),
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       contexts[placementCase.label] = guide;
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: SpotlightGuideHintPointer(
-                          size: const Size(24, 40),
-                          child: SizedBox(
-                            key: pointerKey,
-                            width: 24,
-                            height: 40,
-                            child: const ColoredBox(color: Colors.yellow),
-                          ),
-                        ),
                         child: const SizedBox(width: 80, height: 40),
                       );
                     },
@@ -2999,20 +3147,20 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 0,
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(40, 24),
+                child: SizedBox(
+                  key: ValueKey<String>('pointer-top'),
+                  width: 40,
+                  height: 24,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['pointer-top'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        size: Size(40, 24),
-                        child: SizedBox(
-                          key: ValueKey<String>('pointer-top'),
-                          width: 40,
-                          height: 24,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 100, height: 40),
                     );
                   },
@@ -3061,22 +3209,21 @@ void main() {
               ),
               gap: 0,
               targetAnchorPosition: const SpotlightGuideAnchorPosition.center(),
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(40, 24),
+                pointerAnchorPosition: SpotlightGuideAnchorPosition.end(),
+                child: SizedBox(
+                  key: ValueKey<String>('pointer-end'),
+                  width: 40,
+                  height: 24,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['pointer-end'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        size: Size(40, 24),
-                        pointerAnchorPosition:
-                            SpotlightGuideAnchorPosition.end(),
-                        child: SizedBox(
-                          key: ValueKey<String>('pointer-end'),
-                          width: 40,
-                          height: 24,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 100, height: 40),
                     );
                   },
@@ -3202,20 +3349,20 @@ void main() {
                 minWidth: 180,
                 maxWidth: 300,
                 gap: 10,
+                pointer: const SpotlightGuideHintPointer(
+                  size: Size(32, 48),
+                  targetGap: 4,
+                  child: SizedBox(
+                    key: ValueKey<String>('stable-edge-pointer'),
+                    width: 32,
+                    height: 48,
+                    child: ColoredBox(color: Colors.yellow),
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: const SpotlightGuideHintPointer(
-                          size: Size(32, 48),
-                          targetGap: 4,
-                          child: SizedBox(
-                            key: ValueKey<String>('stable-edge-pointer'),
-                            width: 32,
-                            height: 48,
-                            child: ColoredBox(color: Colors.yellow),
-                          ),
-                        ),
                         child: const SizedBox(width: 112, height: 72),
                       );
                     },

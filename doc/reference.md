@@ -202,21 +202,22 @@ the anchor away from rounded-corner unsafe areas.
 
 | Parameter | Owner | Meaning |
 | --- | --- | --- |
-| `pointer` | `SpotlightGuideBubbleHint` | Optional visual pointer configuration. |
-| `SpotlightGuideHintPointer` | `SpotlightGuideBubbleHint.pointer` | Groups the pointer widget, optional builder, optional size, pointer anchor, target gap, paint layer, bubble side, and paint offset. |
+| `pointer` | `SpotlightGuideStepItem` | Layout-aware pointer metadata for built-in bubble/text hints. Keep pointer config here so reveal scrolling, auto placement, and margin safety can reserve pointer space before `hintBuilder` runs. |
+| `SpotlightGuideHintPointer` | `SpotlightGuideStepItem.pointer` | Groups the pointer widget, optional builder, optional size, pointer anchor, target gap, paint layer, bubble side, and paint offset. |
 | `SpotlightGuideTapPointer` | `SpotlightGuideHintPointer.child` | Built-in pointer widget for simple tap cues when an app does not want to ship an image asset. |
 | `SpotlightGuideHintPointer.builder` | `SpotlightGuideHintPointer` | Optional wrapper for `child` that receives `SpotlightGuidePointerContext`, useful for rotating or swapping directional pointer artwork after auto and RTL placement resolve. |
 | `SpotlightGuidePointerContext.targetDirection` | `SpotlightGuideHintPointer.builder` | Physical direction from the pointer toward the target. |
 | `SpotlightGuidePointerContext.targetRotation` | `SpotlightGuideHintPointer.builder` | Shortcut for rotating artwork whose natural pose points up so it points toward the target. |
 | `SpotlightGuidePointerContext.rotationToTarget(from: ...)` | `SpotlightGuideHintPointer.builder` | Rotates artwork from its declared `SpotlightGuidePointerDirection` source pose toward the target. Opposite target sides mirror clockwise/counterclockwise turns automatically. |
 | `SpotlightGuidePointerDirection` | `SpotlightGuidePointerContext.rotationToTarget` | Describes an unrotated pointer asset pose. `up()` is the default source pose, `upRight()` describes a northeast-facing asset, `upRight(0)` is identical to `upRight()`, and constructors such as `right(pi / 2)` add a clockwise offset from that named pose. |
-| `SpotlightGuideHintPointer.size` | `SpotlightGuideHintPointer` | Optional fixed pointer layout slot. When null, the pointer uses its child widget's laid-out size. |
+| `SpotlightGuideHintPointer.size` | `SpotlightGuideHintPointer` | Optional fixed pointer layout slot. When null, the pointer uses its child widget's laid-out size; for image or animation pointers, provide a stable size or tight child dimensions to avoid decode-time layout changes. |
 | `SpotlightGuideHintPointer.pointerAnchorPosition` | `SpotlightGuideHintPointer` | Point inside the pointer that aligns with the target contact point. The bubble anchor alignment is controlled separately by `targetAnchorPosition`. |
 | `SpotlightGuideHintPointer.targetGap` | `SpotlightGuideHintPointer` | Signed target-to-pointer distance. Positive values move the pointer away from the target, negative values pull it back toward the target, and zero keeps it touching. |
 | `SpotlightGuideHintPointer.anchorMode` | `SpotlightGuideHintPointer` | Use `pointer` for the default target -> pointer -> bubble chain. Use `target` when the pointer is decorative and the bubble anchor should still point directly at the target. |
 | `SpotlightGuideHintPointer.visualOffset` | `SpotlightGuideHintPointer` | Visual-only child nudge for custom pointer assets. It does not move the target anchor, pointer layout slot, bubble anchor, or bubble position. |
 | `SpotlightGuidePointerOffset.physical` | `SpotlightGuidePointerOffset` | Left/right/up/down nudge in physical screen directions. |
 | `SpotlightGuidePointerOffset.directional` | `SpotlightGuidePointerOffset` | Start/end/up/down nudge where start/end mirror with `Directionality`. |
+| `SpotlightGuidePaintGate` | Custom hint child | Optional render-level gate that keeps target holes and hints hidden until custom async visual content is ready. Use `requireNonEmptySize` for natural-size images whose height is unknown before decode. |
 | `targetAnchorPosition` | `SpotlightGuideStepItem` | Pointer to bubble anchor when a pointer exists; target to bubble anchor when pointer is null. |
 | `decoration` | `SpotlightGuideStepItem` | Owns the built-in bubble shape, padding, border, shadow and visual anchor metadata. |
 | `SpotlightGuideBubbleDecoration.anchor` | `SpotlightGuideBubbleDecoration` | Defaults to `SpotlightGuideTriangleAnchor`. Use `SpotlightGuideNoAnchor()` for no anchor, or provide a custom `SpotlightGuideBubbleAnchor`. |
@@ -236,8 +237,28 @@ SpotlightGuideHintPointer.pointerAnchorPosition -> targetGap -> pointer layout s
 
 If a custom pointer image has transparent padding or a painted tip that is not
 on the widget edge, wrap it or provide `SpotlightGuideHintPointer.size` so its
-layout edge represents the desired visual contact point. If the bubble uses
-`SpotlightGuideNoAnchor`, the bubble edge is the endpoint used by `gap`.
+layout edge represents the desired visual contact point. Fixed item-level
+pointer sizes are also included in the default reveal-space estimate. If the
+bubble uses `SpotlightGuideNoAnchor`, the bubble edge is the endpoint used by
+`gap`.
+
+For image pointers, prefer a stable layout slot. `SpotlightGuideBubbleHint`
+lays the pointer out during the render pass and suppresses transient zero-size
+natural pointer frames. While a rendered hint is not ready, the overlay keeps
+that step's target holes and hints hidden as one visual unit, so a target hole
+does not appear before its bubble. The component still cannot know an arbitrary
+image's future aspect ratio before decode, so give
+`SpotlightGuideHintPointer.size` or give the image both width and height when
+the first visible frame or reveal-scroll space estimate must be exact. For
+large raster assets, use Flutter's `Image.cacheWidth` and `Image.cacheHeight`
+to decode closer to the rendered size instead of caching an unnecessarily large
+bitmap.
+
+For fully custom hints, wrap an async image or animation in
+`SpotlightGuidePaintGate`. `ready` lets product state decide when the hint is
+visually complete. `requireNonEmptySize` waits for the child to lay out with a
+non-empty size, which is useful when an image only receives a width and the
+height should remain aspect-ratio driven.
 
 For small last-mile visual nudges, use `SpotlightGuideHintPointer.visualOffset`.
 It translates only the pointer child paint. The anchor chain still uses the
@@ -332,11 +353,16 @@ src/hints/bubble.dart
 
 src/hints/bubble_hint.dart
   SpotlightGuideBubbleHint
-  A higher-level hint that combines an optional visual pointer with SpotlightGuideBubble.
+  A higher-level hint that renders the step-level pointer, when configured, with SpotlightGuideBubble.
 
   SpotlightGuideHintPointer
   Pointer configuration for any widget, including images, icons, animations,
   CustomPaint, or SpotlightGuideTapPointer.
+
+  SpotlightGuidePaintGate
+  Render-level readiness gate for custom hints with async images or animations.
+  It keeps target holes and hints hidden together until the gated child is
+  ready, without requiring a post-frame measurement.
 
 src/hints/text_hint.dart
   SpotlightGuideTextHint
@@ -356,7 +382,7 @@ text, Back/Next/Done actions, optional Skip, long-content scrolling, and pointer
 support while leaving `SpotlightGuideBubbleDecoration.contentPadding` at zero
 for fully custom hint bodies.
 
-Use `SpotlightGuideBubbleHint` when the hint needs a visual pointer or pointer-to-bubble-anchor layout.
+Use `SpotlightGuideBubbleHint` when the hint should render the step-level pointer or needs pointer-to-bubble-anchor layout.
 
 Use `SpotlightGuideBubble` when the hint is only a bubble with arrow.
 

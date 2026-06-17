@@ -6,11 +6,11 @@
 
 | Basic flow | Pointer hint | Same-step hints |
 | --- | --- | --- |
-| ![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/basic_flow.gif) | ![Built-in tap pointer hint](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/pointer_hint.gif) | ![Several hints in one step](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/same_step_hints.gif) |
+| ![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/basic_flow.gif) | ![Built-in tap pointer hint](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/pointer_hint.gif) | ![Several hints in one step](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/same_step_hints.gif) |
 | Same-step auto scroll | Lazy target reveal | Barrier dismiss |
-| ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/lazy_target_reveal.gif) | ![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/barrier_dismiss.gif) |
+| ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/lazy_target_reveal.gif) | ![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/barrier_dismiss.gif) |
 | Custom anchors and groups | Horizontal auto | Target decoration |
-| ![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/custom_anchors.gif) | ![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/horizontal_auto.gif) | ![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/target_decoration.gif) |
+| ![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/custom_anchors.gif) | ![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/horizontal_auto.gif) | ![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/target_decoration.gif) |
 
 ## Highlights
 
@@ -107,7 +107,7 @@ flutter run -d ios
 
 ## Basic Usage
 
-![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/basic_flow.gif)
+![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/basic_flow.gif)
 
 ```dart
 SpotlightGuidePortal(
@@ -143,7 +143,7 @@ the same placement, margin, pointer, and decoration system as custom hints.
 
 ## Pointer Hints
 
-![Built-in tap pointer hint](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/pointer_hint.gif)
+![Built-in tap pointer hint](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/pointer_hint.gif)
 
 Use a pointer when the guide should visually point at a small tap target. A
 pointer is any widget: the built-in tap pointer is only a shortcut, and you can
@@ -171,12 +171,64 @@ pointer, or when the pointer uses
 `anchorMode: SpotlightGuidePointerAnchorMode.target`, `gap` remains the target
 to bubble distance.
 
+Configure pointers on `SpotlightGuideStepItem.pointer`, not inside the hint
+widget. The portal reads item-level pointer metadata before the hint is built,
+so automatic reveal scrolling, auto placement, and safe-area checks can reserve
+the real target-to-pointer gap and fixed pointer size.
+
+When migrating from `0.1.x`, move `pointer:` from `SpotlightGuideBubbleHint` or
+`SpotlightGuideTextHint` to the surrounding `SpotlightGuideStepItem`.
+
 Use `SpotlightGuideHintPointer.targetGap` when the pointer itself should sit
 away from the target. Positive values move it away from the target in the
 resolved placement direction, negative values pull it back toward the target,
 and zero keeps the pointer touching the target. Custom pointer widgets can omit
 `size` to use the child's laid-out size; provide `size` when an image or
-animation should reserve a stable visual slot.
+animation should reserve a stable visual slot and participate in reveal-space
+estimation.
+
+For image pointers, prefer a stable layout slot. This follows Flutter's image
+layout guidance: an image with only one dimension may change size after decode.
+Set `SpotlightGuideHintPointer.size` and make the image fill that slot, or give
+the child its own tight width and height. The guide also hides transient
+zero-size natural pointer frames internally, keeping the target hole and hint
+hidden until they can appear together from the same stable layout.
+If `size` is omitted, the pointer still lays out naturally, but reveal scrolling
+cannot know the final pointer width or height before the hint render pass; use
+`size` when automatic scroll-space estimation must be exact.
+
+For large raster pointer assets, also consider `cacheWidth` and `cacheHeight`
+on `Image` so Flutter decodes closer to the displayed size instead of keeping a
+much larger bitmap in memory.
+
+```dart
+pointer: SpotlightGuideHintPointer(
+  size: const Size(68, 103),
+  child: Image.asset(
+    'assets/guide_pointer.png',
+    width: 68,
+    height: 103,
+    cacheWidth: 136,
+    cacheHeight: 206,
+    fit: BoxFit.contain,
+  ),
+)
+```
+
+For fully custom hints, wrap async visual content with
+`SpotlightGuidePaintGate` when the guide should wait for that content before
+showing the target hole. This is useful when an image intentionally only has a
+width and the height should follow the decoded aspect ratio:
+
+```dart
+SpotlightGuidePaintGate(
+  requireNonEmptySize: true,
+  child: Image.asset(
+    'assets/guide_pointer.png',
+    width: 68,
+  ),
+)
+```
 
 Use `visualOffset` only for small asset-level nudges. It moves the pointer
 widget's painted content, but does not move the target anchor, pointer layout
@@ -204,6 +256,20 @@ SpotlightGuideStepItem(
   targetId: 'more-button',
   placement: SpotlightGuidePlacement.bottom,
   gap: 10,
+  pointer: SpotlightGuideHintPointer.tap(
+    anchorMode: SpotlightGuidePointerAnchorMode.pointer,
+    visualOffset: SpotlightGuidePointerOffset.directional(end: 2),
+    builder: (
+      BuildContext context,
+      SpotlightGuidePointerContext pointer,
+      Widget child,
+    ) {
+      return Transform.rotate(
+        angle: pointer.rotationToTarget(),
+        child: child,
+      );
+    },
+  ),
   decoration: const SpotlightGuideBubbleDecoration(
     anchor: SpotlightGuideNoAnchor(),
   ),
@@ -212,20 +278,6 @@ SpotlightGuideStepItem(
       guide: guide,
       title: 'Tap here',
       message: 'The pointer can be any widget.',
-      pointer: SpotlightGuideHintPointer.tap(
-        anchorMode: SpotlightGuidePointerAnchorMode.pointer,
-        visualOffset: SpotlightGuidePointerOffset.directional(end: 2),
-        builder: (
-          BuildContext context,
-          SpotlightGuidePointerContext pointer,
-          Widget child,
-        ) {
-          return Transform.rotate(
-            angle: pointer.rotationToTarget(),
-            child: child,
-          );
-        },
-      ),
     );
   },
 )
@@ -246,7 +298,7 @@ Transform.rotate(
 
 ## Multiple Hints In One Step
 
-![Several hints in one step](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/same_step_hints.gif)
+![Several hints in one step](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/same_step_hints.gif)
 
 Use `SpotlightGuideStep(items: ...)` when several hints should appear together. A single item can also highlight several targets with `targetIds`.
 
@@ -261,7 +313,7 @@ SpotlightGuideStep(
 
 ## Repeated Target IDs
 
-![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/custom_anchors.gif)
+![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/custom_anchors.gif)
 
 When several mounted `SpotlightGuideTarget` widgets use the same `id`, the
 component treats them as one logical target group. All instances are highlighted
@@ -296,7 +348,7 @@ Use `targetDecoration` when the spotlight hole needs a specific shape, padding,
 outer rings or glow. The decoration paints on the overlay only; it does not wrap
 or modify the real target widget.
 
-![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/target_decoration.gif)
+![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/target_decoration.gif)
 
 Use translucent `SpotlightGuideTargetRingLayer`s for a crisp border-style halo,
 `SpotlightGuideTargetGlowLayer` for a blurred soft halo, or
@@ -342,7 +394,7 @@ targetDecoration: const SpotlightGuideTargetDecoration(
 
 ## Dynamic Or API-Driven Steps
 
-![Dynamic guide steps](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/dynamic_steps.gif)
+![Dynamic guide steps](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/dynamic_steps.gif)
 
 For automatic guides, rebuild `steps` after data loads. A portal without an
 external controller starts when `steps` first becomes non-empty.
@@ -405,7 +457,7 @@ SpotlightGuidePortal(
 
 | Same-step auto scroll | Lazy target reveal |
 | --- | --- |
-| ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/lazy_target_reveal.gif) |
+| ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/lazy_target_reveal.gif) |
 
 If a target is already built but outside a scrollable viewport, the default
 `SpotlightGuideRevealOptions` calls `Scrollable.ensureVisible`. It does not
@@ -481,7 +533,7 @@ SpotlightGuidePortal(
 
 ## Barrier Taps
 
-![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/barrier_dismiss.gif)
+![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/barrier_dismiss.gif)
 
 The dim barrier absorbs taps so they never reach the page behind the guide. By
 default, tapping empty space does not close or advance the guide.
@@ -547,7 +599,7 @@ SpotlightGuideStep.item(
 
 ## Stepping Back And Jumping
 
-![Controller API guide](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/controller_api.gif)
+![Controller API guide](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/controller_api.gif)
 
 The controller can start the portal-owned sequence with `showPortal()` or a
 runtime sequence with `showSteps(steps)`. The controller and the `guide` context
@@ -566,17 +618,17 @@ controller.hide();
 
 ## RTL And Anchors
 
-![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/horizontal_auto.gif)
+![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/horizontal_auto.gif)
 
 Use `SpotlightGuideAnchorPosition.start`, `center`, or `end` for semantic alignment. `start` and `end` follow `Directionality`, so Arabic and other RTL layouts mirror correctly.
 
 ## Custom UI
 
-![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.1.6/doc/images/readme/custom_anchors.gif)
+![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/custom_anchors.gif)
 
 `hintBuilder` may return:
 
-- `SpotlightGuideBubbleHint` for a common bubble plus optional pointer image.
+- `SpotlightGuideBubbleHint` for a common bubble that can render the step-level pointer.
 - `SpotlightGuideBubble` for a connected bubble arrow without pointer.
 - Any custom widget, image composition, or app-specific guide UI.
 

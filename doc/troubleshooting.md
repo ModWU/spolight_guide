@@ -159,6 +159,64 @@ flutter test --no-pub test/spotlight_guide/spotlight_guide_pointer_test.dart
 flutter test --no-pub test/spotlight_guide/spotlight_guide_safe_area_test.dart
 ```
 
+## Pointer Image Jumps On First Display
+
+Configure pointers on `SpotlightGuideStepItem.pointer` and give image pointers
+a stable layout slot. Item-level pointer metadata lets the default reveal logic
+reserve pointer space before the hint is built. Flutter images that specify
+only width or only height can report a transient zero size on the other axis
+before decode, then relayout after the image dimensions are known. When the
+dimensions are known, prefer:
+
+```dart
+SpotlightGuideHintPointer(
+  size: const Size(68, 103),
+  child: Image.asset(
+    'assets/guide_pointer.png',
+    width: 68,
+    height: 103,
+    cacheWidth: 136,
+    cacheHeight: 206,
+    fit: BoxFit.contain,
+  ),
+)
+```
+
+For large pointer images, set `cacheWidth` and `cacheHeight` near the displayed
+pixel size so Flutter decodes a smaller bitmap. This improves memory use
+without changing the guide layout slot.
+
+If `SpotlightGuideHintPointer.size` is omitted, the pointer can still use its
+natural child size, but automatic reveal scrolling cannot reserve that final
+pointer width or height before the hint render pass.
+
+When the height should stay natural and the app only knows the width, wrap the
+image in a paint gate instead of guessing the height:
+
+```dart
+SpotlightGuidePaintGate(
+  requireNonEmptySize: true,
+  child: Image.asset(
+    'assets/guide_pointer.png',
+    width: 68,
+  ),
+)
+```
+
+`SpotlightGuideBubbleHint` also guards against this internally: if a pointer
+uses natural child size and the pointer child reports a transient zero width or
+height, that intermediate frame is not painted or hit tested, and the target
+hole is not exposed ahead of the hint. Once the child has a valid laid-out
+size, the target hole, pointer, and bubble are shown from the same stable
+layout. If a custom pointer is intentionally zero-sized, remove the pointer or
+provide an explicit `size` for the desired anchor slot.
+
+Related tests:
+
+```sh
+flutter test --no-pub test/spotlight_guide/spotlight_guide_pointer_test.dart
+```
+
 ## Repeated Target ID Picks The Wrong Anchor
 
 If several mounted `SpotlightGuideTarget` widgets share the same id, the guide

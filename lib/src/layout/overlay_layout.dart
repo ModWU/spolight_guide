@@ -32,6 +32,15 @@ class _SpotlightGuideOverlayLayout extends StatefulWidget {
 /// Lays out active hints over the dim barrier.
 class _SpotlightGuideOverlayLayoutState
     extends State<_SpotlightGuideOverlayLayout> {
+  final _SpotlightGuideOverlayReadiness _readiness =
+      _SpotlightGuideOverlayReadiness();
+
+  @override
+  void dispose() {
+    _readiness.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final TextDirection textDirection = Directionality.of(context);
@@ -81,6 +90,11 @@ class _SpotlightGuideOverlayLayoutState
         ),
       );
     }
+    _readiness.configure(
+      renderedItems.map(
+        (_SpotlightGuideRenderedItem item) => item.overlayItem.itemIndex,
+      ),
+    );
 
     // A transparency Material does not absorb pointer events, which lets taps
     // inside an interactive spotlight hole reach the widget behind the guide.
@@ -112,6 +126,8 @@ class _SpotlightGuideOverlayLayoutState
       inputs: renderedItem.inputs,
       guide: renderedItem.contextInfo,
       textDirection: Directionality.of(context),
+      readiness: _readiness,
+      readinessKey: renderedItem.overlayItem.itemIndex,
       child: renderedItem.overlayItem.item.hintBuilder(
         context,
         renderedItem.contextInfo,
@@ -132,6 +148,7 @@ class _SpotlightGuideOverlayLayoutState
             widget.targetHoles,
             textDirection,
             devicePixelRatio,
+            _readiness,
           ),
           child: BackdropFilter(
             filter: ui.ImageFilter.blur(
@@ -147,6 +164,7 @@ class _SpotlightGuideOverlayLayoutState
           color: barrier.effectiveColor,
           textDirection: textDirection,
           devicePixelRatio: devicePixelRatio,
+          readiness: _readiness,
         ),
       ),
     ];
@@ -158,10 +176,47 @@ class _SpotlightGuideOverlayLayoutState
           : () => widget.onBarrierTap!(widget.controller),
       child: _SpotlightBarrierRegion(
         interactiveHoles: interactiveHoleRects,
+        readiness: _readiness,
         child: Stack(fit: StackFit.expand, children: barrierLayers),
       ),
     );
   }
+}
+
+class _SpotlightGuideOverlayReadiness extends ChangeNotifier {
+  final Set<int> _pendingItems = <int>{};
+
+  bool get isReady => _pendingItems.isEmpty;
+
+  /// Starts each build with every rendered hint pending.
+  ///
+  /// Hint slots mark themselves ready during the same layout pass. Barrier
+  /// painters and clippers listen to this object through Flutter's repaint and
+  /// reclip hooks, so the spotlight holes and hints become visible together.
+  void configure(Iterable<int> itemKeys) {
+    _pendingItems
+      ..clear()
+      ..addAll(itemKeys);
+  }
+
+  void setItemReady(int itemKey, bool ready) {
+    final bool changed = ready
+        ? _pendingItems.remove(itemKey)
+        : _pendingItems.add(itemKey);
+    if (changed) {
+      notifyListeners();
+    }
+  }
+}
+
+abstract interface class _SpotlightGuideHintLayoutParticipant {
+  bool get isPaintReady;
+
+  double? get targetLayoutGap;
+
+  Offset get layoutOffsetCorrection;
+
+  void useLayoutGuide(SpotlightGuideStepContext value);
 }
 
 /// Combines one overlay item with its computed layout and public context.
@@ -243,6 +298,7 @@ class _SpotlightGuideHintLayoutInputs {
       contentSize: contentSize,
       gap: overlayItem.item.gap,
       decoration: decoration,
+      pointer: overlayItem.item.pointer,
       indicatorSize: decoration.anchorSize,
       anchorConnectionHalfExtent: decoration.anchorConnectionHalfExtent,
       controller: controller,
@@ -255,12 +311,16 @@ class _SpotlightGuideHintSlot extends SingleChildRenderObjectWidget {
     required this.inputs,
     required this.guide,
     required this.textDirection,
+    required this.readiness,
+    required this.readinessKey,
     required super.child,
   });
 
   final _SpotlightGuideHintLayoutInputs inputs;
   final SpotlightGuideStepContext guide;
   final TextDirection textDirection;
+  final _SpotlightGuideOverlayReadiness readiness;
+  final int readinessKey;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
@@ -268,6 +328,8 @@ class _SpotlightGuideHintSlot extends SingleChildRenderObjectWidget {
       inputs: inputs,
       guide: guide,
       textDirection: textDirection,
+      readiness: readiness,
+      readinessKey: readinessKey,
     );
   }
 
@@ -279,7 +341,9 @@ class _SpotlightGuideHintSlot extends SingleChildRenderObjectWidget {
     renderObject
       ..inputs = inputs
       ..guide = guide
-      ..textDirection = textDirection;
+      ..textDirection = textDirection
+      ..readiness = readiness
+      ..readinessKey = readinessKey;
   }
 }
 
@@ -288,9 +352,13 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
     required _SpotlightGuideHintLayoutInputs inputs,
     required SpotlightGuideStepContext guide,
     required TextDirection textDirection,
+    required _SpotlightGuideOverlayReadiness readiness,
+    required int readinessKey,
   }) : _inputs = inputs,
        _guide = guide,
-       _textDirection = textDirection;
+       _textDirection = textDirection,
+       _readiness = readiness,
+       _readinessKey = readinessKey;
 
   static const int _maxLayoutPasses = 24;
   static const double _layoutTolerance = 0.01;
@@ -323,6 +391,48 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
     }
     _textDirection = value;
     markNeedsLayout();
+  }
+
+  _SpotlightGuideOverlayReadiness _readiness;
+
+  set readiness(_SpotlightGuideOverlayReadiness value) {
+    if (_readiness == value) {
+      return;
+    }
+    if (attached) {
+      _readiness.removeListener(_handleReadinessChanged);
+    }
+    _readiness = value;
+    if (attached) {
+      _readiness.addListener(_handleReadinessChanged);
+    }
+    markNeedsPaint();
+  }
+
+  int _readinessKey;
+
+  set readinessKey(int value) {
+    if (_readinessKey == value) {
+      return;
+    }
+    _readinessKey = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _readiness.addListener(_handleReadinessChanged);
+  }
+
+  @override
+  void detach() {
+    _readiness.removeListener(_handleReadinessChanged);
+    super.detach();
+  }
+
+  void _handleReadinessChanged() {
+    markNeedsPaint();
   }
 
   @override
@@ -378,6 +488,7 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
       contentSize: measuredSize ?? layout.rect.size,
     );
     _guide._absorbLayout(finalGuide);
+    _readiness.setItemReady(_readinessKey, _isSubtreePaintReady(child));
 
     final BoxParentData childParentData = child.parentData! as BoxParentData;
     childParentData.offset =
@@ -390,6 +501,9 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
     if (child == null) {
       return;
     }
+    if (!_readiness.isReady) {
+      return;
+    }
     final BoxParentData childParentData = child.parentData! as BoxParentData;
     context.paintChild(child, offset + childParentData.offset);
   }
@@ -398,6 +512,9 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
     final RenderBox? child = this.child;
     if (child == null) {
+      return false;
+    }
+    if (!_readiness.isReady) {
       return false;
     }
     final BoxParentData childParentData = child.parentData! as BoxParentData;
@@ -419,6 +536,22 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
       0,
       1,
     );
+  }
+
+  bool _isSubtreePaintReady(RenderObject renderObject) {
+    final _SpotlightGuideHintLayoutParticipant? participant =
+        _hintLayoutParticipantOf(renderObject);
+    if (participant != null && !participant.isPaintReady) {
+      return false;
+    }
+    bool ready = true;
+    renderObject.visitChildren((RenderObject child) {
+      if (!ready) {
+        return;
+      }
+      ready = _isSubtreePaintReady(child);
+    });
+    return ready;
   }
 
   bool _sizesNearlyEqual(Size? a, Size b) {
@@ -455,17 +588,20 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
     RenderObject renderObject,
     SpotlightGuideStepContext guide,
   ) {
-    if (renderObject is _RenderSpotlightGuideBubbleHint) {
-      renderObject.useLayoutGuide(guide);
-    }
+    _hintLayoutParticipantOf(renderObject)?.useLayoutGuide(guide);
     renderObject.visitChildren((RenderObject child) {
       _applyLayoutGuide(child, guide);
     });
   }
 
   Offset _layoutOffsetCorrection(RenderObject renderObject) {
-    if (renderObject is _RenderSpotlightGuideBubbleHint) {
-      return renderObject.layoutOffsetCorrection;
+    final _SpotlightGuideHintLayoutParticipant? participant =
+        _hintLayoutParticipantOf(renderObject);
+    if (participant != null) {
+      final Offset correction = participant.layoutOffsetCorrection;
+      if (correction != Offset.zero) {
+        return correction;
+      }
     }
     Offset correction = Offset.zero;
     renderObject.visitChildren((RenderObject child) {
@@ -477,14 +613,28 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
   }
 
   double? _internalTargetGap(RenderObject renderObject) {
-    if (renderObject is _RenderSpotlightGuideBubbleHint) {
-      return renderObject.targetLayoutGap;
+    final _SpotlightGuideHintLayoutParticipant? participant =
+        _hintLayoutParticipantOf(renderObject);
+    if (participant != null) {
+      final double? targetGap = participant.targetLayoutGap;
+      if (targetGap != null) {
+        return targetGap;
+      }
     }
     double? targetGap;
     renderObject.visitChildren((RenderObject child) {
       targetGap ??= _internalTargetGap(child);
     });
     return targetGap;
+  }
+
+  _SpotlightGuideHintLayoutParticipant? _hintLayoutParticipantOf(
+    RenderObject renderObject,
+  ) {
+    if (renderObject is _SpotlightGuideHintLayoutParticipant) {
+      return renderObject as _SpotlightGuideHintLayoutParticipant;
+    }
+    return null;
   }
 }
 
@@ -746,7 +896,7 @@ class _HintLayout {
     double? layoutGap,
   ) {
     return layoutGap == null
-        ? _finiteOrZero(step.gap)
+        ? _stepTargetLayoutGap(step)
         : _finiteOrZero(layoutGap);
   }
 

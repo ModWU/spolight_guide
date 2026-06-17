@@ -36,7 +36,6 @@ class SpotlightGuideTextHint extends StatelessWidget {
     this.footer,
     this.semanticsLabel,
     this.decoration,
-    this.pointer,
     this.clipBehavior = Clip.antiAlias,
   });
 
@@ -108,9 +107,6 @@ class SpotlightGuideTextHint extends StatelessWidget {
   /// Optional bubble decoration override.
   final SpotlightGuideAnchoredDecoration? decoration;
 
-  /// Optional visual pointer configuration.
-  final SpotlightGuideHintPointer? pointer;
-
   /// Clip behavior applied to the bubble content body.
   final Clip clipBehavior;
 
@@ -119,7 +115,6 @@ class SpotlightGuideTextHint extends StatelessWidget {
     return SpotlightGuideBubbleHint(
       guide: guide,
       decoration: decoration,
-      pointer: pointer,
       clipBehavior: clipBehavior,
       child: Semantics(
         container: true,

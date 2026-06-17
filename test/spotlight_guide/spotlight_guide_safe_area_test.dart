@@ -84,20 +84,20 @@ void main() {
                   ),
                   margin: margin,
                   gap: gap,
+                  pointer: SpotlightGuideHintPointer(
+                    size: pointerSize,
+                    child: SizedBox(
+                      key: pointerKey,
+                      width: pointerSize.width,
+                      height: pointerSize.height,
+                      child: const ColoredBox(color: Colors.yellow),
+                    ),
+                  ),
                   hintBuilder:
                       (BuildContext context, SpotlightGuideStepContext guide) {
                         contexts[testCase.label] = guide;
                         return SpotlightGuideBubbleHint(
                           guide: guide,
-                          pointer: SpotlightGuideHintPointer(
-                            size: pointerSize,
-                            child: SizedBox(
-                              key: pointerKey,
-                              width: pointerSize.width,
-                              height: pointerSize.height,
-                              child: const ColoredBox(color: Colors.yellow),
-                            ),
-                          ),
                           child: SizedBox(
                             width: testCase.bubbleSize.width,
                             height: testCase.bubbleSize.height,
@@ -176,20 +176,20 @@ void main() {
                 top: 24,
                 bottom: 24,
               ),
+              pointer: const SpotlightGuideHintPointer(
+                size: Size(40, 40),
+                child: SizedBox(
+                  key: ValueKey<String>('rtl-safe-pointer'),
+                  width: 40,
+                  height: 40,
+                  child: ColoredBox(color: Colors.yellow),
+                ),
+              ),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     contexts['rtl-safe'] = guide;
                     return SpotlightGuideBubbleHint(
                       guide: guide,
-                      pointer: const SpotlightGuideHintPointer(
-                        size: Size(40, 40),
-                        child: SizedBox(
-                          key: ValueKey<String>('rtl-safe-pointer'),
-                          width: 40,
-                          height: 40,
-                          child: ColoredBox(color: Colors.yellow),
-                        ),
-                      ),
                       child: const SizedBox(width: 140, height: 220),
                     );
                   },
@@ -261,24 +261,24 @@ void main() {
                     borderRadius: 28,
                   ),
                   margin: margin,
+                  pointer: SpotlightGuideHintPointer(
+                    size: const Size(40, 24),
+                    pointerAnchorPosition:
+                        const SpotlightGuideAnchorPosition.start(),
+                    bubblePlacement:
+                        SpotlightGuidePointerBubblePlacement.bottom,
+                    child: SizedBox(
+                      key: pointerKey,
+                      width: 40,
+                      height: 24,
+                      child: const ColoredBox(color: Colors.yellow),
+                    ),
+                  ),
                   hintBuilder:
                       (BuildContext context, SpotlightGuideStepContext guide) {
                         contexts[testCase.label] = guide;
                         return SpotlightGuideBubbleHint(
                           guide: guide,
-                          pointer: SpotlightGuideHintPointer(
-                            size: const Size(40, 24),
-                            pointerAnchorPosition:
-                                const SpotlightGuideAnchorPosition.start(),
-                            bubblePlacement:
-                                SpotlightGuidePointerBubblePlacement.bottom,
-                            child: SizedBox(
-                              key: pointerKey,
-                              width: 40,
-                              height: 24,
-                              child: const ColoredBox(color: Colors.yellow),
-                            ),
-                          ),
                           child: const SizedBox(width: 20, height: 20),
                         );
                       },
@@ -355,22 +355,21 @@ void main() {
                 ),
                 margin: margin,
                 gap: gap,
+                pointer: const SpotlightGuideHintPointer(
+                  size: Size(64, 104),
+                  bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                  child: SizedBox(
+                    key: ValueKey<String>('cross-axis-pointer'),
+                    width: 64,
+                    height: 104,
+                    child: ColoredBox(color: Colors.yellow),
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       contexts['cross-axis'] = guide;
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: const SpotlightGuideHintPointer(
-                          size: Size(64, 104),
-                          bubblePlacement:
-                              SpotlightGuidePointerBubblePlacement.bottom,
-                          child: SizedBox(
-                            key: ValueKey<String>('cross-axis-pointer'),
-                            width: 64,
-                            height: 104,
-                            child: ColoredBox(color: Colors.yellow),
-                          ),
-                        ),
                         child: const SizedBox(width: 300, height: 96),
                       );
                     },
@@ -445,21 +444,21 @@ void main() {
                 margin: margin,
                 gap: gap,
                 maxWidth: 300,
+                pointer: const SpotlightGuideHintPointer(
+                  size: pointerSize,
+                  targetGap: targetGap,
+                  child: SizedBox(
+                    key: ValueKey<String>('right-reserve-pointer'),
+                    width: 48,
+                    height: 48,
+                    child: ColoredBox(color: Colors.yellow),
+                  ),
+                ),
                 hintBuilder:
                     (BuildContext context, SpotlightGuideStepContext guide) {
                       contexts['right-reserve'] = guide;
                       return SpotlightGuideBubbleHint(
                         guide: guide,
-                        pointer: const SpotlightGuideHintPointer(
-                          size: pointerSize,
-                          targetGap: targetGap,
-                          child: SizedBox(
-                            key: ValueKey<String>('right-reserve-pointer'),
-                            width: 48,
-                            height: 48,
-                            child: ColoredBox(color: Colors.yellow),
-                          ),
-                        ),
                         child: const SizedBox(width: 300, height: 84),
                       );
                     },
