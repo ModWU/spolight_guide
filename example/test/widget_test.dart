@@ -33,7 +33,10 @@ void main() {
     final SpotlightGuideStepItem item = step.items.single;
 
     expect(item.decoration.anchor, isNot(isA<SpotlightGuideTriangleAnchor>()));
-    expect(item.targetAnchorPosition.anchor, SpotlightGuideAnchor.center);
+    expect(
+      item.targetAnchorPosition.anchor,
+      SpotlightGuideAnchorAlignment.center,
+    );
     expect(item.targetAnchorPosition.offset, 0);
   });
 
@@ -89,7 +92,7 @@ void main() {
     );
     expect(
       steps.first.items.single.targetAnchorPosition.anchor,
-      SpotlightGuideAnchor.center,
+      SpotlightGuideAnchorAlignment.center,
     );
   });
 

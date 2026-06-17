@@ -464,22 +464,42 @@ void main() {
   );
 
   testWidgets(
-    'onlyWhenNeeded false still auto-scrolls to each offscreen later item',
+    'disabled skipVisibleItems still focuses already visible later items',
     (tester) async {
       final SpotlightGuidePortalController controller =
           SpotlightGuidePortalController();
-      final ScrollController scrollController = ScrollController();
       final List<int> focusedIndices = <int>[];
-      addTearDown(scrollController.dispose);
 
       await tester.pumpWidget(
         guideApp(
           controller: controller,
-          child: multiItemScrollableTargets(
-            controller: scrollController,
-            scrollDirection: Axis.vertical,
-            firstId: 'force-first',
-            secondId: 'force-second',
+          child: const Stack(
+            children: <Widget>[
+              Positioned(
+                left: 80,
+                top: 80,
+                child: SpotlightGuideTarget(
+                  id: 'force-visible-first',
+                  child: SizedBox(
+                    width: 80,
+                    height: 40,
+                    child: ColoredBox(color: Colors.red),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 220,
+                top: 160,
+                child: SpotlightGuideTarget(
+                  id: 'force-visible-second',
+                  child: SizedBox(
+                    width: 80,
+                    height: 40,
+                    child: ColoredBox(color: Colors.blue),
+                  ),
+                ),
+              ),
+            ],
           ),
           steps: <SpotlightGuideStep>[
             SpotlightGuideStep(
@@ -488,25 +508,25 @@ void main() {
               ),
               autoScrollOptions: SpotlightGuideAutoScrollOptions(
                 interval: kAutoScrollTestInterval,
-                onlyWhenNeeded: false,
+                skipVisibleItems: false,
                 onItemChanged: (SpotlightGuideAutoScrollDetails details) {
                   recordAutoScrollIndex(focusedIndices, details);
                 },
               ),
               items: <SpotlightGuideStepItem>[
                 SpotlightGuideStepItem(
-                  targetId: 'force-first',
+                  targetId: 'force-visible-first',
                   targetDecoration: const SpotlightGuideTargetDecoration(
                     padding: EdgeInsets.zero,
                   ),
-                  hintBuilder: hint('force-first'),
+                  hintBuilder: hint('force-visible-first'),
                 ),
                 SpotlightGuideStepItem(
-                  targetId: 'force-second',
+                  targetId: 'force-visible-second',
                   targetDecoration: const SpotlightGuideTargetDecoration(
                     padding: EdgeInsets.zero,
                   ),
-                  hintBuilder: hint('force-second'),
+                  hintBuilder: hint('force-visible-second'),
                 ),
               ],
             ),
@@ -517,13 +537,24 @@ void main() {
       controller.reset();
       await pumpGuideFrames(tester);
       expect(focusedIndices, <int>[0]);
+      expect(
+        find.byKey(const ValueKey<String>('force-visible-first')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('force-visible-second')),
+        findsNothing,
+      );
 
       await pumpAutoScrollInterval(tester);
 
       expect(focusedIndices, <int>[0, 1]);
-      expect(scrollController.offset, greaterThan(0));
       expect(
-        find.byKey(const ValueKey<String>('force-second')),
+        find.byKey(const ValueKey<String>('force-visible-first')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('force-visible-second')),
         findsOneWidget,
       );
     },

@@ -324,7 +324,7 @@ Same-step scroll starts only when:
 - `autoScrollOptions.enabled` is true.
 - A later item has mounted target contexts, or has an `onReveal` hook that can
   build a not-yet-mounted target.
-- That later item is not fully visible, unless `onlyWhenNeeded` is false.
+- That later item is not fully visible, unless `skipVisibleItems` is false.
 - The item reveal options are enabled.
 
 A later item whose rect is exactly flush to the viewport edge counts as fully

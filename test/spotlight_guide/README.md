@@ -62,9 +62,10 @@ spotlight_guide_target_decoration_test.dart
 spotlight_guide_auto_scroll_test.dart
   Zero interval, three-item index sequencing, finish/next/reset cancellation,
   single-item and disabled auto scroll, onItemChanged deduplication,
-  onlyWhenNeeded false, horizontal axis, partially visible later targets, lazy
-  target with onReveal, reset callback restart. Uses [kAutoScrollTestInterval],
-  [pumpGuideFrames], and [pumpAutoScrollInterval] for stable timer-driven pumps.
+  disabled skipVisibleItems for already visible later targets, horizontal axis,
+  partially visible later targets, lazy target with onReveal, reset callback
+  restart. Uses [kAutoScrollTestInterval], [pumpGuideFrames], and
+  [pumpAutoScrollInterval] for stable timer-driven pumps.
 
 spotlight_guide_reveal_test.dart
   Default ensureVisible, only-if-needed reveal, always reveal, configurable

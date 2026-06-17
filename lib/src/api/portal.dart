@@ -801,7 +801,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         }
         continue;
       }
-      if (!options.onlyWhenNeeded || !_isItemRevealSatisfied(step, item)) {
+      if (!options.skipVisibleItems || !_isItemRevealSatisfied(step, item)) {
         return true;
       }
     }
@@ -906,7 +906,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         }
         continue;
       }
-      if (!options.onlyWhenNeeded || !_isItemRevealSatisfied(step, item)) {
+      if (!options.skipVisibleItems || !_isItemRevealSatisfied(step, item)) {
         return true;
       }
     }
@@ -949,7 +949,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
           !_isAutoScrollActive(autoScrollToken)) {
         return;
       }
-      if (options.onlyWhenNeeded && _isItemRevealSatisfied(step, item)) {
+      if (options.skipVisibleItems && _isItemRevealSatisfied(step, item)) {
         _focusAutoScrollTarget(itemIndex);
         await _waitForEndOfFrame(token);
         _notifyAutoScrollChanged(step, itemIndex);

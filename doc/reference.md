@@ -301,7 +301,8 @@ Margins reduce the available space before min/max constraints are applied.
 | `targetPolicy` | `SpotlightGuideRevealOptions` | Which area drives reveal scrolling: the full highlighted area, the anchor target, or the default anchor fallback when the highlighted area is too large to fit. |
 | `visibilityPadding` | `SpotlightGuideRevealOptions` | Insets applied to the viewport before the `onlyIfNeeded` visibility check. Use it for sticky headers, bottom bars, or visual edge padding. |
 | `autoScrollOptions` | `SpotlightGuideStep` | Same-step multi-item viewing aid for later hidden targets. |
-| `autoScrollOptions.onItemChanged` | `SpotlightGuideAutoScrollOptions` | Fires with [SpotlightGuideAutoScrollDetails] when sequential same-step scroll focuses a new item (`itemIndex` starts at `0`). Exposes `highlightTargetIds`, `primaryTargetId`, and optional [SpotlightGuideStepItem.key]. Not called when every item is already on screen. |
+| `autoScrollOptions.skipVisibleItems` | `SpotlightGuideAutoScrollOptions` | Defaults to `true`, so already fully visible later items are skipped. Set `false` when every later item should receive the same timed focus callback even if it is already visible. |
+| `autoScrollOptions.onItemChanged` | `SpotlightGuideAutoScrollOptions` | Fires with [SpotlightGuideAutoScrollDetails] when sequential same-step scroll focuses a new item (`itemIndex` starts at `0`). Exposes `highlightTargetIds`, `primaryTargetId`, and optional [SpotlightGuideStepItem.key]. With default `skipVisibleItems: true`, already visible later items are skipped; set it to `false` to receive timed focus callbacks for visible items too. |
 | `key` | `SpotlightGuideStepItem` | Optional stable item label for copy or analytics. Not the same as [SpotlightGuideTarget.id]. |
 | `highlightTargetIds` | `SpotlightGuideStepItem` | Read-only view of the registered target ids highlighted by the item (`targetId` or `targetIds`). |
 
@@ -355,10 +356,12 @@ src/hints/bubble_hint.dart
   SpotlightGuideBubbleHint
   A higher-level hint that renders the step-level pointer, when configured, with SpotlightGuideBubble.
 
+src/hints/pointer.dart
   SpotlightGuidePointer
   Pointer configuration for any widget, including images, icons, animations,
   CustomPaint, or SpotlightGuideTapPointer.
 
+src/hints/paint_gate.dart
   SpotlightGuidePaintGate
   Render-level readiness gate for custom hints with async images or animations.
   It keeps target holes and hints hidden together until the gated child is
@@ -375,6 +378,10 @@ src/hints/tap_pointer.dart
 src/hints/bubble_decoration.dart
   SpotlightGuideBubbleDecoration
   Low-level Decoration for custom containers that still need the connected bubble-arrow shape.
+
+src/hints/bubble_anchor.dart
+  SpotlightGuideBubbleAnchor
+  Low-level anchor model for custom triangle, path, or no-anchor bubble shapes.
 ```
 
 Use `SpotlightGuideTextHint` for ordinary onboarding copy. It supplies progress

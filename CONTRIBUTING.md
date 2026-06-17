@@ -11,8 +11,21 @@ spotlight_guide.dart
 spotlight_guide/spotlight_guide.dart
   Library entry that owns imports and part declarations.
 
-spotlight_guide/src/api/models.dart
-  Public configuration models, enums, callbacks, reveal options, step context.
+spotlight_guide/src/api/callbacks.dart
+  Public callback typedefs, state-change details, and barrier dismiss behavior.
+
+spotlight_guide/src/api/barrier.dart
+  Barrier style merging and fallback behavior.
+
+spotlight_guide/src/api/reveal.dart
+  Reveal callbacks, reveal options, reveal strategies, same-step scroll
+  options, missing-target behavior, and reveal context helpers.
+
+spotlight_guide/src/api/placement.dart
+  Placement, physical direction, semantic anchor, and anchor-position models.
+
+spotlight_guide/src/api/steps.dart
+  SpotlightGuideStepItem, SpotlightGuideStep, and SpotlightGuideStepContext.
 
 spotlight_guide/src/api/portal.dart
   Public SpotlightGuidePortal widget, configuration fields, private State,
@@ -43,10 +56,12 @@ spotlight_guide/src/runtime/geometry.dart
   Internal target, overlay item, and hole geometry value objects.
 
 spotlight_guide/src/hints/
-  Built-in reusable hint UI: bubble, pointer bubble hint, bubble decoration.
+  Built-in reusable hint UI: bubble, pointer model, pointer bubble hint,
+  bubble anchors, bubble decoration, text hint, tap pointer, and paint gate.
 
 spotlight_guide/src/layout/
-  Hint measurement, placement selection, constraints, arrow safe-area layout.
+  Overlay composition plus pure hint measurement, placement selection,
+  constraints, and arrow safe-area layout.
 
 spotlight_guide/src/painting/
   Barrier painter and connected bubble-arrow path painter. Barrier holes are
@@ -199,18 +214,18 @@ The scroll aid does not advance the controller index. It only moves scrollables 
 
 | Change Type | Code Area | Required Docs | Required Tests |
 | --- | --- | --- | --- |
-| New public parameter, enum, callback, or default value | `src/api/models.dart`, `src/api/portal.dart` | `doc/reference.md`, `README.md` when user-facing, `CHANGELOG.md` | Closest focused test file plus helper updates if needed |
+| New public parameter, enum, callback, or default value | `src/api/*.dart`, `src/api/portal.dart` | `doc/reference.md`, `README.md` when user-facing, `CHANGELOG.md` | Closest focused test file plus helper updates if needed |
 | Target registration, `targetId`, `targetIds`, `anchorTargetId`, `targetKey` | `src/api/target.dart`, `src/runtime/target_resolver.dart`, `src/runtime/geometry.dart` | `doc/reference.md`, `doc/troubleshooting.md` if behavior affects missing targets | `spotlight_guide_targets_test.dart`, reveal tests if scroll is involved |
-| Missing target wait/skip behavior | `src/runtime/missing_target_policy.dart`, `src/api/models.dart`, `src/api/portal.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `doc/examples.md` for API-driven guides | `spotlight_guide_targets_test.dart`, `spotlight_guide_controller_test.dart` when active step metadata changes |
+| Missing target wait/skip behavior | `src/runtime/missing_target_policy.dart`, `src/api/reveal.dart`, `src/api/portal.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `doc/examples.md` for API-driven guides | `spotlight_guide_targets_test.dart`, `spotlight_guide_controller_test.dart` when active step metadata changes |
 | Step, controller, next/previous/goTo/finish/hide/reset, dynamic steps/items, `onBarrierTap` | `src/api/controller.dart`, `src/api/portal.dart`, `src/runtime/step_source.dart` | `CONTRIBUTING.md`, `CHANGELOG.md`, `doc/reference.md` and `README.md` when user-facing | `spotlight_guide_controller_test.dart` |
-| `SpotlightGuideBarrierStyle`, blur, color, hole pass-through, barrier hit testing | `src/api/models.dart`, `src/layout/overlay_layout.dart`, `src/painting/barrier_painter.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `README.md`, `CHANGELOG.md` | `spotlight_guide_barrier_test.dart` |
-| Reveal, scroll, lazy list, same-step scroll | `src/api/portal.dart`, `src/api/models.dart`, `src/runtime/reveal_scroll_strategy.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `doc/examples.md` for integration changes, `CHANGELOG.md` | `spotlight_guide_reveal_test.dart`, `spotlight_guide_auto_scroll_test.dart` |
-| Placement, constraints, margin, min/max size, RTL anchor semantics | `src/layout/overlay_layout.dart`, `src/api/models.dart` | `doc/reference.md`, `doc/troubleshooting.md` for known symptoms | `spotlight_guide_layout_test.dart` |
+| `SpotlightGuideBarrierStyle`, blur, color, hole pass-through, barrier hit testing | `src/api/barrier.dart`, `src/layout/overlay_layout.dart`, `src/painting/barrier_painter.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `README.md`, `CHANGELOG.md` | `spotlight_guide_barrier_test.dart` |
+| Reveal, scroll, lazy list, same-step scroll | `src/api/portal.dart`, `src/api/reveal.dart`, `src/runtime/reveal_scroll_strategy.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `doc/examples.md` for integration changes, `CHANGELOG.md` | `spotlight_guide_reveal_test.dart`, `spotlight_guide_auto_scroll_test.dart` |
+| Placement, constraints, margin, min/max size, RTL anchor semantics | `src/layout/hint_layout.dart`, `src/layout/overlay_layout.dart`, `src/api/placement.dart` | `doc/reference.md`, `doc/troubleshooting.md` for known symptoms | `spotlight_guide_layout_test.dart` |
 | Arrow safe area, anchor size, anchor tip, connected path, barrier holes | `src/layout/overlay_layout.dart`, `src/painting/`, `src/hints/` | `doc/reference.md`, `doc/troubleshooting.md` if hint-facing | `spotlight_guide_layout_test.dart`, pointer tests if pointer alignment can move |
-| Pointer widget, `SpotlightGuideBubbleHint`, `SpotlightGuidePointer`, pointer alignment | `src/hints/bubble_hint.dart` | `doc/reference.md`, `doc/examples.md` if usage changes | `spotlight_guide_pointer_test.dart` |
+| Pointer widget, `SpotlightGuideBubbleHint`, `SpotlightGuidePointer`, pointer alignment | `src/hints/pointer.dart`, `src/hints/bubble_hint.dart` | `doc/reference.md`, `doc/examples.md` if usage changes | `spotlight_guide_pointer_test.dart` |
 | Built-in hint type added, renamed, or behavior changed | `src/hints/` | `doc/reference.md`, `README.md`, `doc/examples.md`, `CHANGELOG.md` | `spotlight_guide_hint_test.dart`, plus pointer/layout tests when alignment can move |
 | Target decoration shape, ring, glow, shadow, or dashed layer behavior | `src/api/target_decoration.dart`, `src/painting/barrier_painter.dart` | `doc/reference.md`, `doc/troubleshooting.md` if symptoms change | `spotlight_guide_target_decoration_test.dart` |
-| Low-level bubble decoration or painter behavior | `src/hints/bubble_decoration.dart`, `src/painting/` | `doc/reference.md`, `doc/troubleshooting.md` if symptoms change | Layout/pointer tests that inspect geometry |
+| Low-level bubble anchor, decoration, or painter behavior | `src/hints/bubble_anchor.dart`, `src/hints/bubble_decoration.dart`, `src/painting/` | `doc/reference.md`, `doc/troubleshooting.md` if symptoms change | Layout/pointer tests that inspect geometry |
 | Test helper or fixture behavior | `test/spotlight_guide/spotlight_guide_test_helpers.dart` | `test/spotlight_guide/README.md` if fixture responsibilities change | Run all `test/spotlight_guide` |
 | Directory structure or file ownership | `spotlight_guide.dart`, `src/**`, tests | `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `test/spotlight_guide/README.md` | Full analyze and full guide tests |
 

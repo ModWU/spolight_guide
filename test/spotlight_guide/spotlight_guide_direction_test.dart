@@ -1565,16 +1565,16 @@ double _anchorAxisPosition(
 }) {
   final bool reverse = isHorizontalAxis && textDirection == TextDirection.rtl;
   return switch (position.anchor) {
-    SpotlightGuideAnchor.center =>
+    SpotlightGuideAnchorAlignment.center =>
       (isHorizontalAxis ? rect.center.dx : rect.center.dy) +
           (reverse ? -position.offset : position.offset),
-    SpotlightGuideAnchor.start =>
+    SpotlightGuideAnchorAlignment.start =>
       isHorizontalAxis
           ? reverse
                 ? rect.right - position.offset
                 : rect.left + position.offset
           : rect.top + position.offset,
-    SpotlightGuideAnchor.end =>
+    SpotlightGuideAnchorAlignment.end =>
       isHorizontalAxis
           ? reverse
                 ? rect.left + position.offset
