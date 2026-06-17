@@ -363,7 +363,7 @@ class _DropletAnchorSpec extends SpotlightGuidePathAnchorShape {
   double get visualHalfExtent => _anchorVisualHalfExtent;
 
   @override
-  void addToPath(Path path, SpotlightGuideAnchorPathBuilder builder) {
+  void addToPath(Path path, SpotlightGuideBubbleAnchorPathBuilder builder) {
     builder.cubicTo(path, -0.82, 0.18, -0.58, 0.72, 0, 1);
     builder.cubicTo(path, 0.58, 0.72, 0.82, 0.18, builder.endSide, 0);
   }
@@ -382,7 +382,7 @@ class _SweepAnchorSpec extends SpotlightGuidePathAnchorShape {
   double get visualHalfExtent => _anchorVisualHalfExtent;
 
   @override
-  void addToPath(Path path, SpotlightGuideAnchorPathBuilder builder) {
+  void addToPath(Path path, SpotlightGuideBubbleAnchorPathBuilder builder) {
     builder.cubicTo(path, 0.04, 0.14, 0.26, 0.36, 0.38, 0.58);
     builder.lineTo(path, 0.74, 0.58);
     builder.lineTo(path, 0, 1);
@@ -405,7 +405,7 @@ class _ArrowAnchorSpec extends SpotlightGuidePathAnchorShape {
   double get visualHalfExtent => _anchorVisualHalfExtent;
 
   @override
-  void addToPath(Path path, SpotlightGuideAnchorPathBuilder builder) {
+  void addToPath(Path path, SpotlightGuideBubbleAnchorPathBuilder builder) {
     builder.cubicTo(path, 0.02, 0.16, 0.1, 0.38, 0.12, 0.62);
     builder.lineTo(path, 0.46, 0.62);
     builder.lineTo(path, 0, 1);
@@ -428,5 +428,5 @@ class _NoVisibleAnchorSpec extends SpotlightGuidePathAnchorShape {
   double get visualHalfExtent => 0;
 
   @override
-  void addToPath(Path path, SpotlightGuideAnchorPathBuilder builder) {}
+  void addToPath(Path path, SpotlightGuideBubbleAnchorPathBuilder builder) {}
 }

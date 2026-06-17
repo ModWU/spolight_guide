@@ -138,7 +138,7 @@ void main() {
           final Rect bubbleRect = tester.getRect(
             find.byType(SpotlightGuideBubble),
           );
-          final SpotlightGuideAnchorGeometry anchorGeometry =
+          final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
               _bubbleAnchorGeometry(tester);
 
           expect(guide.placement, expectedPlacement, reason: label);
@@ -326,7 +326,7 @@ void main() {
           final Rect bubbleRect = tester.getRect(
             find.byType(SpotlightGuideBubble),
           );
-          final SpotlightGuideAnchorGeometry anchorGeometry =
+          final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
               _bubbleAnchorGeometry(tester);
 
           if (testCase.expectedPlacement != null) {
@@ -490,7 +490,7 @@ void main() {
           final Rect bubbleRect = tester.getRect(
             find.byType(SpotlightGuideBubble),
           );
-          final SpotlightGuideAnchorGeometry anchorGeometry =
+          final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
               _bubbleAnchorGeometry(tester);
 
           expect(guide.placement, expectedPlacement, reason: label);
@@ -871,7 +871,7 @@ void main() {
             final Rect bubbleRect = tester.getRect(
               find.byType(SpotlightGuideBubble),
             );
-            final SpotlightGuideAnchorGeometry anchorGeometry =
+            final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
                 _bubbleAnchorGeometry(tester);
             final bool horizontalAxis =
                 guide.anchorDirection == SpotlightGuideDirection.up ||
@@ -1430,7 +1430,7 @@ void _expectBubbleOnPointerSide({
 void _expectBubbleAnchorAimsAtPointerCenter({
   required Rect bubbleRect,
   required Rect pointerRect,
-  required SpotlightGuideAnchorGeometry anchorGeometry,
+  required SpotlightGuideBubbleAnchorGeometry anchorGeometry,
   required String reason,
 }) {
   final double anchorAxis = _bubbleAnchorGlobalAxis(bubbleRect, anchorGeometry);
@@ -1453,7 +1453,7 @@ void _expectBubbleAnchorAimsAtPointerCenter({
 void _expectBubbleAnchorAimsAtTargetAnchor({
   required Rect bubbleRect,
   required SpotlightGuideStepContext guide,
-  required SpotlightGuideAnchorGeometry anchorGeometry,
+  required SpotlightGuideBubbleAnchorGeometry anchorGeometry,
   required String reason,
 }) {
   expect(
@@ -1541,13 +1541,13 @@ SpotlightGuideBubbleDecoration _bubbleDecoration(WidgetTester tester) {
   return bubble.effectiveDecoration as SpotlightGuideBubbleDecoration;
 }
 
-SpotlightGuideAnchorGeometry _bubbleAnchorGeometry(WidgetTester tester) {
+SpotlightGuideBubbleAnchorGeometry _bubbleAnchorGeometry(WidgetTester tester) {
   return _bubbleDecoration(tester).effectiveAnchorGeometry!;
 }
 
 double _bubbleAnchorGlobalAxis(
   Rect bubbleRect,
-  SpotlightGuideAnchorGeometry anchorGeometry,
+  SpotlightGuideBubbleAnchorGeometry anchorGeometry,
 ) {
   return switch (anchorGeometry.direction) {
     SpotlightGuideDirection.up ||

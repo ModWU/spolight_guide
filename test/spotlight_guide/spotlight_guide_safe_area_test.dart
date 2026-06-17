@@ -119,7 +119,7 @@ void main() {
         final SpotlightGuideBubbleDecoration decoration = _bubbleDecoration(
           tester,
         );
-        final SpotlightGuideAnchorGeometry anchorGeometry =
+        final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
             decoration.effectiveAnchorGeometry!;
 
         _expectBubbleInsideMargin(bubbleRect, guide, reason: testCase.label);
@@ -296,7 +296,7 @@ void main() {
         final SpotlightGuideBubbleDecoration decoration = _bubbleDecoration(
           tester,
         );
-        final SpotlightGuideAnchorGeometry anchorGeometry =
+        final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
             decoration.effectiveAnchorGeometry!;
         final double pointerTargetX =
             testCase.textDirection == TextDirection.rtl
@@ -387,7 +387,7 @@ void main() {
       final SpotlightGuideBubbleDecoration decoration = _bubbleDecoration(
         tester,
       );
-      final SpotlightGuideAnchorGeometry anchorGeometry =
+      final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
           decoration.effectiveAnchorGeometry!;
 
       _expectBubbleInsideMargin(bubbleRect, guide, reason: 'cross-axis');
@@ -476,7 +476,7 @@ void main() {
       final SpotlightGuideBubbleDecoration decoration = _bubbleDecoration(
         tester,
       );
-      final SpotlightGuideAnchorGeometry anchorGeometry =
+      final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
           decoration.effectiveAnchorGeometry!;
 
       _expectBubbleInsideMargin(bubbleRect, guide, reason: 'right-reserve');
@@ -564,7 +564,7 @@ void _expectBubbleInsideMargin(
 }
 
 void _expectAnchorInsideSafeInset(
-  SpotlightGuideAnchorGeometry anchorGeometry,
+  SpotlightGuideBubbleAnchorGeometry anchorGeometry,
   Rect bubbleRect,
   double safeInset, {
   required String reason,
@@ -639,7 +639,7 @@ void _expectPointerTouchesTarget(
 void _expectBubbleAnchorAlignedToPointer(
   Rect bubbleRect,
   Rect pointerRect,
-  SpotlightGuideAnchorGeometry anchorGeometry, {
+  SpotlightGuideBubbleAnchorGeometry anchorGeometry, {
   required String reason,
 }) {
   switch (anchorGeometry.direction) {

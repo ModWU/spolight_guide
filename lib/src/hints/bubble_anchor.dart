@@ -1,8 +1,9 @@
 part of '../../spotlight_guide.dart';
 
 /// Resolved geometry passed from guide layout to a visual anchor.
-class SpotlightGuideAnchorGeometry {
-  const SpotlightGuideAnchorGeometry({
+@immutable
+class SpotlightGuideBubbleAnchorGeometry {
+  const SpotlightGuideBubbleAnchorGeometry({
     required this.direction,
     required this.offset,
   });
@@ -16,7 +17,7 @@ class SpotlightGuideAnchorGeometry {
 
   @override
   bool operator ==(Object other) {
-    return other is SpotlightGuideAnchorGeometry &&
+    return other is SpotlightGuideBubbleAnchorGeometry &&
         other.direction == direction &&
         other.offset == offset;
   }
@@ -28,8 +29,9 @@ class SpotlightGuideAnchorGeometry {
 /// Base class for anchors attached to [SpotlightGuideBubbleDecoration].
 ///
 /// Subclass this when the built-in triangle is not enough. The decoration
-/// supplies [SpotlightGuideAnchorGeometry] after target layout resolves. Your
+/// supplies [SpotlightGuideBubbleAnchorGeometry] after target layout resolves. Your
 /// anchor can then contribute padding and append its outline to the bubble path.
+@immutable
 abstract class SpotlightGuideBubbleAnchor {
   const SpotlightGuideBubbleAnchor();
 
@@ -37,7 +39,7 @@ abstract class SpotlightGuideBubbleAnchor {
   Size get preferredSize;
 
   /// Insets added to the child so content does not cover the anchor.
-  EdgeInsetsGeometry padding(SpotlightGuideAnchorGeometry? geometry);
+  EdgeInsetsGeometry padding(SpotlightGuideBubbleAnchorGeometry? geometry);
 
   /// Minimum side-axis inset needed before the body can safely contain this
   /// anchor near rounded corners.
@@ -61,11 +63,11 @@ abstract class SpotlightGuideBubbleAnchor {
   /// Returning null means no anchor is painted. When a gap is returned,
   /// [SpotlightGuideBubbleDecoration] skips that range on the body side before
   /// calling [addToPath], so the anchor and body share one continuous outline.
-  SpotlightGuideAnchorConnection? resolveConnection({
+  SpotlightGuideBubbleAnchorConnection? resolveConnection({
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   });
 
   /// Appends this anchor outline to [path].
@@ -74,14 +76,17 @@ abstract class SpotlightGuideBubbleAnchor {
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   });
 
   /// Creates a copy resolved with current guide geometry.
-  SpotlightGuideBubbleAnchor resolve(SpotlightGuideAnchorGeometry geometry);
+  SpotlightGuideBubbleAnchor resolve(
+    SpotlightGuideBubbleAnchorGeometry geometry,
+  );
 }
 
 /// Anchor that paints nothing.
+@immutable
 class SpotlightGuideNoAnchor extends SpotlightGuideBubbleAnchor {
   const SpotlightGuideNoAnchor();
 
@@ -89,16 +94,16 @@ class SpotlightGuideNoAnchor extends SpotlightGuideBubbleAnchor {
   Size get preferredSize => Size.zero;
 
   @override
-  EdgeInsetsGeometry padding(SpotlightGuideAnchorGeometry? geometry) {
+  EdgeInsetsGeometry padding(SpotlightGuideBubbleAnchorGeometry? geometry) {
     return EdgeInsets.zero;
   }
 
   @override
-  SpotlightGuideAnchorConnection? resolveConnection({
+  SpotlightGuideBubbleAnchorConnection? resolveConnection({
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   }) {
     return null;
   }
@@ -109,11 +114,11 @@ class SpotlightGuideNoAnchor extends SpotlightGuideBubbleAnchor {
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   }) {}
 
   @override
-  SpotlightGuideNoAnchor resolve(SpotlightGuideAnchorGeometry geometry) {
+  SpotlightGuideNoAnchor resolve(SpotlightGuideBubbleAnchorGeometry geometry) {
     return this;
   }
 
@@ -130,8 +135,9 @@ class SpotlightGuideNoAnchor extends SpotlightGuideBubbleAnchor {
 /// bubble body edge, while `outward == 1` is the outer tip edge. A shape may be
 /// visually wider than the body connection; use [startSide] and [endSide] when
 /// the outline must begin or end exactly at the body connection.
-class SpotlightGuideAnchorPathBuilder {
-  SpotlightGuideAnchorPathBuilder({
+@immutable
+class SpotlightGuideBubbleAnchorPathBuilder {
+  const SpotlightGuideBubbleAnchorPathBuilder({
     required this.direction,
     required Offset Function(double side, double outward) pointBuilder,
     required this.startSide,
@@ -188,6 +194,7 @@ class SpotlightGuideAnchorPathBuilder {
 /// bubble edge is opened for the anchor, while [visualHalfExtent] controls the
 /// side-axis range available to the drawn path. Keeping them separate lets a
 /// shape have a narrow, pointed base with a wider visual arrow head.
+@immutable
 abstract class SpotlightGuidePathAnchorShape {
   const SpotlightGuidePathAnchorShape();
 
@@ -208,25 +215,26 @@ abstract class SpotlightGuidePathAnchorShape {
   /// Appends the normalized path outline.
   ///
   /// The current path position is already at the connection start. Implementers
-  /// should finish at [SpotlightGuideAnchorPathBuilder.endSide] with
+  /// should finish at [SpotlightGuideBubbleAnchorPathBuilder.endSide] with
   /// `outward == 0`.
-  void addToPath(Path path, SpotlightGuideAnchorPathBuilder builder);
+  void addToPath(Path path, SpotlightGuideBubbleAnchorPathBuilder builder);
 }
 
 /// Generic custom anchor driven by a reusable [SpotlightGuidePathAnchorShape].
+@immutable
 class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
   const SpotlightGuidePathAnchor({
     required this.shape,
-    SpotlightGuideAnchorGeometry? geometry,
+    SpotlightGuideBubbleAnchorGeometry? geometry,
   }) : _geometry = geometry;
 
   /// Path, size and connection rules for this anchor.
   final SpotlightGuidePathAnchorShape shape;
 
-  final SpotlightGuideAnchorGeometry? _geometry;
+  final SpotlightGuideBubbleAnchorGeometry? _geometry;
 
   /// Resolved geometry, when this anchor has already been laid out.
-  SpotlightGuideAnchorGeometry? get geometry => _geometry;
+  SpotlightGuideBubbleAnchorGeometry? get geometry => _geometry;
 
   @override
   Size get preferredSize => _finiteSizeOrZero(shape.preferredSize);
@@ -244,8 +252,8 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
   }
 
   @override
-  EdgeInsetsGeometry padding(SpotlightGuideAnchorGeometry? geometry) {
-    final SpotlightGuideAnchorGeometry? resolved = geometry ?? _geometry;
+  EdgeInsetsGeometry padding(SpotlightGuideBubbleAnchorGeometry? geometry) {
+    final SpotlightGuideBubbleAnchorGeometry? resolved = geometry ?? _geometry;
     if (resolved == null || preferredSize.isEmpty) {
       return EdgeInsets.zero;
     }
@@ -259,29 +267,29 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
   }
 
   @override
-  SpotlightGuideAnchorConnection? resolveConnection({
+  SpotlightGuideBubbleAnchorConnection? resolveConnection({
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   }) {
-    final SpotlightGuideAnchorGeometry? resolved = geometry ?? _geometry;
+    final SpotlightGuideBubbleAnchorGeometry? resolved = geometry ?? _geometry;
     if (resolved == null || preferredSize.isEmpty) {
       return null;
     }
     return switch (resolved.direction) {
-      SpotlightGuideDirection.up ||
-      SpotlightGuideDirection.down => SpotlightGuideAnchorConnection.horizontal(
-        direction: resolved.direction,
-        center: body.left + resolved.offset,
-        halfWidth: connectionHalfExtent,
-      ),
-      SpotlightGuideDirection.left ||
-      SpotlightGuideDirection.right => SpotlightGuideAnchorConnection.vertical(
-        direction: resolved.direction,
-        center: body.top + resolved.offset,
-        halfWidth: connectionHalfExtent,
-      ),
+      SpotlightGuideDirection.up || SpotlightGuideDirection.down =>
+        SpotlightGuideBubbleAnchorConnection.horizontal(
+          direction: resolved.direction,
+          center: body.left + resolved.offset,
+          halfWidth: connectionHalfExtent,
+        ),
+      SpotlightGuideDirection.left || SpotlightGuideDirection.right =>
+        SpotlightGuideBubbleAnchorConnection.vertical(
+          direction: resolved.direction,
+          center: body.top + resolved.offset,
+          halfWidth: connectionHalfExtent,
+        ),
     };
   }
 
@@ -291,10 +299,10 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   }) {
-    final SpotlightGuideAnchorGeometry? resolved = geometry ?? _geometry;
-    final SpotlightGuideAnchorConnection? connection = resolveConnection(
+    final SpotlightGuideBubbleAnchorGeometry? resolved = geometry ?? _geometry;
+    final SpotlightGuideBubbleAnchorConnection? connection = resolveConnection(
       body: body,
       paintOffset: paintOffset,
       paintSize: paintSize,
@@ -311,52 +319,54 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
     final double startSide = -connectionHalfExtent / visualHalfExtent;
     final double endSide = connectionHalfExtent / visualHalfExtent;
 
-    final SpotlightGuideAnchorPathBuilder builder =
-        switch (resolved.direction) {
-          SpotlightGuideDirection.up => SpotlightGuideAnchorPathBuilder(
-            direction: resolved.direction,
-            startSide: startSide,
-            endSide: endSide,
-            pointBuilder: (double side, double outward) => Offset(
-              connection.center + visualHalfExtent * side,
-              body.top - (body.top - paintOffset.dy) * outward,
-            ),
-          ),
-          SpotlightGuideDirection.down => SpotlightGuideAnchorPathBuilder(
-            direction: resolved.direction,
-            startSide: startSide,
-            endSide: endSide,
-            pointBuilder: (double side, double outward) => Offset(
-              connection.center - visualHalfExtent * side,
-              body.bottom +
-                  (paintOffset.dy + paintSize.height - body.bottom) * outward,
-            ),
-          ),
-          SpotlightGuideDirection.left => SpotlightGuideAnchorPathBuilder(
-            direction: resolved.direction,
-            startSide: startSide,
-            endSide: endSide,
-            pointBuilder: (double side, double outward) => Offset(
-              body.left - (body.left - paintOffset.dx) * outward,
-              connection.center - visualHalfExtent * side,
-            ),
-          ),
-          SpotlightGuideDirection.right => SpotlightGuideAnchorPathBuilder(
-            direction: resolved.direction,
-            startSide: startSide,
-            endSide: endSide,
-            pointBuilder: (double side, double outward) => Offset(
-              body.right +
-                  (paintOffset.dx + paintSize.width - body.right) * outward,
-              connection.center + visualHalfExtent * side,
-            ),
-          ),
-        };
+    final SpotlightGuideBubbleAnchorPathBuilder builder = switch (resolved
+        .direction) {
+      SpotlightGuideDirection.up => SpotlightGuideBubbleAnchorPathBuilder(
+        direction: resolved.direction,
+        startSide: startSide,
+        endSide: endSide,
+        pointBuilder: (double side, double outward) => Offset(
+          connection.center + visualHalfExtent * side,
+          body.top - (body.top - paintOffset.dy) * outward,
+        ),
+      ),
+      SpotlightGuideDirection.down => SpotlightGuideBubbleAnchorPathBuilder(
+        direction: resolved.direction,
+        startSide: startSide,
+        endSide: endSide,
+        pointBuilder: (double side, double outward) => Offset(
+          connection.center - visualHalfExtent * side,
+          body.bottom +
+              (paintOffset.dy + paintSize.height - body.bottom) * outward,
+        ),
+      ),
+      SpotlightGuideDirection.left => SpotlightGuideBubbleAnchorPathBuilder(
+        direction: resolved.direction,
+        startSide: startSide,
+        endSide: endSide,
+        pointBuilder: (double side, double outward) => Offset(
+          body.left - (body.left - paintOffset.dx) * outward,
+          connection.center - visualHalfExtent * side,
+        ),
+      ),
+      SpotlightGuideDirection.right => SpotlightGuideBubbleAnchorPathBuilder(
+        direction: resolved.direction,
+        startSide: startSide,
+        endSide: endSide,
+        pointBuilder: (double side, double outward) => Offset(
+          body.right +
+              (paintOffset.dx + paintSize.width - body.right) * outward,
+          connection.center + visualHalfExtent * side,
+        ),
+      ),
+    };
     shape.addToPath(path, builder);
   }
 
   @override
-  SpotlightGuidePathAnchor resolve(SpotlightGuideAnchorGeometry geometry) {
+  SpotlightGuidePathAnchor resolve(
+    SpotlightGuideBubbleAnchorGeometry geometry,
+  ) {
     return SpotlightGuidePathAnchor(shape: shape, geometry: geometry);
   }
 
@@ -372,11 +382,12 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
 }
 
 /// Built-in triangular anchor.
+@immutable
 class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
   const SpotlightGuideTriangleAnchor({
     this.size = const Size(14, 8),
     this.tipArcAngle = 0,
-    SpotlightGuideAnchorGeometry? geometry,
+    SpotlightGuideBubbleAnchorGeometry? geometry,
   }) : _geometry = geometry;
 
   /// Width is the triangle base width. Height is the distance from base to tip.
@@ -389,16 +400,16 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
   /// noticeable rounded tip without making the anchor look flat.
   final double tipArcAngle;
 
-  final SpotlightGuideAnchorGeometry? _geometry;
+  final SpotlightGuideBubbleAnchorGeometry? _geometry;
 
-  SpotlightGuideAnchorGeometry? get geometry => _geometry;
+  SpotlightGuideBubbleAnchorGeometry? get geometry => _geometry;
 
   @override
   Size get preferredSize => _finiteSizeOrZero(size);
 
   @override
-  EdgeInsetsGeometry padding(SpotlightGuideAnchorGeometry? geometry) {
-    final SpotlightGuideAnchorGeometry? resolved = geometry ?? _geometry;
+  EdgeInsetsGeometry padding(SpotlightGuideBubbleAnchorGeometry? geometry) {
+    final SpotlightGuideBubbleAnchorGeometry? resolved = geometry ?? _geometry;
     final Size safeSize = preferredSize;
     if (resolved == null || safeSize.isEmpty) {
       return EdgeInsets.zero;
@@ -424,13 +435,13 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
   double get connectionHalfExtent => preferredSize.width / 2;
 
   @override
-  SpotlightGuideAnchorConnection? resolveConnection({
+  SpotlightGuideBubbleAnchorConnection? resolveConnection({
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   }) {
-    final SpotlightGuideAnchorGeometry? resolved = geometry ?? _geometry;
+    final SpotlightGuideBubbleAnchorGeometry? resolved = geometry ?? _geometry;
     final Size safeSize = preferredSize;
     if (resolved == null || safeSize.isEmpty) {
       return null;
@@ -439,28 +450,28 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     switch (resolved.direction) {
       case SpotlightGuideDirection.up:
         final double center = body.left + resolved.offset;
-        return SpotlightGuideAnchorConnection.horizontal(
+        return SpotlightGuideBubbleAnchorConnection.horizontal(
           direction: resolved.direction,
           center: center,
           halfWidth: halfWidth,
         );
       case SpotlightGuideDirection.down:
         final double center = body.left + resolved.offset;
-        return SpotlightGuideAnchorConnection.horizontal(
+        return SpotlightGuideBubbleAnchorConnection.horizontal(
           direction: resolved.direction,
           center: center,
           halfWidth: halfWidth,
         );
       case SpotlightGuideDirection.left:
         final double center = body.top + resolved.offset;
-        return SpotlightGuideAnchorConnection.vertical(
+        return SpotlightGuideBubbleAnchorConnection.vertical(
           direction: resolved.direction,
           center: center,
           halfWidth: halfWidth,
         );
       case SpotlightGuideDirection.right:
         final double center = body.top + resolved.offset;
-        return SpotlightGuideAnchorConnection.vertical(
+        return SpotlightGuideBubbleAnchorConnection.vertical(
           direction: resolved.direction,
           center: center,
           halfWidth: halfWidth,
@@ -474,10 +485,10 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   }) {
-    final SpotlightGuideAnchorGeometry? resolved = geometry ?? _geometry;
-    final SpotlightGuideAnchorConnection? gap = resolveConnection(
+    final SpotlightGuideBubbleAnchorGeometry? resolved = geometry ?? _geometry;
+    final SpotlightGuideBubbleAnchorConnection? gap = resolveConnection(
       body: body,
       paintOffset: paintOffset,
       paintSize: paintSize,
@@ -548,7 +559,9 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
   }
 
   @override
-  SpotlightGuideTriangleAnchor resolve(SpotlightGuideAnchorGeometry geometry) {
+  SpotlightGuideTriangleAnchor resolve(
+    SpotlightGuideBubbleAnchorGeometry geometry,
+  ) {
     return SpotlightGuideTriangleAnchor(
       size: size,
       tipArcAngle: tipArcAngle,
@@ -641,20 +654,21 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
   int get hashCode => Object.hash(size, tipArcAngle, _geometry);
 }
 
-class SpotlightGuideAnchorConnection {
-  const SpotlightGuideAnchorConnection._({
+@immutable
+class SpotlightGuideBubbleAnchorConnection {
+  const SpotlightGuideBubbleAnchorConnection._({
     required this.direction,
     required this.center,
     required this.start,
     required this.end,
   });
 
-  factory SpotlightGuideAnchorConnection.horizontal({
+  factory SpotlightGuideBubbleAnchorConnection.horizontal({
     required SpotlightGuideDirection direction,
     required double center,
     required double halfWidth,
   }) {
-    return SpotlightGuideAnchorConnection._(
+    return SpotlightGuideBubbleAnchorConnection._(
       direction: direction,
       center: center,
       start: center - halfWidth,
@@ -662,12 +676,12 @@ class SpotlightGuideAnchorConnection {
     );
   }
 
-  factory SpotlightGuideAnchorConnection.vertical({
+  factory SpotlightGuideBubbleAnchorConnection.vertical({
     required SpotlightGuideDirection direction,
     required double center,
     required double halfWidth,
   }) {
-    return SpotlightGuideAnchorConnection._(
+    return SpotlightGuideBubbleAnchorConnection._(
       direction: direction,
       center: center,
       start: center - halfWidth,

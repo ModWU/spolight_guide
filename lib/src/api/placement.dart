@@ -96,6 +96,7 @@ enum SpotlightGuideAnchorAlignment { center, start, end }
 /// // 8px after center on the current semantic horizontal axis.
 /// const SpotlightGuideAnchorPosition.center(8);
 /// ```
+@immutable
 class SpotlightGuideAnchorPosition {
   const SpotlightGuideAnchorPosition._(this.anchor, this.offset);
 

@@ -634,7 +634,7 @@ Use `guide.anchorDirection` when a custom hint needs to know which physical
 side the anchor is on. For example, a hint placed below a target has an
 `up` direction because the anchor sits on the bubble's top edge and points
 toward the target. Path-based custom anchors can read the same resolved side
-from `SpotlightGuideAnchorPathBuilder.direction` inside `addToPath`.
+from `SpotlightGuideBubbleAnchorPathBuilder.direction` inside `addToPath`.
 Use `guide.targetAnchorPosition` when custom pointer or bubble layouts need to
 resolve the same anchor position that built-in hints use.
 

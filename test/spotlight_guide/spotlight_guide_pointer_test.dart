@@ -892,7 +892,7 @@ void main() {
           final Rect bubbleRect = tester.getRect(
             find.byType(SpotlightGuideBubble),
           );
-          final SpotlightGuideAnchorGeometry anchorGeometry =
+          final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
               _bubbleAnchorGeometry(tester);
           final bool horizontalAnchorAxis =
               guide.anchorDirection == SpotlightGuideDirection.up ||
@@ -2128,9 +2128,8 @@ void main() {
       final SpotlightGuideStepContext guide = contexts[testCase.label]!;
       final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
       final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
-      final SpotlightGuideAnchorGeometry anchorGeometry = _bubbleAnchorGeometry(
-        tester,
-      );
+      final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
+          _bubbleAnchorGeometry(tester);
 
       expect(anchorGeometry.direction, testCase.expectedAnchorDirection);
       switch (testCase.bubbleSide) {
@@ -2517,9 +2516,8 @@ void main() {
 
       final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
       final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
-      final SpotlightGuideAnchorGeometry anchorGeometry = _bubbleAnchorGeometry(
-        tester,
-      );
+      final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
+          _bubbleAnchorGeometry(tester);
       final bool bubbleIsOnLeft =
           testCase.expectedAnchorDirection == SpotlightGuideDirection.right;
 
@@ -2616,7 +2614,7 @@ void main() {
         final Rect bubbleRect = tester.getRect(
           find.byType(SpotlightGuideBubble),
         );
-        final SpotlightGuideAnchorGeometry anchorGeometry =
+        final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
             _bubbleAnchorGeometry(tester);
         final double pointerTargetX = _pointerAnchorAxisPosition(
           pointerRect,
@@ -2744,7 +2742,7 @@ void main() {
         final Rect bubbleRect = tester.getRect(
           find.byType(SpotlightGuideBubble),
         );
-        final SpotlightGuideAnchorGeometry anchorGeometry =
+        final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
             _bubbleAnchorGeometry(tester);
         final bool horizontalAnchorAxis =
             guide.anchorDirection == SpotlightGuideDirection.up ||
@@ -2838,7 +2836,7 @@ void main() {
     final SpotlightGuideBubbleDecoration bubbleDecoration = _bubbleDecoration(
       tester,
     );
-    final SpotlightGuideAnchorGeometry anchorGeometry =
+    final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
         bubbleDecoration.effectiveAnchorGeometry!;
     final double safeInset = bubbleDecoration.anchorSafeInset;
 
@@ -2910,9 +2908,8 @@ void main() {
 
     final SpotlightGuideStepContext guide = contexts['target-anchor-mode']!;
     final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
-    final SpotlightGuideAnchorGeometry anchorGeometry = _bubbleAnchorGeometry(
-      tester,
-    );
+    final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
+        _bubbleAnchorGeometry(tester);
 
     expect(anchorGeometry.direction, guide.anchorDirection);
     expect(
@@ -3218,9 +3215,8 @@ void main() {
       find.byKey(const ValueKey<String>('pointer-end')),
     );
     final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
-    final SpotlightGuideAnchorGeometry anchorGeometry = _bubbleAnchorGeometry(
-      tester,
-    );
+    final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
+        _bubbleAnchorGeometry(tester);
     // With an end pointer anchor in LTR, the pointer's right edge aligns with
     // the target anchor. The bubble anchor still aims at the pointer center.
     expect(
@@ -3526,7 +3522,7 @@ SpotlightGuideBubbleDecoration _bubbleDecoration(WidgetTester tester) {
   return bubble.effectiveDecoration as SpotlightGuideBubbleDecoration;
 }
 
-SpotlightGuideAnchorGeometry _bubbleAnchorGeometry(WidgetTester tester) {
+SpotlightGuideBubbleAnchorGeometry _bubbleAnchorGeometry(WidgetTester tester) {
   return _bubbleDecoration(tester).effectiveAnchorGeometry!;
 }
 
@@ -3574,7 +3570,7 @@ double _pointerAnchorAxisPosition(
 
 double _bubbleAnchorGlobalAxis(
   Rect bubbleRect,
-  SpotlightGuideAnchorGeometry anchorGeometry,
+  SpotlightGuideBubbleAnchorGeometry anchorGeometry,
 ) {
   return switch (anchorGeometry.direction) {
     SpotlightGuideDirection.up ||
@@ -3602,9 +3598,8 @@ _PointerVisibleGeometry _pointerVisibleGeometry(
   WidgetTester tester,
   Finder pointerFinder,
 ) {
-  final SpotlightGuideAnchorGeometry anchorGeometry = _bubbleAnchorGeometry(
-    tester,
-  );
+  final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
+      _bubbleAnchorGeometry(tester);
   return _PointerVisibleGeometry(
     pointer: tester.getRect(pointerFinder),
     bubble: tester.getRect(find.byType(SpotlightGuideBubble)),

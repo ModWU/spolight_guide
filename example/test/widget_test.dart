@@ -260,7 +260,7 @@ void main() {
     );
     final SpotlightGuideBubbleDecoration bubbleDecoration =
         bubble.effectiveDecoration as SpotlightGuideBubbleDecoration;
-    final SpotlightGuideAnchorGeometry anchorGeometry =
+    final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
         bubbleDecoration.effectiveAnchorGeometry!;
     final double safeInset = bubbleDecoration.anchorSafeInset;
     const double pointerHandSize = 64;
@@ -439,7 +439,7 @@ void main() {
     );
     final SpotlightGuideBubbleDecoration bubbleDecoration =
         bubble.effectiveDecoration as SpotlightGuideBubbleDecoration;
-    final SpotlightGuideAnchorGeometry anchorGeometry =
+    final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
         bubbleDecoration.effectiveAnchorGeometry!;
 
     expect(

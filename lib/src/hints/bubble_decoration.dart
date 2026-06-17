@@ -1,6 +1,7 @@
 part of '../../spotlight_guide.dart';
 
 /// Base class for hint decorations that can consume guide-resolved geometry.
+@immutable
 abstract class SpotlightGuideAnchoredDecoration extends Decoration {
   const SpotlightGuideAnchoredDecoration();
 
@@ -17,7 +18,7 @@ abstract class SpotlightGuideAnchoredDecoration extends Decoration {
 
   /// Returns a copy that uses current guide geometry.
   SpotlightGuideAnchoredDecoration resolveAnchor(
-    SpotlightGuideAnchorGeometry geometry,
+    SpotlightGuideBubbleAnchorGeometry geometry,
   );
 
   /// Border radius used to clip the content area, if the decoration needs it.
@@ -29,6 +30,7 @@ abstract class SpotlightGuideAnchoredDecoration extends Decoration {
 /// When [anchor] is omitted, a [SpotlightGuideTriangleAnchor] is used. Pass
 /// [SpotlightGuideNoAnchor] to hide the anchor while keeping the same bubble
 /// container.
+@immutable
 class SpotlightGuideBubbleDecoration extends SpotlightGuideAnchoredDecoration {
   const SpotlightGuideBubbleDecoration({
     this.color = Colors.white,
@@ -50,9 +52,9 @@ class SpotlightGuideBubbleDecoration extends SpotlightGuideAnchoredDecoration {
   final SpotlightGuideBubbleAnchor anchor;
 
   /// Resolved target geometry for [anchor].
-  final SpotlightGuideAnchorGeometry? anchorGeometry;
+  final SpotlightGuideBubbleAnchorGeometry? anchorGeometry;
 
-  SpotlightGuideAnchorGeometry? get effectiveAnchorGeometry {
+  SpotlightGuideBubbleAnchorGeometry? get effectiveAnchorGeometry {
     final SpotlightGuideBubbleAnchor current = anchor;
     if (anchorGeometry != null) {
       return anchorGeometry;
@@ -111,7 +113,7 @@ class SpotlightGuideBubbleDecoration extends SpotlightGuideAnchoredDecoration {
 
   @override
   SpotlightGuideBubbleDecoration resolveAnchor(
-    SpotlightGuideAnchorGeometry geometry,
+    SpotlightGuideBubbleAnchorGeometry geometry,
   ) {
     return SpotlightGuideBubbleDecoration(
       color: color,
@@ -164,6 +166,7 @@ class SpotlightGuideBubbleDecoration extends SpotlightGuideAnchoredDecoration {
 /// padding. If the visual anchor must be connected to the background as one
 /// outline, prefer [SpotlightGuideBubbleDecoration] or a custom
 /// [SpotlightGuideAnchoredDecoration].
+@immutable
 class SpotlightGuideProxyDecoration extends SpotlightGuideAnchoredDecoration {
   const SpotlightGuideProxyDecoration({
     required this.decoration,
@@ -179,7 +182,7 @@ class SpotlightGuideProxyDecoration extends SpotlightGuideAnchoredDecoration {
   final SpotlightGuideBubbleAnchor anchor;
 
   /// Resolved target geometry for [anchor].
-  final SpotlightGuideAnchorGeometry? anchorGeometry;
+  final SpotlightGuideBubbleAnchorGeometry? anchorGeometry;
 
   @override
   final BorderRadiusGeometry? contentClipBorderRadius;
@@ -191,7 +194,7 @@ class SpotlightGuideProxyDecoration extends SpotlightGuideAnchoredDecoration {
 
   @override
   SpotlightGuideProxyDecoration resolveAnchor(
-    SpotlightGuideAnchorGeometry geometry,
+    SpotlightGuideBubbleAnchorGeometry geometry,
   ) {
     return SpotlightGuideProxyDecoration(
       decoration: decoration,

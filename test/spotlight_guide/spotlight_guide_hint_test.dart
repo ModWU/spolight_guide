@@ -78,7 +78,7 @@ void main() {
               decoration: const SpotlightGuideBubbleDecoration(
                 anchor: SpotlightGuideTriangleAnchor(
                   size: Size(14, 8),
-                  geometry: SpotlightGuideAnchorGeometry(
+                  geometry: SpotlightGuideBubbleAnchorGeometry(
                     direction: SpotlightGuideDirection.up,
                     offset: 30,
                   ),
@@ -148,7 +148,7 @@ void main() {
                 color: Color(0xFFFFFFFF),
                 anchor: SpotlightGuideTriangleAnchor(
                   size: Size(20, 20),
-                  geometry: SpotlightGuideAnchorGeometry(
+                  geometry: SpotlightGuideBubbleAnchorGeometry(
                     direction: SpotlightGuideDirection.up,
                     offset: 20,
                   ),
@@ -687,18 +687,19 @@ void main() {
     const _WideVisualAnchorShape shape = _WideVisualAnchorShape();
     const SpotlightGuidePathAnchor anchor = SpotlightGuidePathAnchor(
       shape: shape,
-      geometry: SpotlightGuideAnchorGeometry(
+      geometry: SpotlightGuideBubbleAnchorGeometry(
         direction: SpotlightGuideDirection.up,
         offset: 40,
       ),
     );
     final Rect body = Rect.fromLTWH(20, 40, 120, 80);
-    final SpotlightGuideAnchorConnection connection = anchor.resolveConnection(
-      body: body,
-      paintOffset: const Offset(20, 0),
-      paintSize: const Size(120, 120),
-      geometry: null,
-    )!;
+    final SpotlightGuideBubbleAnchorConnection connection = anchor
+        .resolveConnection(
+          body: body,
+          paintOffset: const Offset(20, 0),
+          paintSize: const Size(120, 120),
+          geometry: null,
+        )!;
 
     expect(connection.start, moreOrLessEquals(body.left + 40 - 5));
     expect(connection.end, moreOrLessEquals(body.left + 40 + 5));
@@ -771,7 +772,7 @@ class _WideVisualAnchorShape extends SpotlightGuidePathAnchorShape {
   double get visualHalfExtent => 24;
 
   @override
-  void addToPath(Path path, SpotlightGuideAnchorPathBuilder builder) {
+  void addToPath(Path path, SpotlightGuideBubbleAnchorPathBuilder builder) {
     builder.cubicTo(path, builder.startSide - 0.2, 0.1, -0.6, 0.4, -0.2, 0.7);
     builder.lineTo(path, 0, 1);
     builder.lineTo(path, 0.5, 0.6);
@@ -799,7 +800,7 @@ class _RecordingPathAnchorShape extends SpotlightGuidePathAnchorShape {
   double get connectionHalfExtent => 6;
 
   @override
-  void addToPath(Path path, SpotlightGuideAnchorPathBuilder builder) {
+  void addToPath(Path path, SpotlightGuideBubbleAnchorPathBuilder builder) {
     directions.add(builder.direction);
     builder.lineTo(path, 0, 1);
     builder.lineTo(path, builder.endSide, 0);

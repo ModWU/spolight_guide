@@ -915,7 +915,7 @@ class _RenderBubbleHint extends RenderBox
     final RenderBox bubble = _bubbleChild!;
     final SpotlightGuideAnchoredDecoration resolvedDecoration = _decoration
         .resolveAnchor(
-          SpotlightGuideAnchorGeometry(
+          SpotlightGuideBubbleAnchorGeometry(
             direction: _anchorDirection,
             offset: anchorOffset,
           ),

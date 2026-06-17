@@ -5,70 +5,68 @@ Read this file before changing Spotlight Guide code. It is the maintainer entry 
 ## File Map
 
 ```text
-spotlight_guide.dart
-  Public export used by product code.
+lib/spotlight_guide.dart
+  Public library entry used by product code. It owns imports and part
+  declarations.
 
-spotlight_guide/spotlight_guide.dart
-  Library entry that owns imports and part declarations.
-
-spotlight_guide/src/api/callbacks.dart
+lib/src/api/callbacks.dart
   Public callback typedefs, state-change details, and barrier dismiss behavior.
 
-spotlight_guide/src/api/barrier.dart
+lib/src/api/barrier.dart
   Barrier style merging and fallback behavior.
 
-spotlight_guide/src/api/reveal.dart
+lib/src/api/reveal.dart
   Reveal callbacks, reveal options, reveal strategies, same-step scroll
   options, missing-target behavior, and reveal context helpers.
 
-spotlight_guide/src/api/placement.dart
+lib/src/api/placement.dart
   Placement, physical direction, semantic anchor, and anchor-position models.
 
-spotlight_guide/src/api/steps.dart
+lib/src/api/steps.dart
   SpotlightGuideStepItem, SpotlightGuideStep, and SpotlightGuideStepContext.
 
-spotlight_guide/src/api/portal.dart
+lib/src/api/portal.dart
   Public SpotlightGuidePortal widget, configuration fields, private State,
   overlay host, guide orchestration, reveal pipeline, same-step scroll,
   and overlay rendering. Keep the widget and its State together unless there is
   a strong Flutter-specific reason to split them.
 
-spotlight_guide/src/api/target.dart
+lib/src/api/target.dart
   SpotlightGuideTarget registration and target scope.
 
-spotlight_guide/src/api/controller.dart
+lib/src/api/controller.dart
   SpotlightGuidePortalController and pending command handling.
 
-spotlight_guide/src/runtime/step_source.dart
+lib/src/runtime/step_source.dart
   Active step source: portal-owned steps or controller-provided runtime steps.
 
-spotlight_guide/src/runtime/target_resolver.dart
+lib/src/runtime/target_resolver.dart
   Target id/key/group lookup and overlay geometry resolution.
 
-spotlight_guide/src/runtime/missing_target_policy.dart
+lib/src/runtime/missing_target_policy.dart
   Missing-target wait/skip strategy for portal defaults and item overrides.
 
-spotlight_guide/src/runtime/reveal_scroll_strategy.dart
+lib/src/runtime/reveal_scroll_strategy.dart
   Reveal scroll decision strategy: when to scroll, which target context drives
   scroll, and how large target groups relate to anchor targets.
 
-spotlight_guide/src/runtime/geometry.dart
+lib/src/runtime/geometry.dart
   Internal target, overlay item, and hole geometry value objects.
 
-spotlight_guide/src/hints/
+lib/src/hints/
   Built-in reusable hint UI: bubble, pointer model, pointer bubble hint,
   bubble anchors, bubble decoration, text hint, tap pointer, and paint gate.
 
-spotlight_guide/src/layout/
+lib/src/layout/
   Overlay composition plus pure hint measurement, placement selection,
   constraints, and arrow safe-area layout.
 
-spotlight_guide/src/painting/
+lib/src/painting/
   Barrier painter and connected bubble-arrow path painter. Barrier holes are
   unioned before subtraction, so nested or overlapping targets remain one clear
   highlighted area.
 
-spotlight_guide/src/utils/collections.dart
+lib/src/utils/collections.dart
   Equality helpers and Rect padding extension.
 ```
 
@@ -103,6 +101,25 @@ test/spotlight_guide/spotlight_guide_hint_test.dart
 
 ## Maintainer Rules
 
+- Start from official guidance, then apply package-specific rules. Use
+  [Effective Dart: Style](https://dart.dev/effective-dart/style),
+  [Effective Dart: Design](https://dart.dev/effective-dart/design),
+  [Dart package layout conventions](https://dart.dev/tools/pub/package-layout),
+  and the [Flutter repository style guide](https://github.com/flutter/flutter/blob/main/docs/contributing/Style-guide-for-Flutter-repo.md)
+  as the default reference points before inventing local rules.
+- Keep file and directory names `lowercase_with_underscores`. Keep public Dart
+  types in `UpperCamelCase`, members and local variables in `lowerCamelCase`,
+  and avoid abbreviations unless they are standard Flutter/Dart terms.
+- Design APIs so common calls read like normal Dart/Flutter code. If a
+  parameter name repeats the owner name, the field name, and the package name,
+  shorten it unless the extra word prevents a real ambiguity.
+- Prefer immutable public configuration objects. Use `const` constructors,
+  `final` fields, and `@immutable` for value-style API classes. If a field is a
+  list exposed to callbacks or custom builders, expose an unmodifiable view or a
+  documented read-only snapshot.
+- Do not add a compatibility alias for a bad early name while the package is
+  still pre-stable. Rename to the correct API and update all docs/examples/tests
+  in the same change.
 - Prefer official Flutter style first. Keep a public `StatefulWidget` and its
   private `State` in the same file when that is the common readable shape, and
   split files only when the split gives a clear maintenance benefit.
@@ -142,6 +159,35 @@ test/spotlight_guide/spotlight_guide_hint_test.dart
   `onStateChanged`.
 - Update tests and docs with behavior changes. Treat this component as a
   reusable feature, not a one-page patch.
+
+## Composition And Ownership Checklist
+
+Use this checklist before adding a field, class, function, or file:
+
+- Can this behavior be built by composing smaller existing pieces? Prefer that
+  over adding a broad flag to `SpotlightGuidePortal`.
+- Does this class own one concept? A target resolver resolves target geometry;
+  a reveal strategy decides reveal scrolling; layout computes geometry; painters
+  paint; widgets compose and route data.
+- Does the public field belong to the caller's mental model? Target selection
+  belongs on `SpotlightGuideStepItem`, shared dimming belongs on
+  `SpotlightGuidePortal` or `SpotlightGuideStep`, and visual hint composition
+  belongs under `src/hints`.
+- Is the behavior independently variable? If yes, prefer a small strategy,
+  policy, source, resolver, or value object. If no, a private helper method is
+  usually clearer.
+- Can the name be understood without opening implementation code? Public names
+  should distinguish target, pointer, bubble, anchor, barrier, reveal, and
+  controller concepts.
+- Will custom users need to extend it? If yes, expose a narrow abstract class
+  with a small method surface and callback context data. If no, keep it private.
+- Is the result stable during rebuild, hot reload, route transition, and scroll
+  animation? If not, add a focused test in the matching test file before or
+  with the implementation.
+- Does a file now contain two unrelated jobs? Split by ownership, not by line
+  count. A long render object can stay together when its state is tightly
+  coupled, but public API, layout algorithms, painters, and runtime policies
+  should not live in one mixed file.
 
 ## Core Invariants
 
@@ -253,9 +299,11 @@ For a bug fix, add or update:
 For code changes:
 
 ```sh
-dart format lib/spotlight_guide.dart lib/src test/spotlight_guide
-flutter analyze --no-pub lib/spotlight_guide.dart lib/src test/spotlight_guide
-flutter test --no-pub test/spotlight_guide
+dart format lib test example/lib example/test example/tool
+dart format --output=none --set-exit-if-changed lib test example/lib example/test example/tool
+flutter analyze --no-pub
+flutter test --no-pub
+(cd example && flutter test --no-pub)
 git diff --check
 ```
 

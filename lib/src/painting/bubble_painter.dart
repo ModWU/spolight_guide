@@ -50,14 +50,14 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
   }
 
   Path _buildPath(Offset offset, Size size) {
-    final SpotlightGuideAnchorGeometry? geometry =
+    final SpotlightGuideBubbleAnchorGeometry? geometry =
         decoration.effectiveAnchorGeometry;
     final Rect body = _bodyRect(offset, size, geometry);
     final double radius = math.min(
       _nonNegativeFiniteOrZero(decoration.borderRadius),
       math.min(body.width, body.height) / 2,
     );
-    final SpotlightGuideAnchorConnection? connection = _resolveConnection(
+    final SpotlightGuideBubbleAnchorConnection? connection = _resolveConnection(
       body: body,
       offset: offset,
       size: size,
@@ -106,7 +106,7 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
   Rect _bodyRect(
     Offset offset,
     Size size,
-    SpotlightGuideAnchorGeometry? geometry,
+    SpotlightGuideBubbleAnchorGeometry? geometry,
   ) {
     final double depth = geometry == null
         ? 0
@@ -142,11 +142,11 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
     };
   }
 
-  SpotlightGuideAnchorConnection? _resolveConnection({
+  SpotlightGuideBubbleAnchorConnection? _resolveConnection({
     required Rect body,
     required Offset offset,
     required Size size,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   }) {
     return decoration.anchor.resolveConnection(
       body: body,
@@ -159,10 +159,10 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
   Path _buildTopAnchorPath(
     Rect body,
     double radius,
-    SpotlightGuideAnchorConnection connection,
+    SpotlightGuideBubbleAnchorConnection connection,
     Offset offset,
     Size size,
-    SpotlightGuideAnchorGeometry? geometry,
+    SpotlightGuideBubbleAnchorGeometry? geometry,
   ) {
     final Path path = Path()
       ..moveTo(body.left + radius, body.top)
@@ -193,10 +193,10 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
   Path _buildBottomAnchorPath(
     Rect body,
     double radius,
-    SpotlightGuideAnchorConnection connection,
+    SpotlightGuideBubbleAnchorConnection connection,
     Offset offset,
     Size size,
-    SpotlightGuideAnchorGeometry? geometry,
+    SpotlightGuideBubbleAnchorGeometry? geometry,
   ) {
     final Path path = Path()
       ..moveTo(body.left + radius, body.top)
@@ -227,10 +227,10 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
   Path _buildLeftAnchorPath(
     Rect body,
     double radius,
-    SpotlightGuideAnchorConnection connection,
+    SpotlightGuideBubbleAnchorConnection connection,
     Offset offset,
     Size size,
-    SpotlightGuideAnchorGeometry? geometry,
+    SpotlightGuideBubbleAnchorGeometry? geometry,
   ) {
     final Path path = Path()
       ..moveTo(body.left + radius, body.top)
@@ -261,10 +261,10 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
   Path _buildRightAnchorPath(
     Rect body,
     double radius,
-    SpotlightGuideAnchorConnection connection,
+    SpotlightGuideBubbleAnchorConnection connection,
     Offset offset,
     Size size,
-    SpotlightGuideAnchorGeometry? geometry,
+    SpotlightGuideBubbleAnchorGeometry? geometry,
   ) {
     final Path path = Path()
       ..moveTo(body.left + radius, body.top)
@@ -297,7 +297,7 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
     Rect body,
     Offset offset,
     Size size,
-    SpotlightGuideAnchorGeometry? geometry,
+    SpotlightGuideBubbleAnchorGeometry? geometry,
   ) {
     decoration.anchor.addToPath(
       path: path,

@@ -5,6 +5,7 @@ part of '../../spotlight_guide.dart';
 /// This decoration does not wrap or modify the real target widget. It controls
 /// the overlay hole used by the dim barrier, plus optional paint layers such as
 /// rings, glows, and shadows around that hole.
+@immutable
 class SpotlightGuideTargetDecoration {
   const SpotlightGuideTargetDecoration({
     this.padding = const EdgeInsets.all(6),
@@ -41,6 +42,7 @@ class SpotlightGuideTargetDecoration {
 }
 
 /// Shape used by [SpotlightGuideTargetDecoration] to cut a spotlight hole.
+@immutable
 abstract class SpotlightGuideTargetShape {
   const SpotlightGuideTargetShape();
 
@@ -90,6 +92,7 @@ abstract class SpotlightGuideTargetShape {
 }
 
 /// Rounded rectangle spotlight target shape.
+@immutable
 class SpotlightGuideRoundedRectShape extends SpotlightGuideTargetShape {
   const SpotlightGuideRoundedRectShape({
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
@@ -144,6 +147,7 @@ class SpotlightGuideRoundedRectShape extends SpotlightGuideTargetShape {
 }
 
 /// Oval spotlight target shape.
+@immutable
 class SpotlightGuideOvalShape extends SpotlightGuideTargetShape {
   const SpotlightGuideOvalShape();
 
@@ -190,6 +194,7 @@ class SpotlightGuideOvalShape extends SpotlightGuideTargetShape {
 }
 
 /// Context passed to custom target decoration layers.
+@immutable
 class SpotlightGuideTargetLayerContext {
   const SpotlightGuideTargetLayerContext({
     required this.rect,
@@ -242,6 +247,7 @@ class SpotlightGuideTargetLayerContext {
 }
 
 /// A custom visual layer painted around one spotlight target hole.
+@immutable
 abstract class SpotlightGuideTargetLayer {
   const SpotlightGuideTargetLayer();
 
@@ -254,6 +260,7 @@ abstract class SpotlightGuideTargetLayer {
 }
 
 /// Draws an outside-only ring around the target hole.
+@immutable
 class SpotlightGuideTargetRingLayer extends SpotlightGuideTargetLayer {
   const SpotlightGuideTargetRingLayer({
     required this.color,
@@ -306,6 +313,7 @@ class SpotlightGuideTargetRingLayer extends SpotlightGuideTargetLayer {
 }
 
 /// Draws a dashed outline that follows the target shape.
+@immutable
 class SpotlightGuideTargetOutlineLayer extends SpotlightGuideTargetLayer {
   const SpotlightGuideTargetOutlineLayer({
     required this.color,
@@ -385,6 +393,7 @@ class SpotlightGuideTargetOutlineLayer extends SpotlightGuideTargetLayer {
 /// The layer is painted on the overlay and the actual target hole is cleared
 /// afterwards, so the glow can spread inward naturally without covering the
 /// real target widget.
+@immutable
 class SpotlightGuideTargetGlowLayer extends SpotlightGuideTargetLayer {
   const SpotlightGuideTargetGlowLayer({
     required this.color,
@@ -433,6 +442,7 @@ class SpotlightGuideTargetGlowLayer extends SpotlightGuideTargetLayer {
 }
 
 /// Draws an offset shadow around the target hole.
+@immutable
 class SpotlightGuideTargetShadowLayer extends SpotlightGuideTargetLayer {
   const SpotlightGuideTargetShadowLayer({
     required this.color,

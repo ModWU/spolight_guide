@@ -153,6 +153,7 @@ enum SpotlightGuideBubbleSide {
 /// Use [targetDirection] to orient arrows, hands, and other directional
 /// artwork toward the highlighted target after auto placement, semantic
 /// start/end placement, and RTL resolution have already run.
+@immutable
 class SpotlightGuidePointerContext {
   const SpotlightGuidePointerContext({
     required this.guide,
@@ -270,6 +271,7 @@ class SpotlightGuidePointerContext {
 /// target -> pointer -> bubble layout chain. Use it as a last-mile adjustment
 /// when a custom pointer asset has a visual tip that does not sit exactly on
 /// the widget bounds.
+@immutable
 class SpotlightGuidePointerOffset {
   const SpotlightGuidePointerOffset._({
     required double physicalDx,
@@ -359,6 +361,7 @@ class SpotlightGuidePointerOffset {
 /// [size] is omitted, [SpotlightGuideBubbleHint] uses the child's laid-out size
 /// and reports transient zero-size pointer frames as not paint-ready, so the
 /// overlay can reveal target holes and hints together from a stable layout.
+@immutable
 class SpotlightGuidePointer {
   const SpotlightGuidePointer({
     required this.child,

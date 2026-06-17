@@ -226,7 +226,7 @@ the anchor away from rounded-corner unsafe areas.
 | `SpotlightGuidePathAnchor` | `SpotlightGuideBubbleDecoration.anchor` | Generic path-driven anchor for custom Bezier arrows and non-triangle shapes. |
 | `SpotlightGuidePathAnchorShape.connectionHalfExtent` | `SpotlightGuidePathAnchorShape` | Half of the bubble-edge opening. Keep this small for a pointed base. |
 | `SpotlightGuidePathAnchorShape.visualHalfExtent` | `SpotlightGuidePathAnchorShape` | Half of the visual drawing range. This may be wider than the connection, so an arrow can have a narrow base and a broad head. |
-| `SpotlightGuideAnchorPathBuilder` | `SpotlightGuidePathAnchorShape.addToPath` | Converts normalized side/outward coordinates into the current physical anchor direction, exposes that side through `direction`, and provides line/cubic helpers. |
+| `SpotlightGuideBubbleAnchorPathBuilder` | `SpotlightGuidePathAnchorShape.addToPath` | Converts normalized side/outward coordinates into the current physical anchor direction, exposes that side through `direction`, and provides line/cubic helpers. |
 | `SpotlightGuideProxyDecoration` | `SpotlightGuideStepItem.decoration` | Lets a regular Flutter `Decoration` participate in guide layout. Use the built-in bubble decoration when the anchor must visually connect to the body. |
 
 Anchor chain:
@@ -399,7 +399,7 @@ Return a custom widget from `hintBuilder` when the guide is image-based, product
 
 Use `SpotlightGuideStepContext.anchorDirection` when a fully custom hint
 needs to draw differently for top, bottom, left, or right anchors. Use
-`SpotlightGuideAnchorPathBuilder.direction` inside
+`SpotlightGuideBubbleAnchorPathBuilder.direction` inside
 `SpotlightGuidePathAnchorShape.addToPath` when only the bubble anchor shape
 needs that side-specific logic. Both values are the final physical side after
 auto placement and semantic `start`/`end` placement have resolved.

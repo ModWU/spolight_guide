@@ -19,9 +19,9 @@ spotlight_guide_targets_test.dart
   Target registration, multiple hints in a step, targetIds, duplicate ids,
   duplicate anchor groups, anchorId selection and rebuild fallback, targetKey,
   late target appearance, portal enabled toggle, per-target enabled toggle,
-  target removal rebuild/notification, missing targetIds member, missing target
-  wait/skip behavior, unknown anchorTargetId fallback, no-target whole-child
-  highlight.
+  target removal rebuild/notification, read-only target snapshots, missing
+  targetIds member, missing target wait/skip behavior, unknown anchorTargetId
+  fallback, no-target whole-child highlight.
 
 spotlight_guide_layout_test.dart
   Placement, auto placement by full-overlay directional space, RTL anchor

@@ -28,6 +28,7 @@ part of '../../spotlight_guide.dart';
 ///   child: page,
 /// )
 /// ```
+@immutable
 class SpotlightGuideBarrierStyle {
   const SpotlightGuideBarrierStyle({this.color, this.blurSigma})
     : assert(
@@ -62,13 +63,6 @@ class SpotlightGuideBarrierStyle {
   }
 
   bool get hasBlur => effectiveBlurSigma > 0;
-
-  SpotlightGuideBarrierStyle copyWith({Color? color, double? blurSigma}) {
-    return SpotlightGuideBarrierStyle(
-      color: color ?? this.color,
-      blurSigma: blurSigma ?? this.blurSigma,
-    );
-  }
 
   /// Returns this style with non-null fields from [other] replacing it.
   ///

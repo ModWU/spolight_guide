@@ -72,6 +72,7 @@ part of '../../spotlight_guide.dart';
 ///   },
 /// )
 /// ```
+@immutable
 class SpotlightGuideStepItem {
   const SpotlightGuideStepItem({
     required this.hintBuilder,
@@ -131,10 +132,10 @@ class SpotlightGuideStepItem {
   /// Empty when the item uses [targetKey] or highlights the whole portal child.
   List<Object> get highlightTargetIds {
     if (targetId != null) {
-      return <Object>[targetId!];
+      return List<Object>.unmodifiable(<Object>[targetId!]);
     }
     if (targetIds != null) {
-      return _uniqueObjects(targetIds!);
+      return List<Object>.unmodifiable(_uniqueObjects(targetIds!));
     }
     return const <Object>[];
   }
@@ -363,6 +364,7 @@ class SpotlightGuideStepItem {
 ///   ),
 /// ];
 /// ```
+@immutable
 class SpotlightGuideStep {
   const SpotlightGuideStep({
     required this.items,
@@ -436,8 +438,8 @@ class SpotlightGuideStepContext {
     required this.itemIndex,
     required this.itemTotal,
     required this.targetRect,
-    required this.targetRects,
-    required this.stepTargetRects,
+    required List<Rect> targetRects,
+    required List<Rect> stepTargetRects,
     required this.targetAnchorPoint,
     this.targetAnchorPosition = const SpotlightGuideAnchorPosition.center(),
     required this.overlaySize,
@@ -456,7 +458,8 @@ class SpotlightGuideStepContext {
     required this.anchorSize,
     required this.anchorConnectionHalfExtent,
     required this.controller,
-  });
+  }) : targetRects = List<Rect>.unmodifiable(targetRects),
+       stepTargetRects = List<Rect>.unmodifiable(stepTargetRects);
 
   /// Zero-based step index in the active guide sequence.
   int index;

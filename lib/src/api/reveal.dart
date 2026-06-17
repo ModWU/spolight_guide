@@ -49,6 +49,7 @@ typedef SpotlightGuideRevealCallback =
 ///   hintBuilder: buildHint,
 /// )
 /// ```
+@immutable
 class SpotlightGuideRevealOptions {
   const SpotlightGuideRevealOptions({
     this.enabled = true,
@@ -145,6 +146,7 @@ enum SpotlightGuideRevealMode {
 }
 
 /// Information passed to [SpotlightGuideRevealStrategy].
+@immutable
 class SpotlightGuideRevealDetails {
   const SpotlightGuideRevealDetails({
     required this.reason,
@@ -204,6 +206,7 @@ abstract class SpotlightGuideRevealStrategy {
 
 /// Default reveal presentation: dim the page first, then show hints after
 /// target preparation settles.
+@immutable
 class SpotlightGuideDeferredReveal extends SpotlightGuideRevealStrategy {
   const SpotlightGuideDeferredReveal();
 
@@ -217,6 +220,7 @@ class SpotlightGuideDeferredReveal extends SpotlightGuideRevealStrategy {
 ///
 /// Use this when an app prefers the guide to visibly track animated scrolling
 /// instead of waiting until the final target position is stable.
+@immutable
 class SpotlightGuideLiveReveal extends SpotlightGuideRevealStrategy {
   const SpotlightGuideLiveReveal();
 
@@ -233,6 +237,7 @@ class SpotlightGuideLiveReveal extends SpotlightGuideRevealStrategy {
 /// target ids ([SpotlightGuideStepItem.targetId] or [SpotlightGuideStepItem.targetIds]).
 /// Use [key] when the item defines a stable business label. When the item
 /// highlights the whole portal child, [highlightTargetIds] is empty.
+@immutable
 class SpotlightGuideAutoScrollDetails {
   const SpotlightGuideAutoScrollDetails({
     required this.stepIndex,
@@ -323,6 +328,7 @@ enum SpotlightGuideMissingTargetBehavior {
 ///   items: items,
 /// )
 /// ```
+@immutable
 class SpotlightGuideAutoScrollOptions {
   const SpotlightGuideAutoScrollOptions({
     this.enabled = true,

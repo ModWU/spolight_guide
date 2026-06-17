@@ -12,6 +12,18 @@ import 'spotlight_guide_test_helpers.dart';
 /// or portal refresh behavior for targets that appear and disappear after the
 /// guide has started.
 void main() {
+  test('highlightTargetIds returns an unmodifiable snapshot', () {
+    final SpotlightGuideStepItem item = SpotlightGuideStepItem(
+      targetIds: const <Object>['a', 'b', 'a'],
+      hintBuilder: hint('snapshot'),
+    );
+
+    final List<Object> ids = item.highlightTargetIds;
+
+    expect(ids, <Object>['a', 'b']);
+    expect(() => ids.add('c'), throwsUnsupportedError);
+  });
+
   testWidgets('renders multiple hints in the same step', (tester) async {
     final Map<String, SpotlightGuideStepContext> contexts =
         <String, SpotlightGuideStepContext>{};
@@ -78,6 +90,8 @@ void main() {
     expect(contexts['multi-target']?.targetRects.length, 2);
     expect(contexts['multi-target']?.stepTargetRects.length, 2);
     final SpotlightGuideStepContext guide = contexts['multi-target']!;
+    expect(() => guide.targetRects.add(Rect.zero), throwsUnsupportedError);
+    expect(() => guide.stepTargetRects.add(Rect.zero), throwsUnsupportedError);
     // The default fixture has target `b` at (240,360) 80x50. The highlighted
     // holes include both targets, but the anchor rect should be `b`.
     expect(guide.targetRect.left, moreOrLessEquals(240, epsilon: 0.5));

@@ -97,6 +97,7 @@ enum SpotlightGuideStateChangeReason {
 }
 
 /// Public state snapshot reported by [SpotlightGuidePortal.onStateChanged].
+@immutable
 class SpotlightGuideStateDetails {
   const SpotlightGuideStateDetails({
     required this.reason,

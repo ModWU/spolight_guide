@@ -1153,7 +1153,7 @@ void main() {
 class _WideVisualNarrowConnectionAnchor extends SpotlightGuideBubbleAnchor {
   const _WideVisualNarrowConnectionAnchor([this.geometry]);
 
-  final SpotlightGuideAnchorGeometry? geometry;
+  final SpotlightGuideBubbleAnchorGeometry? geometry;
 
   @override
   Size get preferredSize => const Size(80, 16);
@@ -1162,8 +1162,9 @@ class _WideVisualNarrowConnectionAnchor extends SpotlightGuideBubbleAnchor {
   double get connectionHalfExtent => 4;
 
   @override
-  EdgeInsetsGeometry padding(SpotlightGuideAnchorGeometry? geometry) {
-    final SpotlightGuideAnchorGeometry? resolved = geometry ?? this.geometry;
+  EdgeInsetsGeometry padding(SpotlightGuideBubbleAnchorGeometry? geometry) {
+    final SpotlightGuideBubbleAnchorGeometry? resolved =
+        geometry ?? this.geometry;
     if (resolved == null) {
       return EdgeInsets.zero;
     }
@@ -1176,29 +1177,30 @@ class _WideVisualNarrowConnectionAnchor extends SpotlightGuideBubbleAnchor {
   }
 
   @override
-  SpotlightGuideAnchorConnection? resolveConnection({
+  SpotlightGuideBubbleAnchorConnection? resolveConnection({
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   }) {
-    final SpotlightGuideAnchorGeometry? resolved = geometry ?? this.geometry;
+    final SpotlightGuideBubbleAnchorGeometry? resolved =
+        geometry ?? this.geometry;
     if (resolved == null) {
       return null;
     }
     return switch (resolved.direction) {
-      SpotlightGuideDirection.up ||
-      SpotlightGuideDirection.down => SpotlightGuideAnchorConnection.horizontal(
-        direction: resolved.direction,
-        center: body.left + resolved.offset,
-        halfWidth: connectionHalfExtent,
-      ),
-      SpotlightGuideDirection.left ||
-      SpotlightGuideDirection.right => SpotlightGuideAnchorConnection.vertical(
-        direction: resolved.direction,
-        center: body.top + resolved.offset,
-        halfWidth: connectionHalfExtent,
-      ),
+      SpotlightGuideDirection.up || SpotlightGuideDirection.down =>
+        SpotlightGuideBubbleAnchorConnection.horizontal(
+          direction: resolved.direction,
+          center: body.left + resolved.offset,
+          halfWidth: connectionHalfExtent,
+        ),
+      SpotlightGuideDirection.left || SpotlightGuideDirection.right =>
+        SpotlightGuideBubbleAnchorConnection.vertical(
+          direction: resolved.direction,
+          center: body.top + resolved.offset,
+          halfWidth: connectionHalfExtent,
+        ),
     };
   }
 
@@ -1208,11 +1210,13 @@ class _WideVisualNarrowConnectionAnchor extends SpotlightGuideBubbleAnchor {
     required Rect body,
     required Offset paintOffset,
     required Size paintSize,
-    required SpotlightGuideAnchorGeometry? geometry,
+    required SpotlightGuideBubbleAnchorGeometry? geometry,
   }) {}
 
   @override
-  SpotlightGuideBubbleAnchor resolve(SpotlightGuideAnchorGeometry geometry) {
+  SpotlightGuideBubbleAnchor resolve(
+    SpotlightGuideBubbleAnchorGeometry geometry,
+  ) {
     return _WideVisualNarrowConnectionAnchor(geometry);
   }
 }
