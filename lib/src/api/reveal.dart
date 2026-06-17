@@ -51,14 +51,26 @@ typedef SpotlightGuideRevealCallback =
 /// ```
 @immutable
 class SpotlightGuideRevealOptions {
+  /// Default reveal scroll duration used by built-in reveal helpers.
+  ///
+  /// This follows Flutter's animation convention: scroll "speed" is expressed
+  /// by a duration plus a curve instead of a separate velocity field.
+  static const Duration defaultDuration = Duration(milliseconds: 320);
+
+  /// Default reveal scroll curve used by built-in reveal helpers.
+  ///
+  /// [Curves.easeOutCubic] moves decisively at the start and slows into the
+  /// final target, so hints appear after the page has visually settled.
+  static const Curve defaultCurve = Curves.easeOutCubic;
+
   const SpotlightGuideRevealOptions({
     this.enabled = true,
     this.scrollPolicy = SpotlightGuideRevealScrollPolicy.onlyIfNeeded,
     this.targetPolicy = SpotlightGuideRevealTargetPolicy.highlightedAreaIfFits,
     this.visibilityPadding = EdgeInsets.zero,
     this.alignment = 0.5,
-    this.duration = const Duration(milliseconds: 250),
-    this.curve = Curves.easeInOut,
+    this.duration = SpotlightGuideRevealOptions.defaultDuration,
+    this.curve = SpotlightGuideRevealOptions.defaultCurve,
     this.alignmentPolicy = ScrollPositionAlignmentPolicy.explicit,
   });
 
@@ -82,9 +94,16 @@ class SpotlightGuideRevealOptions {
   final double alignment;
 
   /// Animation duration passed to [Scrollable.ensureVisible].
+  ///
+  /// The default is long enough for users to perceive a reveal scroll without
+  /// feeling blocked. Use a longer duration for multi-container lazy targets,
+  /// and [Duration.zero] for tests or instant guide setup.
   final Duration duration;
 
   /// Animation curve passed to [Scrollable.ensureVisible].
+  ///
+  /// The default [Curves.easeOutCubic] slows into the target so the following
+  /// hint appears on a visually stable destination.
   final Curve curve;
 
   /// Alignment policy passed to [Scrollable.ensureVisible].
@@ -137,7 +156,13 @@ enum SpotlightGuideRevealReason {
 
 /// How the overlay should render while a target is being revealed.
 enum SpotlightGuideRevealMode {
-  /// Keep the dim barrier but hide hint bubbles and spotlight holes until the
+  /// Block page interaction without painting barrier, holes, or hints.
+  ///
+  /// This keeps reveal scrolling visually focused on the page movement, then
+  /// lets the full guide overlay appear after target geometry is stable.
+  interactionOnly,
+
+  /// Paint the dim barrier but hide hint bubbles and spotlight holes until the
   /// reveal transition settles.
   barrierOnly,
 
@@ -153,6 +178,7 @@ class SpotlightGuideRevealDetails {
     required this.stepIndex,
     required this.total,
     required this.step,
+    this.hasShownGuideContent = false,
     this.itemIndex,
     this.item,
   }) : assert(
@@ -172,6 +198,13 @@ class SpotlightGuideRevealDetails {
   /// Step being prepared.
   final SpotlightGuideStep step;
 
+  /// Whether the current guide run has already painted visible guide content.
+  ///
+  /// This lets strategies distinguish the first reveal, where scrolling the
+  /// page before painting the overlay usually feels best, from later
+  /// transitions where preserving the guide's modal barrier feels steadier.
+  final bool hasShownGuideContent;
+
   /// Item index being revealed, or null for step-level preparation.
   final int? itemIndex;
 
@@ -190,11 +223,14 @@ class SpotlightGuideRevealDetails {
       reason == SpotlightGuideRevealReason.sameStepScroll;
 }
 
-/// Controls how hints and spotlight holes render while reveal scrolling runs.
+/// Controls how the overlay renders while reveal scrolling runs.
 ///
-/// The default strategy hides guide content during reveal transitions and shows
-/// it only after scrolling/layout settles. This avoids detached hints during
-/// animated scroll and works well for lazy targets that are built by
+/// The default strategy blocks page interaction during reveal transitions and
+/// waits until scrolling/layout settles before painting target holes and hint
+/// bubbles. Before the first visible hint it stays visually transparent; after
+/// guide content has already appeared it keeps the dim barrier visible so the
+/// guide does not momentarily expose the page. This avoids detached hints
+/// during animated scroll and works well for lazy targets that are built by
 /// [SpotlightGuideStepItem.onReveal].
 ///
 /// Extend this class to choose a different mode for selected transitions.
@@ -204,11 +240,33 @@ abstract class SpotlightGuideRevealStrategy {
   SpotlightGuideRevealMode resolve(SpotlightGuideRevealDetails details);
 }
 
-/// Default reveal presentation: dim the page first, then show hints after
-/// target preparation settles.
+/// Default reveal presentation: scroll first, then show the guide overlay.
+///
+/// During reveal scrolling this strategy installs an invisible interaction
+/// blocker, so the page cannot be tapped while it is moving. The dim barrier,
+/// target holes, and hints are painted together after target preparation
+/// settles. Once a guide has already shown visible content, later reveal
+/// transitions keep the dim barrier visible and only hide holes and hints.
 @immutable
 class SpotlightGuideDeferredReveal extends SpotlightGuideRevealStrategy {
   const SpotlightGuideDeferredReveal();
+
+  @override
+  SpotlightGuideRevealMode resolve(SpotlightGuideRevealDetails details) {
+    return details.hasShownGuideContent
+        ? SpotlightGuideRevealMode.barrierOnly
+        : SpotlightGuideRevealMode.interactionOnly;
+  }
+}
+
+/// Reveal presentation that dims the page while targets are being revealed.
+///
+/// Use this when a product wants a stronger modal preparation state. The dim
+/// barrier appears during reveal scrolling, then hints and spotlight holes are
+/// added after target preparation settles.
+@immutable
+class SpotlightGuideBarrierReveal extends SpotlightGuideRevealStrategy {
+  const SpotlightGuideBarrierReveal();
 
   @override
   SpotlightGuideRevealMode resolve(SpotlightGuideRevealDetails details) {
@@ -406,11 +464,15 @@ class SpotlightGuideRevealContext {
   /// [SpotlightGuideStepItem.onReveal] when a target is in a lazy scrollable and
   /// is not built yet. After this method returns, the portal resolves targets
   /// again and applies [SpotlightGuideRevealOptions] as a final visibility pass.
+  ///
+  /// The default [duration] and [curve] match [SpotlightGuideRevealOptions], so
+  /// lazy-target preparation and built-in reveal scrolling feel consistent. Set
+  /// [duration] to [Duration.zero] to jump immediately.
   Future<void> scrollToOffset({
     required ScrollController controller,
     required double offset,
-    Duration duration = Duration.zero,
-    Curve curve = Curves.easeInOut,
+    Duration duration = SpotlightGuideRevealOptions.defaultDuration,
+    Curve curve = SpotlightGuideRevealOptions.defaultCurve,
     bool clamp = true,
     int settleFrames = 1,
   }) async {
@@ -442,13 +504,17 @@ class SpotlightGuideRevealContext {
   /// [alignment] follows [Scrollable.ensureVisible] semantics: `0` places the
   /// item near the leading edge, `0.5` centers it when possible, and `1` places
   /// it near the trailing edge.
+  ///
+  /// The default [duration] and [curve] match [SpotlightGuideRevealOptions].
+  /// Set [duration] to [Duration.zero] when the target should be built without
+  /// an animated preparation scroll.
   Future<void> scrollToIndex({
     required ScrollController controller,
     required int index,
     required double itemExtent,
     double alignment = 0,
-    Duration duration = Duration.zero,
-    Curve curve = Curves.easeInOut,
+    Duration duration = SpotlightGuideRevealOptions.defaultDuration,
+    Curve curve = SpotlightGuideRevealOptions.defaultCurve,
     int settleFrames = 1,
   }) async {
     assert(index >= 0, 'index must not be negative.');
@@ -487,10 +553,14 @@ class SpotlightGuideRevealContext {
   }
 
   /// Calls [Scrollable.ensureVisible] for every available target context.
+  ///
+  /// This mirrors Flutter's official API: [duration] controls how long the
+  /// scroll takes, [curve] controls its easing, and [alignmentPolicy] controls
+  /// when the target should be realigned.
   Future<void> ensureVisible({
     double alignment = 0.5,
-    Duration duration = const Duration(milliseconds: 250),
-    Curve curve = Curves.easeInOut,
+    Duration duration = SpotlightGuideRevealOptions.defaultDuration,
+    Curve curve = SpotlightGuideRevealOptions.defaultCurve,
     ScrollPositionAlignmentPolicy alignmentPolicy =
         ScrollPositionAlignmentPolicy.explicit,
   }) async {

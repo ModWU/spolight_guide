@@ -44,8 +44,8 @@ typedef SpotlightGuideHintBuilder =
 ///     if (index == 1) {
 ///       await scrollController.animateTo(
 ///         300,
-///         duration: const Duration(milliseconds: 250),
-///         curve: Curves.easeOut,
+///         duration: SpotlightGuideRevealOptions.defaultDuration,
+///         curve: SpotlightGuideRevealOptions.defaultCurve,
 ///       );
 ///     }
 ///   },
@@ -134,10 +134,13 @@ class SpotlightGuideStateDetails {
   /// parsing widget geometry.
   final int resolvedItemCount;
 
+  /// Whether the active guide is on the first step.
   bool get isFirst => total > 0 && index == 0;
 
+  /// Whether the active guide is on the last step.
   bool get isLast => total > 0 && index == total - 1;
 
+  /// Whether the active step currently has at least one renderable item.
   bool get hasResolvedContent => resolvedItemCount > 0;
 }
 

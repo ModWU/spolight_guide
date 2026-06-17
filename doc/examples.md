@@ -311,7 +311,8 @@ SpotlightGuideStepItem(
   },
   revealOptions: const SpotlightGuideRevealOptions(
     alignment: 0.5,
-    duration: Duration(milliseconds: 250),
+    duration: SpotlightGuideRevealOptions.defaultDuration,
+    curve: SpotlightGuideRevealOptions.defaultCurve,
   ),
   hintBuilder: buildHistoryHint,
 )
@@ -320,6 +321,9 @@ SpotlightGuideStepItem(
 The default reveal scrolls only if the mounted target is outside the visible
 viewport. If a product deliberately wants every reveal to recenter the target,
 set `scrollPolicy: SpotlightGuideRevealScrollPolicy.always`.
+Scroll timing follows Flutter's `duration` and `curve` pattern. Use a longer
+duration for nested lazy scrolling, or `Duration.zero` when setup should jump
+instantly.
 
 For one hint that lights a large group but should point at one important card,
 set `anchorTargetId`. The default reveal scroll target policy uses the full

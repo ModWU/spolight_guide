@@ -62,6 +62,7 @@ class SpotlightGuideBarrierStyle {
     return _nonNegativeFiniteOrZero(blurSigma ?? fallback.blurSigma!);
   }
 
+  /// Whether the resolved barrier applies a background blur.
   bool get hasBlur => effectiveBlurSigma > 0;
 
   /// Returns this style with non-null fields from [other] replacing it.

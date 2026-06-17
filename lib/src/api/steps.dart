@@ -270,8 +270,8 @@ class SpotlightGuideStepItem {
   /// Visual decoration for the spotlight target hole.
   ///
   /// The decoration owns the hole padding, shape and optional paint layers such
-  /// as outer rings, glows, and shadows. It decorates the overlay hole only; it does not
-  /// modify the real target widget.
+  /// as outer rings, glows, and shadows. It decorates the overlay hole only; it
+  /// does not modify the real target widget.
   final SpotlightGuideTargetDecoration targetDecoration;
 
   /// Whether taps over this item's target pass through to the widget behind the
@@ -594,23 +594,33 @@ class SpotlightGuideStepContext {
     controller = other.controller;
   }
 
+  /// Whether this is the first step in the active guide sequence.
   bool get isFirst => index == 0;
 
+  /// Whether this is the last step in the active guide sequence.
   bool get isLast => index == total - 1;
 
+  /// Whether this is the first item in the current step.
   bool get isFirstItem => itemIndex == 0;
 
+  /// Whether this is the last item in the current step.
   bool get isLastItem => itemIndex == itemTotal - 1;
 
+  /// Advances to the next step, or finishes when this is the final step.
   void next() => controller.next();
 
+  /// Moves back to the previous step when one exists.
   void previous() => controller.previous();
 
+  /// Shows the step at [index], clamped to the active sequence.
   void goTo(int index) => controller.goTo(index);
 
+  /// Hides the guide without calling [SpotlightGuidePortal.onFinish].
   void hide() => controller.hide();
 
+  /// Finishes the guide and calls [SpotlightGuidePortal.onFinish].
   void finish() => controller.finish();
 
+  /// Restarts the active guide from the first step.
   void reset() => controller.reset();
 }

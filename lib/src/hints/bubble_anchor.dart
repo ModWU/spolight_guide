@@ -654,6 +654,12 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
   int get hashCode => Object.hash(size, tipArcAngle, _geometry);
 }
 
+/// Side segment opened on the bubble body for a visual anchor.
+///
+/// Custom anchors return this from
+/// [SpotlightGuideBubbleAnchor.resolveConnection] so the bubble painter can
+/// skip that side segment and let [SpotlightGuideBubbleAnchor.addToPath] draw a
+/// continuous anchor outline in its place.
 @immutable
 class SpotlightGuideBubbleAnchorConnection {
   const SpotlightGuideBubbleAnchorConnection._({
@@ -663,6 +669,7 @@ class SpotlightGuideBubbleAnchorConnection {
     required this.end,
   });
 
+  /// Creates a connection on a horizontal bubble side.
   factory SpotlightGuideBubbleAnchorConnection.horizontal({
     required SpotlightGuideDirection direction,
     required double center,
@@ -676,6 +683,7 @@ class SpotlightGuideBubbleAnchorConnection {
     );
   }
 
+  /// Creates a connection on a vertical bubble side.
   factory SpotlightGuideBubbleAnchorConnection.vertical({
     required SpotlightGuideDirection direction,
     required double center,
@@ -689,9 +697,16 @@ class SpotlightGuideBubbleAnchorConnection {
     );
   }
 
+  /// Physical side where the anchor is attached.
   final SpotlightGuideDirection direction;
+
+  /// Center of the opened segment on the owning bubble side.
   final double center;
+
+  /// Leading edge of the opened segment on the owning bubble side.
   final double start;
+
+  /// Trailing edge of the opened segment on the owning bubble side.
   final double end;
 }
 

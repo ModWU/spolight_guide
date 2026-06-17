@@ -13,6 +13,58 @@ import 'spotlight_guide_test_helpers.dart';
 /// [SpotlightGuideStepItem.onReveal], default `Scrollable.ensureVisible`
 /// behavior, lazy-list handling, or same-step multi-item auto scroll.
 void main() {
+  test('default reveal strategy adapts to visible guide state', () {
+    final SpotlightGuideStep step = SpotlightGuideStep.item(
+      SpotlightGuideStepItem(targetId: 'a', hintBuilder: hint('strategy')),
+    );
+    final SpotlightGuideRevealDetails initialDetails =
+        SpotlightGuideRevealDetails(
+          reason: SpotlightGuideRevealReason.stepPreparation,
+          stepIndex: 0,
+          total: 1,
+          step: step,
+        );
+    final SpotlightGuideRevealDetails activeDetails =
+        SpotlightGuideRevealDetails(
+          reason: SpotlightGuideRevealReason.sameStepScroll,
+          stepIndex: 0,
+          total: 1,
+          step: step,
+          itemIndex: 0,
+          item: step.items.single,
+          hasShownGuideContent: true,
+        );
+
+    expect(
+      const SpotlightGuideDeferredReveal().resolve(initialDetails),
+      SpotlightGuideRevealMode.interactionOnly,
+    );
+    expect(
+      const SpotlightGuideDeferredReveal().resolve(activeDetails),
+      SpotlightGuideRevealMode.barrierOnly,
+    );
+    expect(
+      const SpotlightGuideBarrierReveal().resolve(initialDetails),
+      SpotlightGuideRevealMode.barrierOnly,
+    );
+    expect(
+      const SpotlightGuideLiveReveal().resolve(initialDetails),
+      SpotlightGuideRevealMode.liveOverlay,
+    );
+  });
+
+  test('reveal helpers share friendly default animation timing', () {
+    const SpotlightGuideRevealOptions options = SpotlightGuideRevealOptions();
+
+    expect(
+      SpotlightGuideRevealOptions.defaultDuration,
+      const Duration(milliseconds: 320),
+    );
+    expect(SpotlightGuideRevealOptions.defaultCurve, Curves.easeOutCubic);
+    expect(options.duration, SpotlightGuideRevealOptions.defaultDuration);
+    expect(options.curve, SpotlightGuideRevealOptions.defaultCurve);
+  });
+
   testWidgets('default reveal scrolls an already built target into view', (
     tester,
   ) async {
@@ -2698,11 +2750,14 @@ void main() {
       final SpotlightGuidePortalController controller =
           SpotlightGuidePortalController();
       final ScrollController scrollController = ScrollController();
+      final List<SpotlightGuideRevealDetails> revealDetails =
+          <SpotlightGuideRevealDetails>[];
       addTearDown(scrollController.dispose);
 
       await tester.pumpWidget(
         guideApp(
           controller: controller,
+          revealStrategy: _RecordingRevealStrategy(revealDetails),
           child: multiItemScrollableTargets(
             controller: scrollController,
             scrollDirection: Axis.vertical,
@@ -2760,6 +2815,17 @@ void main() {
             'toward the viewport edge',
       );
       expect(
+        revealDetails.any(
+          (SpotlightGuideRevealDetails details) =>
+              details.isSameStepScroll && details.hasShownGuideContent,
+        ),
+        isTrue,
+        reason:
+            'same-step reveal happens after visible guide content exists, so '
+            'the default strategy keeps the dim barrier instead of replacing '
+            'the guide with a transparent blocker',
+      );
+      expect(
         find.byKey(const ValueKey<String>('motion-second')),
         findsNothing,
         reason: 'the next hint should wait until reveal scrolling completes',
@@ -2773,4 +2839,16 @@ void main() {
       );
     },
   );
+}
+
+class _RecordingRevealStrategy extends SpotlightGuideRevealStrategy {
+  const _RecordingRevealStrategy(this.details);
+
+  final List<SpotlightGuideRevealDetails> details;
+
+  @override
+  SpotlightGuideRevealMode resolve(SpotlightGuideRevealDetails value) {
+    details.add(value);
+    return const SpotlightGuideDeferredReveal().resolve(value);
+  }
 }

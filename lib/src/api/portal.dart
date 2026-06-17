@@ -145,8 +145,9 @@ class SpotlightGuidePortal extends StatefulWidget {
   /// changes while the guide is active.
   final SpotlightGuideStateCallback? onStateChanged;
 
-  /// Called when the guide finishes normally through [next] on the last step
-  /// or [SpotlightGuidePortalController.finish].
+  /// Called when the guide finishes normally through
+  /// [SpotlightGuideStepContext.next] on the last step or through
+  /// [SpotlightGuidePortalController.finish].
   final VoidCallback? onFinish;
 
   /// Optional callback invoked when the dim barrier is tapped.
@@ -183,11 +184,13 @@ class SpotlightGuidePortal extends StatefulWidget {
   /// How hints and spotlight holes render while reveal scrolling prepares a
   /// target.
   ///
-  /// The default [SpotlightGuideDeferredReveal] keeps the
-  /// dim barrier visible but hides hint content until reveal scrolling and
-  /// layout have settled. Use [SpotlightGuideLiveReveal],
-  /// or a custom [SpotlightGuideRevealStrategy], when an app wants
-  /// a different transition effect.
+  /// The default [SpotlightGuideDeferredReveal] blocks interaction invisibly
+  /// before the first visible hint, then keeps the dim barrier visible for
+  /// later reveal transitions after the guide has appeared. Use
+  /// [SpotlightGuideBarrierReveal] to always paint the dim barrier during
+  /// preparation, [SpotlightGuideLiveReveal] to track moving targets, or a
+  /// custom [SpotlightGuideRevealStrategy] when an app wants a different
+  /// transition effect.
   final SpotlightGuideRevealStrategy revealStrategy;
 
   @override
@@ -620,10 +623,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
           return;
         }
       }
-      if (!_overlayController.isShowing && widget.blockDuringPreparation) {
-        setState(() {});
-        _showOverlay(token: token);
-      }
+      _showRevealOverlayIfNeeded(token);
       final bool revealMayHaveChangedLayout = await _revealStepTargets(token);
       if (revealMayHaveChangedLayout) {
         await _waitForRevealLayoutToSettle(token);
@@ -1000,7 +1000,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     int itemIndex,
     int stepIndex,
   ) {
-    final bool hideContent = _shouldHideRevealTransitionContent(
+    final SpotlightGuideRevealMode revealMode = _revealModeForTransition(
       reason: SpotlightGuideRevealReason.sameStepScroll,
       step: step,
       stepIndex: stepIndex,
@@ -1008,6 +1008,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       item: item,
       itemIndex: itemIndex,
     );
+    final bool hideContent = revealMode != SpotlightGuideRevealMode.liveOverlay;
     final bool shouldClearFocus =
         hideContent &&
         _autoScrollFocusActive &&
@@ -1112,7 +1113,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     int stableFrames = 0;
     Rect? previousSignature;
     final Duration maxWait =
-        (expectedDuration ?? const Duration(milliseconds: 250)) +
+        (expectedDuration ?? const Duration(milliseconds: 320)) +
         const Duration(milliseconds: 400);
     final Stopwatch stopwatch = Stopwatch()..start();
 
@@ -1336,6 +1337,14 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     if (!widget.blockDuringPreparation ||
         _overlayController.isShowing ||
         !_canShowGuide) {
+      return;
+    }
+    setState(() {});
+    _showOverlay(token: token);
+  }
+
+  void _showRevealOverlayIfNeeded(int token) {
+    if (_overlayController.isShowing || !_canShowGuide) {
       return;
     }
     setState(() {});
@@ -1779,20 +1788,24 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         if (items.isEmpty) {
           return const SizedBox.expand();
         }
-        if (_preparing &&
-            (_waitingForRouteTransition ||
-                _shouldHideRevealTransitionContent(
+        if (_preparing) {
+          final SpotlightGuideRevealMode revealMode = _waitingForRouteTransition
+              ? SpotlightGuideRevealMode.interactionOnly
+              : _revealModeForTransition(
                   reason: SpotlightGuideRevealReason.stepPreparation,
                   step: step,
                   stepIndex: stepIndex,
                   total: steps.length,
-                ))) {
-          return _emptyOverlayLayout(
-            step: step,
-            stepIndex: stepIndex,
-            total: steps.length,
-            overlaySize: info.overlaySize,
-          );
+                );
+          if (revealMode != SpotlightGuideRevealMode.liveOverlay) {
+            return _emptyOverlayLayout(
+              step: step,
+              stepIndex: stepIndex,
+              total: steps.length,
+              overlaySize: info.overlaySize,
+              paintBarrier: revealMode == SpotlightGuideRevealMode.barrierOnly,
+            );
+          }
         }
         final List<_SpotlightGuideOverlayItem> resolvedOverlayItems =
             <_SpotlightGuideOverlayItem>[];
@@ -1857,21 +1870,26 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
           final int? transitionItemIndex = _autoScrollTransitionItemIndex;
           if (_isAutoScrollTransitioning(step, resolvedOverlayItems) &&
               transitionItemIndex != null &&
-              transitionItemIndex < step.items.length &&
-              _shouldHideRevealTransitionContent(
-                reason: SpotlightGuideRevealReason.sameStepScroll,
+              transitionItemIndex < step.items.length) {
+            final SpotlightGuideRevealMode revealMode =
+                _revealModeForTransition(
+                  reason: SpotlightGuideRevealReason.sameStepScroll,
+                  step: step,
+                  stepIndex: stepIndex,
+                  total: steps.length,
+                  item: step.items[transitionItemIndex],
+                  itemIndex: transitionItemIndex,
+                );
+            if (revealMode != SpotlightGuideRevealMode.liveOverlay) {
+              return _emptyOverlayLayout(
                 step: step,
                 stepIndex: stepIndex,
                 total: steps.length,
-                item: step.items[transitionItemIndex],
-                itemIndex: transitionItemIndex,
-              )) {
-            return _emptyOverlayLayout(
-              step: step,
-              stepIndex: stepIndex,
-              total: steps.length,
-              overlaySize: info.overlaySize,
-            );
+                overlaySize: info.overlaySize,
+                paintBarrier:
+                    revealMode == SpotlightGuideRevealMode.barrierOnly,
+              );
+            }
           }
           if (_preparing && widget.blockDuringPreparation) {
             return _emptyOverlayLayout(
@@ -1904,16 +1922,22 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     required int stepIndex,
     required int total,
     required Size overlaySize,
+    bool paintBarrier = true,
   }) {
     return _SpotlightGuideOverlayLayout(
       controller: _controller,
       step: step,
-      barrier: _effectiveBarrier(step),
+      barrier: paintBarrier
+          ? _effectiveBarrier(step)
+          : const SpotlightGuideBarrierStyle(
+              color: Colors.transparent,
+              blurSigma: 0,
+            ),
       index: stepIndex,
       total: total,
       items: const <_SpotlightGuideOverlayItem>[],
       targetHoles: const <_SpotlightGuideTargetHole>[],
-      onBarrierTap: _effectiveBarrierTapCallback,
+      onBarrierTap: null,
       overlaySize: overlaySize,
     );
   }
@@ -1959,7 +1983,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     controller.finish();
   }
 
-  bool _shouldHideRevealTransitionContent({
+  SpotlightGuideRevealMode _revealModeForTransition({
     required SpotlightGuideRevealReason reason,
     required SpotlightGuideStep step,
     required int stepIndex,
@@ -1968,16 +1992,16 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     int? itemIndex,
   }) {
     return widget.revealStrategy.resolve(
-          SpotlightGuideRevealDetails(
-            reason: reason,
-            stepIndex: stepIndex,
-            total: total,
-            step: step,
-            itemIndex: itemIndex,
-            item: item,
-          ),
-        ) ==
-        SpotlightGuideRevealMode.barrierOnly;
+      SpotlightGuideRevealDetails(
+        reason: reason,
+        stepIndex: stepIndex,
+        total: total,
+        step: step,
+        hasShownGuideContent: _hasShownGuideContent,
+        itemIndex: itemIndex,
+        item: item,
+      ),
+    );
   }
 
   /// When same-step scroll still has hidden later items, only the highest

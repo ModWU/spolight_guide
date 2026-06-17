@@ -2,6 +2,20 @@
 
 This file records the current component contract for maintainers.
 
+## 0.2.1
+
+- Refined default reveal scrolling so the first reveal can scroll before
+  painting the overlay, while later in-flow reveal transitions keep the dim
+  barrier visible and only hide hints/holes until targets settle.
+- Unified reveal scroll timing around Flutter's `duration` plus `curve`
+  convention, with `320ms` and `Curves.easeOutCubic` defaults shared by
+  `SpotlightGuideRevealOptions`, `ensureVisible`, `scrollToOffset`, and
+  `scrollToIndex`.
+- Added `SpotlightGuideBarrierReveal` for apps that want a visible dim barrier
+  during every reveal preparation phase.
+- Expanded reveal strategy docs and tests for interaction blocking,
+  lazy-target helpers, and same-step scroll transitions.
+
 ## 0.2.0
 
 - Moved pointer configuration to `SpotlightGuideStepItem.pointer` so reveal

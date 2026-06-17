@@ -1,3 +1,12 @@
+/// Flutter widgets for building spotlight-style product guides.
+///
+/// Wrap a page or feature area with [SpotlightGuidePortal], register
+/// highlighted widgets with [SpotlightGuideTarget], and describe each guide
+/// moment with [SpotlightGuideStep] and [SpotlightGuideStepItem]. The package
+/// handles target lookup, reveal scrolling, auto placement, safe-area
+/// adjustment, bubble anchors, optional pointers, and target-hole decoration.
+library;
+
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;

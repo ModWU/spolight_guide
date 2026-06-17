@@ -376,92 +376,96 @@ void main() {
     );
   });
 
-  testWidgets('preparation can allow child taps while reveal scrolling', (
-    tester,
-  ) async {
-    final SpotlightGuidePortalController controller =
-        SpotlightGuidePortalController();
-    final ScrollController scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-    int childTapCount = 0;
+  testWidgets(
+    'reveal scrolling blocks child taps even when preparation allows them',
+    (tester) async {
+      final SpotlightGuidePortalController controller =
+          SpotlightGuidePortalController();
+      final ScrollController scrollController = ScrollController();
+      addTearDown(scrollController.dispose);
+      int childTapCount = 0;
 
-    await tester.pumpWidget(
-      guideApp(
-        controller: controller,
-        blockDuringPreparation: false,
-        steps: <SpotlightGuideStep>[
-          SpotlightGuideStep.item(
-            SpotlightGuideStepItem(
-              targetId: 'scroll-reveal-target',
-              targetDecoration: const SpotlightGuideTargetDecoration(
-                padding: EdgeInsets.zero,
-              ),
-              revealOptions: const SpotlightGuideRevealOptions(
-                duration: Duration(milliseconds: 300),
-                alignment: 0.5,
-              ),
-              hintBuilder: hint('scroll-reveal-pass-through'),
-            ),
-          ),
-        ],
-        child: Stack(
-          children: <Widget>[
-            SingleChildScrollView(
-              controller: scrollController,
-              child: const SizedBox(
-                height: 1400,
-                child: Stack(
-                  children: <Widget>[
-                    Positioned(
-                      left: 40,
-                      top: 1100,
-                      child: SpotlightGuideTarget(
-                        id: 'scroll-reveal-target',
-                        child: SizedBox(
-                          width: 100,
-                          height: 40,
-                          child: ColoredBox(color: Colors.red),
-                        ),
-                      ),
-                    ),
-                  ],
+      await tester.pumpWidget(
+        guideApp(
+          controller: controller,
+          blockDuringPreparation: false,
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'scroll-reveal-target',
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
                 ),
-              ),
-            ),
-            Positioned.fill(
-              child: GestureDetector(
-                key: const ValueKey<String>('scroll-reveal-child'),
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  childTapCount++;
-                },
+                revealOptions: const SpotlightGuideRevealOptions(
+                  duration: Duration(milliseconds: 300),
+                  alignment: 0.5,
+                ),
+                hintBuilder: hint('scroll-reveal-pass-through'),
               ),
             ),
           ],
+          child: Stack(
+            children: <Widget>[
+              SingleChildScrollView(
+                controller: scrollController,
+                child: const SizedBox(
+                  height: 1400,
+                  child: Stack(
+                    children: <Widget>[
+                      Positioned(
+                        left: 40,
+                        top: 1100,
+                        child: SpotlightGuideTarget(
+                          id: 'scroll-reveal-target',
+                          child: SizedBox(
+                            width: 100,
+                            height: 40,
+                            child: ColoredBox(color: Colors.red),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: GestureDetector(
+                  key: const ValueKey<String>('scroll-reveal-child'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    childTapCount++;
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
 
-    controller.reset();
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 50));
+      controller.reset();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
-    expect(
-      find.byKey(const ValueKey<String>('scroll-reveal-pass-through')),
-      findsNothing,
-    );
+      expect(
+        find.byKey(const ValueKey<String>('scroll-reveal-pass-through')),
+        findsNothing,
+      );
 
-    await tester.tap(find.byKey(const ValueKey<String>('scroll-reveal-child')));
-    await tester.pump();
-    expect(childTapCount, 1);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('scroll-reveal-child')),
+        warnIfMissed: false,
+      );
+      await tester.pump();
+      expect(childTapCount, 0);
 
-    await pumpGuide(tester);
-    expect(scrollController.offset, greaterThan(0));
-    expect(
-      find.byKey(const ValueKey<String>('scroll-reveal-pass-through')),
-      findsOneWidget,
-    );
-  });
+      await pumpGuide(tester);
+      expect(scrollController.offset, greaterThan(0));
+      expect(
+        find.byKey(const ValueKey<String>('scroll-reveal-pass-through')),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('finish cancels a pending async step preparation', (
     tester,

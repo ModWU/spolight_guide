@@ -253,9 +253,9 @@ abstract class SpotlightGuideTargetLayer {
 
   /// Paints this layer.
   ///
-  /// Custom layers are painted before the overlay clears [context.path], so
-  /// implementations can paint outward shapes without manually punching out the
-  /// real target widget.
+  /// Custom layers are painted before the overlay clears
+  /// [SpotlightGuideTargetLayerContext.path], so implementations can paint
+  /// outward shapes without manually punching out the real target widget.
   void paint(Canvas canvas, SpotlightGuideTargetLayerContext context);
 }
 
@@ -269,7 +269,10 @@ class SpotlightGuideTargetRingLayer extends SpotlightGuideTargetLayer {
   }) : assert(width >= 0, 'width must not be negative.'),
        assert(outset >= 0, 'outset must not be negative.');
 
+  /// Color used to fill the ring.
   final Color color;
+
+  /// Thickness of the ring measured outward from [outset].
   final double width;
 
   /// Gap between the spotlight hole and the inner edge of this ring.
@@ -328,9 +331,16 @@ class SpotlightGuideTargetOutlineLayer extends SpotlightGuideTargetLayer {
        assert(gapLength >= 0, 'gapLength must not be negative.'),
        assert(outset >= 0, 'outset must not be negative.');
 
+  /// Stroke color of the dashed outline.
   final Color color;
+
+  /// Stroke width of each dash.
   final double width;
+
+  /// Length of each painted dash segment.
   final double dashLength;
+
+  /// Length of the empty space between dash segments.
   final double gapLength;
 
   /// Distance from the spotlight hole to the dashed outline path.
@@ -339,6 +349,7 @@ class SpotlightGuideTargetOutlineLayer extends SpotlightGuideTargetLayer {
   /// Shifts the start of the dash pattern along the path.
   final double phase;
 
+  /// Stroke cap applied to each painted dash segment.
   final StrokeCap strokeCap;
 
   @override
@@ -403,8 +414,13 @@ class SpotlightGuideTargetGlowLayer extends SpotlightGuideTargetLayer {
   }) : assert(blurRadius >= 0, 'blurRadius must not be negative.'),
        assert(spreadRadius >= 0, 'spreadRadius must not be negative.');
 
+  /// Color of the blurred source shape.
   final Color color;
+
+  /// Blur radius passed through [BoxShadow.toPaint].
   final double blurRadius;
+
+  /// Extra outward expansion applied before the shape is blurred.
   final double spreadRadius;
 
   /// Blur style used for the glow.
@@ -453,10 +469,19 @@ class SpotlightGuideTargetShadowLayer extends SpotlightGuideTargetLayer {
   }) : assert(blurRadius >= 0, 'blurRadius must not be negative.'),
        assert(spreadRadius >= 0, 'spreadRadius must not be negative.');
 
+  /// Color of the shadow source shape.
   final Color color;
+
+  /// Blur radius passed through [BoxShadow.toPaint].
   final double blurRadius;
+
+  /// Extra outward expansion applied before the shape is blurred.
   final double spreadRadius;
+
+  /// Physical offset applied to the shadow path.
   final Offset offset;
+
+  /// Blur style used for the shadow.
   final ui.BlurStyle blurStyle;
 
   @override

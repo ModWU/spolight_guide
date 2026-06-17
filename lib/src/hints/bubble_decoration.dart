@@ -5,6 +5,7 @@ part of '../../spotlight_guide.dart';
 abstract class SpotlightGuideAnchoredDecoration extends Decoration {
   const SpotlightGuideAnchoredDecoration();
 
+  /// Visual anchor that contributes layout padding and optional path geometry.
   SpotlightGuideBubbleAnchor get anchor;
 
   /// Anchor size used by layout before the final offset is known.
@@ -16,7 +17,7 @@ abstract class SpotlightGuideAnchoredDecoration extends Decoration {
   /// Minimum side-axis inset needed to keep the visual anchor connected safely.
   double get anchorSafeInset => anchor.safeInset(borderRadius: 0);
 
-  /// Returns a copy that uses current guide geometry.
+  /// Returns a copy resolved with the anchor geometry from the current layout.
   SpotlightGuideAnchoredDecoration resolveAnchor(
     SpotlightGuideBubbleAnchorGeometry geometry,
   );
@@ -52,8 +53,11 @@ class SpotlightGuideBubbleDecoration extends SpotlightGuideAnchoredDecoration {
   final SpotlightGuideBubbleAnchor anchor;
 
   /// Resolved target geometry for [anchor].
+  ///
+  /// This is filled by guide layout when the bubble has been positioned.
   final SpotlightGuideBubbleAnchorGeometry? anchorGeometry;
 
+  /// Geometry currently used by the anchor, if it has been resolved.
   SpotlightGuideBubbleAnchorGeometry? get effectiveAnchorGeometry {
     final SpotlightGuideBubbleAnchor current = anchor;
     if (anchorGeometry != null) {
@@ -178,12 +182,17 @@ class SpotlightGuideProxyDecoration extends SpotlightGuideAnchoredDecoration {
   /// Decoration delegated to Flutter's normal decoration painter.
   final Decoration decoration;
 
+  /// Visual anchor metadata used by guide layout.
   @override
   final SpotlightGuideBubbleAnchor anchor;
 
   /// Resolved target geometry for [anchor].
+  ///
+  /// This is filled by guide layout when the bubble has been positioned.
   final SpotlightGuideBubbleAnchorGeometry? anchorGeometry;
 
+  /// Border radius used to clip the content, if the delegated decoration needs
+  /// a content clip.
   @override
   final BorderRadiusGeometry? contentClipBorderRadius;
 

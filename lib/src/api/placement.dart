@@ -81,11 +81,12 @@ enum SpotlightGuideAnchorAlignment { center, start, end }
 /// ([SpotlightGuideStepItem.targetAnchorPosition]) and the pointer-to-target
 /// contact relationship ([SpotlightGuidePointer.pointerAnchorPosition]).
 ///
-/// The [offset] value is intentionally signed. For [center], a positive
-/// horizontal offset moves toward the semantic end in LTR and toward the
-/// semantic end in RTL after mirroring. For [start] and [end], the value is an
-/// inset from that semantic edge. Negative values are allowed and may move the
-/// anchor outside the target or pointer.
+/// The [offset] value is intentionally signed. With [center], a positive
+/// horizontal offset moves toward semantic end after [Directionality] is
+/// resolved; on a vertical axis, positive moves toward the physical bottom.
+/// With [start] and [end], the value is an inset from that semantic edge.
+/// Negative values are allowed and may move the anchor outside the target or
+/// pointer.
 ///
 /// Example:
 ///
@@ -111,13 +112,13 @@ class SpotlightGuideAnchorPosition {
 
   final SpotlightGuideAnchorAlignment anchor;
 
-  /// Offset applied to the resolved anchor.
+  /// Signed offset applied after the base anchor point is resolved.
   ///
   /// [SpotlightGuideAnchorAlignment.start] and
   /// [SpotlightGuideAnchorAlignment.end] use this as an inset from the semantic
   /// edge. [SpotlightGuideAnchorAlignment.center] uses this as a signed offset
-  /// from the center. On horizontal axes, semantic edges and positive center
-  /// offsets follow [Directionality]. Negative values are allowed and can move
-  /// the point outside the target/pointer bounds.
+  /// from the center. Horizontal axes follow [Directionality]; vertical axes
+  /// are physical, where positive moves down. Negative values are allowed and
+  /// can move the point outside the target or pointer bounds.
   final double offset;
 }

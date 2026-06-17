@@ -11,9 +11,9 @@ enum SpotlightGuidePointerPaintOrder {
 
 /// Builds a pointer child with resolved placement information.
 ///
-/// [child] is the original [SpotlightGuidePointer.child]. Return it
-/// unchanged for the default appearance, or wrap it with transforms, animation,
-/// direction-specific assets, or extra connector UI.
+/// The [child] argument is the original [SpotlightGuidePointer.child]. Return
+/// it unchanged for the default appearance, or wrap it with transforms,
+/// animation, direction-specific assets, or extra connector UI.
 typedef SpotlightGuidePointerBuilder =
     Widget Function(
       BuildContext context,
@@ -23,7 +23,7 @@ typedef SpotlightGuidePointerBuilder =
 
 /// Natural direction of an unrotated pointer asset.
 ///
-/// The default unrotated pose is up. The built-in values use the same
+/// The default unrotated pose is up. The built-in helpers use the same
 /// screen-space angle convention as [Transform.rotate]: positive radians rotate
 /// clockwise. Each constructor accepts an extra clockwise offset so diagonal or
 /// hand-drawn assets can describe their exact source pose, for example
@@ -119,9 +119,10 @@ enum SpotlightGuidePointerAnchorMode {
 /// Where the bubble body sits relative to [SpotlightGuideStepItem.pointer].
 ///
 /// This does not choose where the pointer sits around the target. That remains
-/// the job of [SpotlightGuideStepItem.placement]. This enum only chooses the
-/// second segment of the chain: pointer -> bubble. The distance on that segment
-/// is controlled by [SpotlightGuideStepItem.gap], not by the target size.
+/// the job of [SpotlightGuideStepItem.placement]. This enum chooses only the
+/// second segment of the chain, from pointer to bubble. The distance on that
+/// segment is controlled by [SpotlightGuideStepItem.gap], not by the target
+/// size or [SpotlightGuidePointer.targetGap].
 enum SpotlightGuideBubbleSide {
   /// Keep the target -> pointer -> bubble line on the same axis.
   ///
@@ -184,6 +185,9 @@ class SpotlightGuidePointerContext {
   final SpotlightGuideDirection bubbleAnchorDirection;
 
   /// Resolved physical bubble side relative to the pointer.
+  ///
+  /// Semantic [SpotlightGuideBubbleSide.start] and
+  /// [SpotlightGuideBubbleSide.end] are resolved before this value is exposed.
   final SpotlightGuideBubbleSide bubbleSide;
 
   /// Effective anchor mode for this pointer.
@@ -317,6 +321,7 @@ class SpotlightGuidePointerOffset {
   /// Physical vertical offset. Positive values move down.
   final double dy;
 
+  /// Resolves this offset to physical screen coordinates.
   Offset resolve(TextDirection textDirection) {
     final double resolvedDirectionalDx = switch (textDirection) {
       TextDirection.ltr => _directionalDx,
@@ -438,7 +443,7 @@ class SpotlightGuidePointer {
   /// sideways, explanation appears below it" compositions.
   final SpotlightGuideBubbleSide bubbleSide;
 
-  /// Optional distance from the hint leading edge to the whole bubble edge.
+  /// Optional main-axis distance from the hint leading edge to the bubble edge.
   ///
   /// This is only used by [SpotlightGuideBubbleSide.along].
   /// Leave null for the default pointer-between-target-and-bubble layout. Set

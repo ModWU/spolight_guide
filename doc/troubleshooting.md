@@ -256,7 +256,11 @@ flutter test --no-pub test/spotlight_guide/spotlight_guide_layout_test.dart
 
 ## Scroll Does Not Move To A Lazy List Target
 
-`Scrollable.ensureVisible` only works for mounted targets. If a list row has not been built yet, first jump or animate to the approximate row position in `onReveal`.
+`Scrollable.ensureVisible` only works for mounted targets. If a list row has not
+been built yet, first scroll to the approximate row position in `onReveal`.
+`context.scrollToIndex` and `context.scrollToOffset` use the same default
+duration and curve as built-in reveal scrolling; pass `Duration.zero` when the
+setup should jump instantly.
 
 ```dart
 SpotlightGuideStepItem(

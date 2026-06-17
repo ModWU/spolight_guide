@@ -140,7 +140,7 @@ sequence.
 | --- | --- | --- |
 | `onStepWillShow` | `SpotlightGuidePortal` | Page-level async preparation before a step is revealed. |
 | `autoStart` | `SpotlightGuidePortal` | Controls startup. By default, a portal without an external controller auto-starts, and a portal with an external controller waits for controller commands. Set true to auto-start even with a controller, or false to show only through controller commands. |
-| `blockDuringPreparation` | `SpotlightGuidePortal` | Blocks page taps while the guide is preparing before hints and spotlight holes are ready. Defaults to `true`. Route push transitions still settle before the barrier appears, and a guide waiting for a missing target does not keep an empty barrier active. Set false to preserve pass-through behavior until the visible overlay is ready. |
+| `blockDuringPreparation` | `SpotlightGuidePortal` | Blocks page taps while non-scroll guide preparation runs before hints and spotlight holes are ready. Defaults to `true`. Route push transitions still settle before the barrier appears, and a guide waiting for a missing target does not keep an empty barrier active. Set false to preserve pass-through behavior during non-scroll preparation. Reveal scrolling always blocks page interaction, even when the default strategy does not paint a barrier yet. |
 | `onStateChanged` | `SpotlightGuidePortal` | Fires after a step is shown, after the guide hides, after active portal steps change, and after targets register or unregister while the guide is active. The callback receives `index`, `total`, `isFirst`, `isLast`, `isShowing`, and `resolvedItemCount`. |
 | `onFinish` | `SpotlightGuidePortal` | Called once when the guide finishes through `next` on the last step, `finish`, or when the steps become empty while active. Not called when `enabled` is toggled off. |
 | `barrierDismissBehavior` | `SpotlightGuidePortal` | Built-in empty-space close behavior. Defaults to `disabled`; `onComplete` finishes only after the last step/final same-step item is presented; `anytime` finishes even mid-flow. |
@@ -292,12 +292,15 @@ Margins reduce the available space before min/max constraints are applied.
 | Parameter | Owner | Meaning |
 | --- | --- | --- |
 | `onStepWillShow` | `SpotlightGuidePortal` | Page-level preparation hook before reveal. |
-| `revealStrategy` | `SpotlightGuidePortal` | Controls whether hints/holes are hidden or kept live while reveal scrolling prepares a target. The default hides content until scrolling/layout settles. |
+| `revealStrategy` | `SpotlightGuidePortal` | Controls how the overlay renders while reveal scrolling prepares a target. The default blocks interaction invisibly before the first visible hint, then keeps the dim barrier visible for later reveal transitions. Use `SpotlightGuideBarrierReveal` to always show a visible dim barrier during preparation, or `SpotlightGuideLiveReveal` to keep hints/holes tracking movement. |
 | `onReveal` | `SpotlightGuideStep` | Step-level preparation, such as switching tabs or jumping close to a lazy list target. |
 | `onReveal` | `SpotlightGuideStepItem` | Item-level preparation before default ensureVisible. For the first item it runs during step preparation; for later items in an auto-scroll step it is deferred until that item's auto-scroll turn. |
 | `revealOptions` | `SpotlightGuideStep` | Default reveal behavior inherited by items. |
 | `revealOptions` | `SpotlightGuideStepItem` | Item-specific reveal behavior. |
 | `scrollPolicy` | `SpotlightGuideRevealOptions` | `onlyIfNeeded` by default, so default reveal scrolls only when a mounted target is outside the padded visible viewport. `always` calls `Scrollable.ensureVisible` every time. |
+| `duration` | `SpotlightGuideRevealOptions` and reveal helpers | Scroll animation duration. Defaults to `SpotlightGuideRevealOptions.defaultDuration` (`320ms`). Use this as the "speed" control; longer values feel slower, `Duration.zero` jumps immediately. |
+| `curve` | `SpotlightGuideRevealOptions` and reveal helpers | Scroll animation easing. Defaults to `SpotlightGuideRevealOptions.defaultCurve` (`Curves.easeOutCubic`) so motion slows into the final target before the hint appears. |
+| `alignmentPolicy` | `SpotlightGuideRevealOptions` and `context.ensureVisible` | Passed to Flutter's `Scrollable.ensureVisible` to control when already visible targets should be realigned. |
 | `targetPolicy` | `SpotlightGuideRevealOptions` | Which area drives reveal scrolling: the full highlighted area, the anchor target, or the default anchor fallback when the highlighted area is too large to fit. |
 | `visibilityPadding` | `SpotlightGuideRevealOptions` | Insets applied to the viewport before the `onlyIfNeeded` visibility check. Use it for sticky headers, bottom bars, or visual edge padding. |
 | `autoScrollOptions` | `SpotlightGuideStep` | Same-step multi-item viewing aid for later hidden targets. |
@@ -308,11 +311,14 @@ Margins reduce the available space before min/max constraints are applied.
 
 Default reveal uses `Scrollable.ensureVisible` for already mounted targets only
 when the target is not fully visible under `onlyIfNeeded`. The default
-`SpotlightGuideDeferredReveal` shows only the barrier while
-reveal scrolling or lazy-target preparation runs, then paints hints and holes
-after layout settles. Use `SpotlightGuideLiveReveal`, or a
-custom `SpotlightGuideRevealStrategy`, to keep resolved overlay
-content live during reveal movement.
+`SpotlightGuideDeferredReveal` blocks page interaction without painting the
+guide overlay before the first visible hint, then paints the barrier, hints, and
+holes after layout settles. Once a guide has shown visible content, later reveal
+transitions keep the dim barrier visible and only hide holes and hints. Use
+`SpotlightGuideBarrierReveal` to show a dim barrier during every preparation
+phase. Use `SpotlightGuideLiveReveal`, or a custom
+`SpotlightGuideRevealStrategy`, to keep resolved overlay content live during
+reveal movement.
 For an item with `targetIds` and `anchorTargetId`, `onlyIfNeeded` first tries to
 keep the whole highlighted group visible when that group can fit in the padded
 viewport. If the group is too large to fit, it uses the anchor target as the
@@ -335,8 +341,8 @@ common lazy-list preparation:
 
 | Helper | Meaning |
 | --- | --- |
-| `scrollToOffset(controller, offset, ...)` | Jump or animate a `ScrollController` to an offset, clamp to scroll extents by default, then wait for layout. |
-| `scrollToIndex(controller, index, itemExtent, ...)` | Convenience wrapper for fixed-extent lazy lists. |
+| `scrollToOffset(controller, offset, ...)` | Animate a `ScrollController` to an offset, clamp to scroll extents by default, then wait for layout. Pass `Duration.zero` to jump. |
+| `scrollToIndex(controller, index, itemExtent, ...)` | Convenience wrapper for fixed-extent lazy lists. It uses the same default duration and curve as built-in reveal scrolling. |
 | `waitForLayout(frames: 1)` | Wait for one or more layout frames before the portal resolves targets again. |
 
 Same-step scroll is enabled by default. It starts when a later item is not fully visible, including a not-yet-built later item that provides an `onReveal` hook. For later items, `onReveal` runs at auto-scroll time (after the configured interval) instead of during initial preparation, so the first hint is seen before the guide scrolls on and a lazy target is only built when it is about to be revealed.
@@ -345,7 +351,7 @@ With the default reveal presentation strategy, a same-step scroll overlay hides 
 
 ## Built-In Hint Types
 
-This component does not force one fixed guide UI. `SpotlightGuideStepItem.hintBuilder` can return any widget. The files under `src/hints/` are only built-in convenience implementations.
+This component does not force one fixed guide UI. `SpotlightGuideStepItem.hintBuilder` can return any widget. The files under `lib/src/hints/` are only built-in convenience implementations.
 
 ```text
 src/hints/bubble.dart
@@ -406,7 +412,7 @@ auto placement and semantic `start`/`end` placement have resolved.
 
 When adding a reusable built-in hint:
 
-- Add it under `src/hints/`.
+- Add it under `lib/src/hints/`.
 - Do not add business-specific copy or assets.
 - Accept `SpotlightGuideStepContext` when the hint needs placement, arrow, or controller data.
 - Preserve RTL semantics by using `SpotlightGuideAnchorPosition` instead of hard-coded left/right behavior.

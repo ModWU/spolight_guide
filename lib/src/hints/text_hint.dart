@@ -68,9 +68,16 @@ class SpotlightGuideTextHint extends StatelessWidget {
   /// Whether to show a skip action.
   final bool showSkipButton;
 
+  /// Label for the back button.
   final String backLabel;
+
+  /// Label for the primary button before the final visible item.
   final String nextLabel;
+
+  /// Label for the primary button on the final visible item.
   final String doneLabel;
+
+  /// Label for the skip button.
   final String skipLabel;
 
   /// Override the default back behavior.
@@ -90,10 +97,19 @@ class SpotlightGuideTextHint extends StatelessWidget {
   /// Padding owned by the text body.
   final EdgeInsetsGeometry padding;
 
+  /// Optional style for [title].
   final TextStyle? titleStyle;
+
+  /// Optional style for [message].
   final TextStyle? messageStyle;
+
+  /// Optional style for the progress label.
   final TextStyle? progressStyle;
+
+  /// Optional style for the next/done action.
   final ButtonStyle? primaryButtonStyle;
+
+  /// Optional style for back and skip actions.
   final ButtonStyle? secondaryButtonStyle;
 
   /// Optional widget placed between the text block and action row.
