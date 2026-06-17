@@ -190,8 +190,8 @@ class SpotlightGuideOvalShape extends SpotlightGuideTargetShape {
 }
 
 /// Context passed to custom target decoration layers.
-class SpotlightGuideTargetPaintContext {
-  const SpotlightGuideTargetPaintContext({
+class SpotlightGuideTargetLayerContext {
+  const SpotlightGuideTargetLayerContext({
     required this.rect,
     required this.overlaySize,
     required this.textDirection,
@@ -250,7 +250,7 @@ abstract class SpotlightGuideTargetLayer {
   /// Custom layers are painted before the overlay clears [context.path], so
   /// implementations can paint outward shapes without manually punching out the
   /// real target widget.
-  void paint(Canvas canvas, SpotlightGuideTargetPaintContext context);
+  void paint(Canvas canvas, SpotlightGuideTargetLayerContext context);
 }
 
 /// Draws an outside-only ring around the target hole.
@@ -269,13 +269,13 @@ class SpotlightGuideTargetRingLayer extends SpotlightGuideTargetLayer {
   final double outset;
 
   @override
-  void paint(Canvas canvas, SpotlightGuideTargetPaintContext context) {
+  void paint(Canvas canvas, SpotlightGuideTargetLayerContext context) {
     _paint(canvas, context, antiAlias: true);
   }
 
   void _paint(
     Canvas canvas,
-    SpotlightGuideTargetPaintContext context, {
+    SpotlightGuideTargetLayerContext context, {
     required bool antiAlias,
   }) {
     final double safeWidth = _nonNegativeFiniteOrZero(width);
@@ -334,7 +334,7 @@ class SpotlightGuideTargetOutlineLayer extends SpotlightGuideTargetLayer {
   final StrokeCap strokeCap;
 
   @override
-  void paint(Canvas canvas, SpotlightGuideTargetPaintContext context) {
+  void paint(Canvas canvas, SpotlightGuideTargetLayerContext context) {
     final double safeWidth = _nonNegativeFiniteOrZero(width);
     if (safeWidth <= 0) {
       return;
@@ -407,7 +407,7 @@ class SpotlightGuideTargetGlowLayer extends SpotlightGuideTargetLayer {
   final ui.BlurStyle blurStyle;
 
   @override
-  void paint(Canvas canvas, SpotlightGuideTargetPaintContext context) {
+  void paint(Canvas canvas, SpotlightGuideTargetLayerContext context) {
     final Path path = context.path(
       outset: _nonNegativeFiniteOrZero(spreadRadius),
     );
@@ -450,7 +450,7 @@ class SpotlightGuideTargetShadowLayer extends SpotlightGuideTargetLayer {
   final ui.BlurStyle blurStyle;
 
   @override
-  void paint(Canvas canvas, SpotlightGuideTargetPaintContext context) {
+  void paint(Canvas canvas, SpotlightGuideTargetLayerContext context) {
     final Path path = context
         .path(outset: _nonNegativeFiniteOrZero(spreadRadius))
         .shift(_finiteOffsetOrZero(offset));

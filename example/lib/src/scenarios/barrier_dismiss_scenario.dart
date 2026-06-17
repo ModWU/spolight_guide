@@ -11,12 +11,10 @@ enum BarrierDismissDemoMode {
 
   SpotlightGuideDismissBehavior get behavior {
     return switch (this) {
-      BarrierDismissDemoMode.anytime =>
-        SpotlightGuideDismissBehavior.anytime,
+      BarrierDismissDemoMode.anytime => SpotlightGuideDismissBehavior.anytime,
       BarrierDismissDemoMode.onComplete =>
         SpotlightGuideDismissBehavior.onComplete,
-      BarrierDismissDemoMode.disabled =>
-        SpotlightGuideDismissBehavior.disabled,
+      BarrierDismissDemoMode.disabled => SpotlightGuideDismissBehavior.disabled,
     };
   }
 

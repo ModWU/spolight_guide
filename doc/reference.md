@@ -103,7 +103,7 @@ targetDecoration: const SpotlightGuideTargetDecoration(
 
 Implement `SpotlightGuideTargetShape` for a custom hole path. Implement
 `SpotlightGuideTargetLayer` for custom visual effects. Custom layers receive a
-`SpotlightGuideTargetPaintContext` with the resolved rect, overlay size, text
+`SpotlightGuideTargetLayerContext` with the resolved rect, overlay size, text
 direction, shape, and a helper for building the current path.
 
 ## Controller Navigation
@@ -203,7 +203,7 @@ the anchor away from rounded-corner unsafe areas.
 | Parameter | Owner | Meaning |
 | --- | --- | --- |
 | `pointer` | `SpotlightGuideStepItem` | Layout-aware pointer metadata for built-in bubble/text hints. Keep pointer config here so reveal scrolling, auto placement, and margin safety can reserve pointer space before `hintBuilder` runs. |
-| `SpotlightGuidePointer` | `SpotlightGuideStepItem.pointer` | Groups the pointer widget, optional builder, optional size, pointer anchor, target gap, paint layer, bubble side, and paint offset. |
+| `SpotlightGuidePointer` | `SpotlightGuideStepItem.pointer` | Groups the pointer widget, optional builder, optional size, pointer anchor, target gap, paint order, bubble side, and paint offset. |
 | `SpotlightGuideTapPointer` | `SpotlightGuidePointer.child` | Built-in pointer widget for simple tap cues when an app does not want to ship an image asset. |
 | `SpotlightGuidePointer.builder` | `SpotlightGuidePointer` | Optional wrapper for `child` that receives `SpotlightGuidePointerContext`, useful for rotating or swapping directional pointer artwork after auto and RTL placement resolve. |
 | `SpotlightGuidePointerContext.targetDirection` | `SpotlightGuidePointer.builder` | Physical direction from the pointer toward the target. |
@@ -301,7 +301,7 @@ Margins reduce the available space before min/max constraints are applied.
 | `targetPolicy` | `SpotlightGuideRevealOptions` | Which area drives reveal scrolling: the full highlighted area, the anchor target, or the default anchor fallback when the highlighted area is too large to fit. |
 | `visibilityPadding` | `SpotlightGuideRevealOptions` | Insets applied to the viewport before the `onlyIfNeeded` visibility check. Use it for sticky headers, bottom bars, or visual edge padding. |
 | `autoScrollOptions` | `SpotlightGuideStep` | Same-step multi-item viewing aid for later hidden targets. |
-| `autoScrollOptions.onItemChanged` | `SpotlightGuideAutoScrollOptions` | Fires with [SpotlightGuideAutoScrollContext] when sequential auto scroll focuses a new item (`itemIndex` starts at `0`). Exposes `highlightTargetIds`, `primaryTargetId`, and optional [SpotlightGuideStepItem.key]. Not called when every item is already on screen. |
+| `autoScrollOptions.onItemChanged` | `SpotlightGuideAutoScrollOptions` | Fires with [SpotlightGuideAutoScrollDetails] when sequential same-step scroll focuses a new item (`itemIndex` starts at `0`). Exposes `highlightTargetIds`, `primaryTargetId`, and optional [SpotlightGuideStepItem.key]. Not called when every item is already on screen. |
 | `key` | `SpotlightGuideStepItem` | Optional stable item label for copy or analytics. Not the same as [SpotlightGuideTarget.id]. |
 | `highlightTargetIds` | `SpotlightGuideStepItem` | Read-only view of the registered target ids highlighted by the item (`targetId` or `targetIds`). |
 

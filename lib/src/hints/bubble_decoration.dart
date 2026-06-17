@@ -271,19 +271,17 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
     }
     return switch (resolved.direction) {
       SpotlightGuideDirection.up ||
-      SpotlightGuideDirection.down =>
-        SpotlightGuideAnchorConnection.horizontal(
-          direction: resolved.direction,
-          center: body.left + resolved.offset,
-          halfWidth: connectionHalfExtent,
-        ),
+      SpotlightGuideDirection.down => SpotlightGuideAnchorConnection.horizontal(
+        direction: resolved.direction,
+        center: body.left + resolved.offset,
+        halfWidth: connectionHalfExtent,
+      ),
       SpotlightGuideDirection.left ||
-      SpotlightGuideDirection.right =>
-        SpotlightGuideAnchorConnection.vertical(
-          direction: resolved.direction,
-          center: body.top + resolved.offset,
-          halfWidth: connectionHalfExtent,
-        ),
+      SpotlightGuideDirection.right => SpotlightGuideAnchorConnection.vertical(
+        direction: resolved.direction,
+        center: body.top + resolved.offset,
+        halfWidth: connectionHalfExtent,
+      ),
     };
   }
 
@@ -313,47 +311,47 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
     final double startSide = -connectionHalfExtent / visualHalfExtent;
     final double endSide = connectionHalfExtent / visualHalfExtent;
 
-    final SpotlightGuideAnchorPathBuilder builder = switch (resolved
-        .direction) {
-      SpotlightGuideDirection.up => SpotlightGuideAnchorPathBuilder(
-        direction: resolved.direction,
-        startSide: startSide,
-        endSide: endSide,
-        pointBuilder: (double side, double outward) => Offset(
-          connection.center + visualHalfExtent * side,
-          body.top - (body.top - paintOffset.dy) * outward,
-        ),
-      ),
-      SpotlightGuideDirection.down => SpotlightGuideAnchorPathBuilder(
-        direction: resolved.direction,
-        startSide: startSide,
-        endSide: endSide,
-        pointBuilder: (double side, double outward) => Offset(
-          connection.center - visualHalfExtent * side,
-          body.bottom +
-              (paintOffset.dy + paintSize.height - body.bottom) * outward,
-        ),
-      ),
-      SpotlightGuideDirection.left => SpotlightGuideAnchorPathBuilder(
-        direction: resolved.direction,
-        startSide: startSide,
-        endSide: endSide,
-        pointBuilder: (double side, double outward) => Offset(
-          body.left - (body.left - paintOffset.dx) * outward,
-          connection.center - visualHalfExtent * side,
-        ),
-      ),
-      SpotlightGuideDirection.right => SpotlightGuideAnchorPathBuilder(
-        direction: resolved.direction,
-        startSide: startSide,
-        endSide: endSide,
-        pointBuilder: (double side, double outward) => Offset(
-          body.right +
-              (paintOffset.dx + paintSize.width - body.right) * outward,
-          connection.center + visualHalfExtent * side,
-        ),
-      ),
-    };
+    final SpotlightGuideAnchorPathBuilder builder =
+        switch (resolved.direction) {
+          SpotlightGuideDirection.up => SpotlightGuideAnchorPathBuilder(
+            direction: resolved.direction,
+            startSide: startSide,
+            endSide: endSide,
+            pointBuilder: (double side, double outward) => Offset(
+              connection.center + visualHalfExtent * side,
+              body.top - (body.top - paintOffset.dy) * outward,
+            ),
+          ),
+          SpotlightGuideDirection.down => SpotlightGuideAnchorPathBuilder(
+            direction: resolved.direction,
+            startSide: startSide,
+            endSide: endSide,
+            pointBuilder: (double side, double outward) => Offset(
+              connection.center - visualHalfExtent * side,
+              body.bottom +
+                  (paintOffset.dy + paintSize.height - body.bottom) * outward,
+            ),
+          ),
+          SpotlightGuideDirection.left => SpotlightGuideAnchorPathBuilder(
+            direction: resolved.direction,
+            startSide: startSide,
+            endSide: endSide,
+            pointBuilder: (double side, double outward) => Offset(
+              body.left - (body.left - paintOffset.dx) * outward,
+              connection.center - visualHalfExtent * side,
+            ),
+          ),
+          SpotlightGuideDirection.right => SpotlightGuideAnchorPathBuilder(
+            direction: resolved.direction,
+            startSide: startSide,
+            endSide: endSide,
+            pointBuilder: (double side, double outward) => Offset(
+              body.right +
+                  (paintOffset.dx + paintSize.width - body.right) * outward,
+              connection.center + visualHalfExtent * side,
+            ),
+          ),
+        };
     shape.addToPath(path, builder);
   }
 

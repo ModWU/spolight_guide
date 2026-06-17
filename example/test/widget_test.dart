@@ -138,10 +138,7 @@ void main() {
     expect(step.items.single.targetId, targetDecorationDashedId);
     expect(decoration.shape, isA<SpotlightGuideRoundedRectShape>());
     expect(decoration.layers, hasLength(1));
-    expect(
-      decoration.layers.single,
-      isA<SpotlightGuideTargetOutlineLayer>(),
-    );
+    expect(decoration.layers.single, isA<SpotlightGuideTargetOutlineLayer>());
   });
 
   testWidgets('custom anchor selector switches arrow styles', (

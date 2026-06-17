@@ -73,19 +73,14 @@ void main() {
     tester,
   ) async {
     final Map<SpotlightGuidePlacement, SpotlightGuideDirection>
-    expectedDirections =
-        <SpotlightGuidePlacement, SpotlightGuideDirection>{
-          SpotlightGuidePlacement.top: SpotlightGuideDirection.down,
-          SpotlightGuidePlacement.bottom: SpotlightGuideDirection.up,
-          SpotlightGuidePlacement.left: SpotlightGuideDirection.right,
-          SpotlightGuidePlacement.right: SpotlightGuideDirection.left,
-        };
+    expectedDirections = <SpotlightGuidePlacement, SpotlightGuideDirection>{
+      SpotlightGuidePlacement.top: SpotlightGuideDirection.down,
+      SpotlightGuidePlacement.bottom: SpotlightGuideDirection.up,
+      SpotlightGuidePlacement.left: SpotlightGuideDirection.right,
+      SpotlightGuidePlacement.right: SpotlightGuideDirection.left,
+    };
 
-    for (final MapEntry<
-          SpotlightGuidePlacement,
-          SpotlightGuideDirection
-        >
-        entry
+    for (final MapEntry<SpotlightGuidePlacement, SpotlightGuideDirection> entry
         in expectedDirections.entries) {
       const double gap = 18;
       final String label = 'fixed-${entry.key.name}';
@@ -240,17 +235,12 @@ void main() {
 
   testWidgets('rtl keeps fixed anchor directions physical', (tester) async {
     final Map<SpotlightGuidePlacement, SpotlightGuideDirection>
-    expectedDirections =
-        <SpotlightGuidePlacement, SpotlightGuideDirection>{
-          SpotlightGuidePlacement.left: SpotlightGuideDirection.right,
-          SpotlightGuidePlacement.right: SpotlightGuideDirection.left,
-        };
+    expectedDirections = <SpotlightGuidePlacement, SpotlightGuideDirection>{
+      SpotlightGuidePlacement.left: SpotlightGuideDirection.right,
+      SpotlightGuidePlacement.right: SpotlightGuideDirection.left,
+    };
 
-    for (final MapEntry<
-          SpotlightGuidePlacement,
-          SpotlightGuideDirection
-        >
-        entry
+    for (final MapEntry<SpotlightGuidePlacement, SpotlightGuideDirection> entry
         in expectedDirections.entries) {
       final String label = 'rtl-fixed-${entry.key.name}';
       final Map<String, SpotlightGuideStepContext> contexts =
@@ -911,10 +901,7 @@ void main() {
       await pumpGuide(tester);
 
       final SpotlightGuideStepContext guide = contexts['safe-arrow']!;
-      expect(
-        guide.anchorOffset,
-        greaterThanOrEqualTo(guide.anchorSafeInset),
-      );
+      expect(guide.anchorOffset, greaterThanOrEqualTo(guide.anchorSafeInset));
       expect(
         arrowSideExtent(guide) - guide.anchorOffset,
         greaterThanOrEqualTo(guide.anchorSafeInset),
@@ -992,10 +979,7 @@ void main() {
 
       final SpotlightGuideStepContext guide = contexts[placementCase.label]!;
       expect(guide.placement, placementCase.placement);
-      expect(
-        guide.anchorOffset,
-        greaterThanOrEqualTo(guide.anchorSafeInset),
-      );
+      expect(guide.anchorOffset, greaterThanOrEqualTo(guide.anchorSafeInset));
       expect(
         arrowSideExtent(guide) - guide.anchorOffset,
         greaterThanOrEqualTo(guide.anchorSafeInset),
@@ -1185,13 +1169,9 @@ class _WideVisualNarrowConnectionAnchor extends SpotlightGuideBubbleAnchor {
     }
     return switch (resolved.direction) {
       SpotlightGuideDirection.up => const EdgeInsets.only(top: 16),
-      SpotlightGuideDirection.down => const EdgeInsets.only(
-        bottom: 16,
-      ),
+      SpotlightGuideDirection.down => const EdgeInsets.only(bottom: 16),
       SpotlightGuideDirection.left => const EdgeInsets.only(left: 16),
-      SpotlightGuideDirection.right => const EdgeInsets.only(
-        right: 16,
-      ),
+      SpotlightGuideDirection.right => const EdgeInsets.only(right: 16),
     };
   }
 
@@ -1208,19 +1188,17 @@ class _WideVisualNarrowConnectionAnchor extends SpotlightGuideBubbleAnchor {
     }
     return switch (resolved.direction) {
       SpotlightGuideDirection.up ||
-      SpotlightGuideDirection.down =>
-        SpotlightGuideAnchorConnection.horizontal(
-          direction: resolved.direction,
-          center: body.left + resolved.offset,
-          halfWidth: connectionHalfExtent,
-        ),
+      SpotlightGuideDirection.down => SpotlightGuideAnchorConnection.horizontal(
+        direction: resolved.direction,
+        center: body.left + resolved.offset,
+        halfWidth: connectionHalfExtent,
+      ),
       SpotlightGuideDirection.left ||
-      SpotlightGuideDirection.right =>
-        SpotlightGuideAnchorConnection.vertical(
-          direction: resolved.direction,
-          center: body.top + resolved.offset,
-          halfWidth: connectionHalfExtent,
-        ),
+      SpotlightGuideDirection.right => SpotlightGuideAnchorConnection.vertical(
+        direction: resolved.direction,
+        center: body.top + resolved.offset,
+        halfWidth: connectionHalfExtent,
+      ),
     };
   }
 

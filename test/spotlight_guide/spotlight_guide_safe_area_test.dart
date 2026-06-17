@@ -265,8 +265,7 @@ void main() {
                     size: const Size(40, 24),
                     pointerAnchorPosition:
                         const SpotlightGuideAnchorPosition.start(),
-                    bubbleSide:
-                        SpotlightGuideBubbleSide.bottom,
+                    bubbleSide: SpotlightGuideBubbleSide.bottom,
                     child: SizedBox(
                       key: pointerKey,
                       width: 40,

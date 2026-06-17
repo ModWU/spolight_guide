@@ -31,8 +31,7 @@ part of '../../spotlight_guide.dart';
 /// ```
 class SpotlightGuidePortalController {
   _SpotlightGuidePortalState? _state;
-  final List<_ControllerCommand> _pendingCommands =
-      <_ControllerCommand>[];
+  final List<_ControllerCommand> _pendingCommands = <_ControllerCommand>[];
   List<SpotlightGuideStep>? _steps;
   int _index = 0;
   bool _active = false;
@@ -71,11 +70,7 @@ class SpotlightGuidePortalController {
   /// Continue to the next step. If the current step is the last one,
   /// [finish] is called automatically.
   void next() {
-    _runOrPending(
-      const _ControllerCommand(
-        _ControllerCommandType.next,
-      ),
-    );
+    _runOrPending(const _ControllerCommand(_ControllerCommandType.next));
   }
 
   /// Go back to the previous step.
@@ -83,11 +78,7 @@ class SpotlightGuidePortalController {
   /// Does nothing when the guide is already on the first step. It never calls
   /// [finish].
   void previous() {
-    _runOrPending(
-      const _ControllerCommand(
-        _ControllerCommandType.previous,
-      ),
-    );
+    _runOrPending(const _ControllerCommand(_ControllerCommandType.previous));
   }
 
   /// Jump directly to [index] and show that step.
@@ -95,49 +86,27 @@ class SpotlightGuidePortalController {
   /// The index is clamped to the valid range. If the guide is not visible yet,
   /// it is shown at that step.
   void goTo(int index) {
-    _runOrPending(
-      _ControllerCommand(
-        _ControllerCommandType.goTo,
-        index,
-      ),
-    );
+    _runOrPending(_ControllerCommand(_ControllerCommandType.goTo, index));
   }
 
   /// Finish the guide immediately.
   void finish() {
-    _runOrPending(
-      const _ControllerCommand(
-        _ControllerCommandType.finish,
-      ),
-    );
+    _runOrPending(const _ControllerCommand(_ControllerCommandType.finish));
   }
 
   /// Hide the guide without calling [SpotlightGuidePortal.onFinish].
   void hide() {
-    _runOrPending(
-      const _ControllerCommand(
-        _ControllerCommandType.hide,
-      ),
-    );
+    _runOrPending(const _ControllerCommand(_ControllerCommandType.hide));
   }
 
   /// Restart from the first step and show the guide.
   void reset() {
-    _runOrPending(
-      const _ControllerCommand(
-        _ControllerCommandType.reset,
-      ),
-    );
+    _runOrPending(const _ControllerCommand(_ControllerCommandType.reset));
   }
 
   /// Show [SpotlightGuidePortal.steps].
   void showPortal({int index = 0}) {
-    _runOrPending(
-      _ControllerCommand(
-        _ControllerCommandType.showPortal,
-        index,
-      ),
-    );
+    _runOrPending(_ControllerCommand(_ControllerCommandType.showPortal, index));
   }
 
   /// Show a runtime guide sequence.
@@ -150,36 +119,20 @@ class SpotlightGuidePortalController {
     final List<SpotlightGuideStep> runtimeSteps =
         List<SpotlightGuideStep>.unmodifiable(steps);
     _runOrPending(
-      _ControllerCommand(
-        _ControllerCommandType.showSteps,
-        index,
-        runtimeSteps,
-      ),
+      _ControllerCommand(_ControllerCommandType.showSteps, index, runtimeSteps),
     );
-  }
-
-  /// Show a guide sequence.
-  ///
-  /// Prefer [showPortal] or [showSteps] in new code.
-  @Deprecated('Use showPortal() or showSteps(steps) instead.')
-  void show({List<SpotlightGuideStep>? steps, int index = 0}) {
-    if (steps == null) {
-      showPortal(index: index);
-    } else {
-      showSteps(steps, index: index);
-    }
   }
 
   void _attach(_SpotlightGuidePortalState state) {
     _state = state;
-    final List<_ControllerCommand> commands =
-        List<_ControllerCommand>.of(_pendingCommands);
+    final List<_ControllerCommand> commands = List<_ControllerCommand>.of(
+      _pendingCommands,
+    );
     _pendingCommands.clear();
     if (commands.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_state == state && state.mounted) {
-          for (final _ControllerCommand command
-              in commands) {
+          for (final _ControllerCommand command in commands) {
             state._handleControllerCommand(command);
           }
         }
@@ -284,11 +237,7 @@ enum _ControllerCommandType {
 
 /// One queued controller action, optionally carrying a target step index.
 class _ControllerCommand {
-  const _ControllerCommand(
-    this.type, [
-    this.index,
-    this.steps,
-  ]);
+  const _ControllerCommand(this.type, [this.index, this.steps]);
 
   final _ControllerCommandType type;
   final int? index;

@@ -19,8 +19,7 @@ List<SpotlightGuideStep> buildLargeGroupAnchorScenario() {
         placement: SpotlightGuidePlacement.verticalAuto,
         margin: kExampleGuideMargin,
         revealOptions: const SpotlightGuideRevealOptions(
-          targetPolicy: SpotlightGuideRevealTargetPolicy
-              .highlightedAreaIfFits,
+          targetPolicy: SpotlightGuideRevealTargetPolicy.highlightedAreaIfFits,
         ),
         hintBuilder: (context, guide) {
           return buildGuideHint(

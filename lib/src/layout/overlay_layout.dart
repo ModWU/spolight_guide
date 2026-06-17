@@ -77,7 +77,7 @@ class _SpotlightGuideOverlayLayoutState
             overlayItem: overlayItem,
             stepTargetRects: stepTargetRects,
           );
-      final SpotlightGuideStepContext contextInfo = inputs.contextFor(
+      final SpotlightGuideStepContext guide = inputs.contextFor(
         layout: layout,
         contentSize: layout.rect.size,
       );
@@ -86,7 +86,7 @@ class _SpotlightGuideOverlayLayoutState
           overlayItem: overlayItem,
           layout: layout,
           inputs: inputs,
-          contextInfo: contextInfo,
+          guide: guide,
         ),
       );
     }
@@ -124,13 +124,13 @@ class _SpotlightGuideOverlayLayoutState
   ) {
     return _SpotlightGuideHintSlot(
       inputs: renderedItem.inputs,
-      guide: renderedItem.contextInfo,
+      guide: renderedItem.guide,
       textDirection: Directionality.of(context),
       readiness: _readiness,
       readinessKey: renderedItem.overlayItem.itemIndex,
       child: renderedItem.overlayItem.item.hintBuilder(
         context,
-        renderedItem.contextInfo,
+        renderedItem.guide,
       ),
     );
   }
@@ -225,13 +225,13 @@ class _SpotlightGuideRenderedItem {
     required this.overlayItem,
     required this.layout,
     required this.inputs,
-    required this.contextInfo,
+    required this.guide,
   });
 
   final _SpotlightGuideOverlayItem overlayItem;
   final _HintLayout layout;
   final _SpotlightGuideHintLayoutInputs inputs;
-  final SpotlightGuideStepContext contextInfo;
+  final SpotlightGuideStepContext guide;
 }
 
 class _SpotlightGuideHintLayoutInputs {
@@ -539,8 +539,9 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
   }
 
   bool _isSubtreePaintReady(RenderObject renderObject) {
-    final _HintLayoutParticipant? participant =
-        _hintLayoutParticipantOf(renderObject);
+    final _HintLayoutParticipant? participant = _hintLayoutParticipantOf(
+      renderObject,
+    );
     if (participant != null && !participant.isPaintReady) {
       return false;
     }
@@ -595,8 +596,9 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
   }
 
   Offset _layoutOffsetCorrection(RenderObject renderObject) {
-    final _HintLayoutParticipant? participant =
-        _hintLayoutParticipantOf(renderObject);
+    final _HintLayoutParticipant? participant = _hintLayoutParticipantOf(
+      renderObject,
+    );
     if (participant != null) {
       final Offset correction = participant.layoutOffsetCorrection;
       if (correction != Offset.zero) {
@@ -613,8 +615,9 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
   }
 
   double? _internalTargetGap(RenderObject renderObject) {
-    final _HintLayoutParticipant? participant =
-        _hintLayoutParticipantOf(renderObject);
+    final _HintLayoutParticipant? participant = _hintLayoutParticipantOf(
+      renderObject,
+    );
     if (participant != null) {
       final double? targetGap = participant.targetLayoutGap;
       if (targetGap != null) {
@@ -628,9 +631,7 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
     return targetGap;
   }
 
-  _HintLayoutParticipant? _hintLayoutParticipantOf(
-    RenderObject renderObject,
-  ) {
+  _HintLayoutParticipant? _hintLayoutParticipantOf(RenderObject renderObject) {
     if (renderObject is _HintLayoutParticipant) {
       return renderObject as _HintLayoutParticipant;
     }

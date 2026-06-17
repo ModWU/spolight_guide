@@ -50,7 +50,7 @@ Widget guideApp({
   Key? appKey,
   Locale? locale,
   SpotlightGuidePortalController? controller,
-  SpotlightGuideStepCallback? onStepWillShow,
+  SpotlightGuideStepWillShowCallback? onStepWillShow,
   SpotlightGuideStateCallback? onStateChanged,
   VoidCallback? onFinish,
   SpotlightGuideBarrierTapCallback? onBarrierTap,
@@ -86,8 +86,7 @@ Widget guideApp({
             onBarrierTap: onBarrierTap,
             barrierDismissBehavior: barrierDismissBehavior,
             barrier: barrier,
-            blockDuringPreparation:
-                blockDuringPreparation,
+            blockDuringPreparation: blockDuringPreparation,
             revealStrategy: revealStrategy,
             child:
                 child ??
@@ -284,12 +283,12 @@ Future<void> pumpGuideFrames(WidgetTester tester, {int count = 12}) async {
   }
 }
 
-/// Records [SpotlightGuideAutoScrollContext.itemIndex] for tests.
+/// Records [SpotlightGuideAutoScrollDetails.itemIndex] for tests.
 void recordAutoScrollIndex(
   List<int> indices,
-  SpotlightGuideAutoScrollContext context,
+  SpotlightGuideAutoScrollDetails details,
 ) {
-  indices.add(context.itemIndex);
+  indices.add(details.itemIndex);
 }
 
 /// Advances the fake-async clock by exactly [interval], then refreshes layout

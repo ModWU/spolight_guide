@@ -140,8 +140,8 @@ List<_DeferredTargetRingLayer> _collectTargetRingLayers(
     if (decoration.layers.isEmpty) {
       continue;
     }
-    final SpotlightGuideTargetPaintContext context =
-        SpotlightGuideTargetPaintContext(
+    final SpotlightGuideTargetLayerContext context =
+        SpotlightGuideTargetLayerContext(
           rect: targetHole.rect,
           overlaySize: size,
           textDirection: textDirection,
@@ -173,8 +173,8 @@ List<_DeferredTargetRingLayer> _paintTargetDecorations(
     if (decoration.layers.isEmpty) {
       continue;
     }
-    final SpotlightGuideTargetPaintContext context =
-        SpotlightGuideTargetPaintContext(
+    final SpotlightGuideTargetLayerContext context =
+        SpotlightGuideTargetLayerContext(
           rect: targetHole.rect,
           overlaySize: size,
           textDirection: textDirection,
@@ -206,7 +206,7 @@ void _paintTargetRingLayers(
 class _DeferredTargetRingLayer {
   const _DeferredTargetRingLayer({required this.context, required this.layer});
 
-  final SpotlightGuideTargetPaintContext context;
+  final SpotlightGuideTargetLayerContext context;
   final SpotlightGuideTargetRingLayer layer;
 }
 

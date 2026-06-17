@@ -79,14 +79,14 @@ class _ControllerApiPageState extends State<ControllerApiPage> {
     );
   }
 
-  void _handleGuideStateChanged(SpotlightGuideStateContext context) {
+  void _handleGuideStateChanged(SpotlightGuideStateDetails details) {
     if (!mounted) {
       return;
     }
     setState(() {
       _guideStatus =
-          '${context.reason.name}: index ${context.index + 1}/${context.total}, '
-          'resolved items ${context.resolvedItemCount}';
+          '${details.reason.name}: index ${details.index + 1}/${details.total}, '
+          'resolved items ${details.resolvedItemCount}';
     });
   }
 }

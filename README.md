@@ -439,7 +439,7 @@ change while active, and when targets register or unregister.
 
 ```dart
 SpotlightGuidePortal(
-  onStateChanged: (SpotlightGuideStateContext state) {
+  onStateChanged: (SpotlightGuideStateDetails state) {
     debugPrint(
       'guide ${state.index + 1}/${state.total}, '
       'resolved=${state.resolvedItemCount}',
@@ -500,7 +500,7 @@ SpotlightGuideStepItem(
 )
 ```
 
-For multiple items in the same step, `SpotlightGuideAutoScrollOptions` can briefly scroll to hidden later targets so users understand the whole introduced area. It is enabled by default and starts when a later target is not fully visible, or when a not-yet-built later target provides an `onReveal` hook. During the default auto-scroll transition, the outgoing hint is hidden before scrolling starts and the next hint appears after the target settles, so hints do not detach from moving or offscreen targets. Use `autoScrollOptions.onItemChanged` to react when that focused item changes. The callback receives [SpotlightGuideAutoScrollContext] with `itemIndex`, `itemTotal`, `highlightTargetIds`, and optional [SpotlightGuideStepItem.key]. Use one item with `targetIds` when a single hint should light several registered targets at once.
+For multiple items in the same step, `SpotlightGuideAutoScrollOptions` can briefly scroll to hidden later targets so users understand the whole introduced area. It is enabled by default and starts when a later target is not fully visible, or when a not-yet-built later target provides an `onReveal` hook. During the default auto-scroll transition, the outgoing hint is hidden before scrolling starts and the next hint appears after the target settles, so hints do not detach from moving or offscreen targets. Use `autoScrollOptions.onItemChanged` to react when that focused item changes. The callback receives [SpotlightGuideAutoScrollDetails] with `itemIndex`, `itemTotal`, `highlightTargetIds`, and optional [SpotlightGuideStepItem.key]. Use one item with `targetIds` when a single hint should light several registered targets at once.
 
 ## Barrier Style
 

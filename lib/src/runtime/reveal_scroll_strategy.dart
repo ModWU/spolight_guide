@@ -61,8 +61,7 @@ class _RevealScrollStrategy {
       SpotlightGuideRevealTargetPolicy.anchorTarget =>
         _isAnchorRevealSatisfied(visibleViewport, geometry, item) ??
             _isHighlightedAreaRevealSatisfied(visibleViewport, geometry),
-      SpotlightGuideRevealTargetPolicy
-          .highlightedAreaIfFits =>
+      SpotlightGuideRevealTargetPolicy.highlightedAreaIfFits =>
         _highlightedAreaCanFit(visibleViewport, geometry)
             ? _isHighlightedAreaRevealSatisfied(visibleViewport, geometry)
             : _isAnchorRevealSatisfied(visibleViewport, geometry, item) ??
@@ -294,8 +293,7 @@ class _RevealScrollStrategy {
       return bubbleReserve;
     }
 
-    final SpotlightGuideDirection
-    targetDirection = switch (placement) {
+    final SpotlightGuideDirection targetDirection = switch (placement) {
       SpotlightGuidePlacement.bottom => SpotlightGuideDirection.up,
       SpotlightGuidePlacement.top => SpotlightGuideDirection.down,
       SpotlightGuidePlacement.left => SpotlightGuideDirection.right,
@@ -308,14 +306,12 @@ class _RevealScrollStrategy {
         'placements must be resolved before pointer reserve checks',
       ),
     };
-    final SpotlightGuideBubbleSide bubbleSide =
-        _resolvePointerLayoutBubbleSide(
-          pointer: pointer,
-          textDirection: textDirection,
-          targetDirection: targetDirection,
-        );
-    if (bubbleSide ==
-        SpotlightGuideBubbleSide.along) {
+    final SpotlightGuideBubbleSide bubbleSide = _resolvePointerLayoutBubbleSide(
+      pointer: pointer,
+      textDirection: textDirection,
+      targetDirection: targetDirection,
+    );
+    if (bubbleSide == SpotlightGuideBubbleSide.along) {
       final double pointerToBubbleGap = _finiteOrZero(item.gap);
       return math.max(
         bubbleReserve,
@@ -338,8 +334,7 @@ class _RevealScrollStrategy {
         return false;
       case SpotlightGuideRevealTargetPolicy.anchorTarget:
         return true;
-      case SpotlightGuideRevealTargetPolicy
-          .highlightedAreaIfFits:
+      case SpotlightGuideRevealTargetPolicy.highlightedAreaIfFits:
         final Rect? viewport = viewportRect();
         if (viewport == null) {
           return false;

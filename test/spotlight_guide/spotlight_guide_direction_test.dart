@@ -47,8 +47,7 @@ void main() {
           textDirection,
         );
         final _TargetGeometry target = _targetFor(expectedPlacement);
-        for (final SpotlightGuideBubbleSide bubbleSide
-            in bubbleSides) {
+        for (final SpotlightGuideBubbleSide bubbleSide in bubbleSides) {
           final SpotlightGuideBubbleSide expectedBubbleSide =
               _resolveBubbleSide(bubbleSide, textDirection);
           final SpotlightGuideDirection expectedTargetDirection =
@@ -143,21 +142,13 @@ void main() {
               _bubbleAnchorGeometry(tester);
 
           expect(guide.placement, expectedPlacement, reason: label);
-          expect(
-            guide.anchorDirection,
-            expectedTargetDirection,
-            reason: label,
-          );
+          expect(guide.anchorDirection, expectedTargetDirection, reason: label);
           expect(
             pointerContext.targetDirection,
             expectedTargetDirection,
             reason: label,
           );
-          expect(
-            pointerContext.bubbleSide,
-            expectedBubbleSide,
-            reason: label,
-          );
+          expect(pointerContext.bubbleSide, expectedBubbleSide, reason: label);
           expect(
             pointerContext.bubbleAnchorDirection,
             expectedAnchorDirection,
@@ -251,8 +242,7 @@ void main() {
 
     for (final TextDirection textDirection in TextDirection.values) {
       for (final _AutoPlacementCase testCase in cases) {
-        for (final SpotlightGuideBubbleSide bubbleSide
-            in bubbleSides) {
+        for (final SpotlightGuideBubbleSide bubbleSide in bubbleSides) {
           final String label =
               '${testCase.label}-${textDirection.name}'
               '-${bubbleSide.name}';
@@ -348,16 +338,8 @@ void main() {
               reason: label,
             );
           }
-          expect(
-            guide.anchorDirection,
-            expectedTargetDirection,
-            reason: label,
-          );
-          expect(
-            pointerContext.bubbleSide,
-            expectedBubbleSide,
-            reason: label,
-          );
+          expect(guide.anchorDirection, expectedTargetDirection, reason: label);
+          expect(pointerContext.bubbleSide, expectedBubbleSide, reason: label);
           expect(
             pointerContext.bubbleAnchorDirection,
             expectedAnchorDirection,
@@ -425,10 +407,10 @@ void main() {
           textDirection,
         );
         final _TargetGeometry target = _targetFor(expectedPlacement);
-        final SpotlightGuideDirection expectedDirection =
-            _targetDirectionFor(expectedPlacement);
-        for (final SpotlightGuideBubbleSide bubbleSide
-            in bubbleSides) {
+        final SpotlightGuideDirection expectedDirection = _targetDirectionFor(
+          expectedPlacement,
+        );
+        for (final SpotlightGuideBubbleSide bubbleSide in bubbleSides) {
           final String label =
               'target-mode-${textDirection.name}-${stepPlacement.name}'
               '-${bubbleSide.name}';
@@ -892,10 +874,8 @@ void main() {
             final SpotlightGuideAnchorGeometry anchorGeometry =
                 _bubbleAnchorGeometry(tester);
             final bool horizontalAxis =
-                guide.anchorDirection ==
-                    SpotlightGuideDirection.up ||
-                guide.anchorDirection ==
-                    SpotlightGuideDirection.down;
+                guide.anchorDirection == SpotlightGuideDirection.up ||
+                guide.anchorDirection == SpotlightGuideDirection.down;
             final double pointerTargetAxis = _anchorAxisPosition(
               pointerRect,
               pointerAnchor,
@@ -1216,9 +1196,7 @@ SpotlightGuideBubbleSide _resolveBubbleSide(
   };
 }
 
-SpotlightGuideDirection _targetDirectionFor(
-  SpotlightGuidePlacement placement,
-) {
+SpotlightGuideDirection _targetDirectionFor(SpotlightGuidePlacement placement) {
   return switch (placement) {
     SpotlightGuidePlacement.top => SpotlightGuideDirection.down,
     SpotlightGuidePlacement.bottom => SpotlightGuideDirection.up,
@@ -1254,33 +1232,21 @@ SpotlightGuideDirection _bubbleAnchorDirection(
 ) {
   return switch (bubbleSide) {
     SpotlightGuideBubbleSide.along => targetDirection,
-    SpotlightGuideBubbleSide.top =>
-      SpotlightGuideDirection.down,
-    SpotlightGuideBubbleSide.bottom =>
-      SpotlightGuideDirection.up,
-    SpotlightGuideBubbleSide.left =>
-      SpotlightGuideDirection.right,
-    SpotlightGuideBubbleSide.right =>
-      SpotlightGuideDirection.left,
-    SpotlightGuideBubbleSide.start ||
-    SpotlightGuideBubbleSide.end => throw StateError(
-      'Semantic bubble placements must be resolved first.',
-    ),
+    SpotlightGuideBubbleSide.top => SpotlightGuideDirection.down,
+    SpotlightGuideBubbleSide.bottom => SpotlightGuideDirection.up,
+    SpotlightGuideBubbleSide.left => SpotlightGuideDirection.right,
+    SpotlightGuideBubbleSide.right => SpotlightGuideDirection.left,
+    SpotlightGuideBubbleSide.start || SpotlightGuideBubbleSide.end =>
+      throw StateError('Semantic bubble placements must be resolved first.'),
   };
 }
 
-SpotlightGuideDirection _oppositeDirection(
-  SpotlightGuideDirection direction,
-) {
+SpotlightGuideDirection _oppositeDirection(SpotlightGuideDirection direction) {
   return switch (direction) {
-    SpotlightGuideDirection.up =>
-      SpotlightGuideDirection.down,
-    SpotlightGuideDirection.down =>
-      SpotlightGuideDirection.up,
-    SpotlightGuideDirection.left =>
-      SpotlightGuideDirection.right,
-    SpotlightGuideDirection.right =>
-      SpotlightGuideDirection.left,
+    SpotlightGuideDirection.up => SpotlightGuideDirection.down,
+    SpotlightGuideDirection.down => SpotlightGuideDirection.up,
+    SpotlightGuideDirection.left => SpotlightGuideDirection.right,
+    SpotlightGuideDirection.right => SpotlightGuideDirection.left,
   };
 }
 
@@ -1469,15 +1435,13 @@ void _expectBubbleAnchorAimsAtPointerCenter({
 }) {
   final double anchorAxis = _bubbleAnchorGlobalAxis(bubbleRect, anchorGeometry);
   switch (anchorGeometry.direction) {
-    case SpotlightGuideDirection.up ||
-        SpotlightGuideDirection.down:
+    case SpotlightGuideDirection.up || SpotlightGuideDirection.down:
       expect(
         anchorAxis,
         moreOrLessEquals(pointerRect.center.dx, epsilon: 0.5),
         reason: reason,
       );
-    case SpotlightGuideDirection.left ||
-        SpotlightGuideDirection.right:
+    case SpotlightGuideDirection.left || SpotlightGuideDirection.right:
       expect(
         anchorAxis,
         moreOrLessEquals(pointerRect.center.dy, epsilon: 0.5),
@@ -1505,15 +1469,13 @@ void _expectPointerCrossAxisAlignedWithTargetAnchor(
   String reason,
 ) {
   switch (guide.anchorDirection) {
-    case SpotlightGuideDirection.up ||
-        SpotlightGuideDirection.down:
+    case SpotlightGuideDirection.up || SpotlightGuideDirection.down:
       expect(
         pointerRect.center.dx,
         moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
         reason: reason,
       );
-    case SpotlightGuideDirection.left ||
-        SpotlightGuideDirection.right:
+    case SpotlightGuideDirection.left || SpotlightGuideDirection.right:
       expect(
         pointerRect.center.dy,
         moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
@@ -1524,21 +1486,16 @@ void _expectPointerCrossAxisAlignedWithTargetAnchor(
 
 double _signedTargetGap(Rect pointerRect, SpotlightGuideStepContext guide) {
   return switch (guide.anchorDirection) {
-    SpotlightGuideDirection.up =>
-      pointerRect.top - guide.targetRect.bottom,
-    SpotlightGuideDirection.down =>
-      guide.targetRect.top - pointerRect.bottom,
-    SpotlightGuideDirection.left =>
-      pointerRect.left - guide.targetRect.right,
-    SpotlightGuideDirection.right =>
-      guide.targetRect.left - pointerRect.right,
+    SpotlightGuideDirection.up => pointerRect.top - guide.targetRect.bottom,
+    SpotlightGuideDirection.down => guide.targetRect.top - pointerRect.bottom,
+    SpotlightGuideDirection.left => pointerRect.left - guide.targetRect.right,
+    SpotlightGuideDirection.right => guide.targetRect.left - pointerRect.right,
   };
 }
 
 double _signedTargetHintGap(SpotlightGuideStepContext guide) {
   return switch (guide.anchorDirection) {
-    SpotlightGuideDirection.up =>
-      guide.hintRect.top - guide.targetRect.bottom,
+    SpotlightGuideDirection.up => guide.hintRect.top - guide.targetRect.bottom,
     SpotlightGuideDirection.down =>
       guide.targetRect.top - guide.hintRect.bottom,
     SpotlightGuideDirection.left =>
@@ -1555,23 +1512,18 @@ double _signedPointerBubbleGap(
 ) {
   return switch (guide.anchorDirection) {
     SpotlightGuideDirection.up => bubbleRect.top - pointerRect.bottom,
-    SpotlightGuideDirection.down =>
-      pointerRect.top - bubbleRect.bottom,
-    SpotlightGuideDirection.left =>
-      bubbleRect.left - pointerRect.right,
-    SpotlightGuideDirection.right =>
-      pointerRect.left - bubbleRect.right,
+    SpotlightGuideDirection.down => pointerRect.top - bubbleRect.bottom,
+    SpotlightGuideDirection.left => bubbleRect.left - pointerRect.right,
+    SpotlightGuideDirection.right => pointerRect.left - bubbleRect.right,
   };
 }
 
 double _hintAnchorGlobalAxis(SpotlightGuideStepContext guide) {
   return switch (guide.anchorDirection) {
     SpotlightGuideDirection.up ||
-    SpotlightGuideDirection.down =>
-      guide.hintRect.left + guide.anchorOffset,
+    SpotlightGuideDirection.down => guide.hintRect.left + guide.anchorOffset,
     SpotlightGuideDirection.left ||
-    SpotlightGuideDirection.right =>
-      guide.hintRect.top + guide.anchorOffset,
+    SpotlightGuideDirection.right => guide.hintRect.top + guide.anchorOffset,
   };
 }
 
@@ -1599,11 +1551,9 @@ double _bubbleAnchorGlobalAxis(
 ) {
   return switch (anchorGeometry.direction) {
     SpotlightGuideDirection.up ||
-    SpotlightGuideDirection.down =>
-      bubbleRect.left + anchorGeometry.offset,
+    SpotlightGuideDirection.down => bubbleRect.left + anchorGeometry.offset,
     SpotlightGuideDirection.left ||
-    SpotlightGuideDirection.right =>
-      bubbleRect.top + anchorGeometry.offset,
+    SpotlightGuideDirection.right => bubbleRect.top + anchorGeometry.offset,
   };
 }
 

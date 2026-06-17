@@ -121,10 +121,9 @@ void main() {
             ),
             autoScrollOptions: SpotlightGuideAutoScrollOptions(
               interval: kAutoScrollTestInterval,
-              onItemChanged:
-                  (SpotlightGuideAutoScrollContext ctx) {
-                    recordAutoScrollIndex(focusedIndices, ctx);
-                  },
+              onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                recordAutoScrollIndex(focusedIndices, details);
+              },
             ),
             items: <SpotlightGuideStepItem>[
               SpotlightGuideStepItem(
@@ -195,10 +194,9 @@ void main() {
             ),
             autoScrollOptions: SpotlightGuideAutoScrollOptions(
               interval: kAutoScrollTestInterval,
-              onItemChanged:
-                  (SpotlightGuideAutoScrollContext ctx) {
-                    recordAutoScrollIndex(focusedIndices, ctx);
-                  },
+              onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                recordAutoScrollIndex(focusedIndices, details);
+              },
             ),
             items: <SpotlightGuideStepItem>[
               SpotlightGuideStepItem(
@@ -323,10 +321,9 @@ void main() {
         steps: <SpotlightGuideStep>[
           SpotlightGuideStep(
             autoScrollOptions: SpotlightGuideAutoScrollOptions(
-              onItemChanged:
-                  (SpotlightGuideAutoScrollContext ctx) {
-                    recordAutoScrollIndex(focusedIndices, ctx);
-                  },
+              onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                recordAutoScrollIndex(focusedIndices, details);
+              },
             ),
             items: <SpotlightGuideStepItem>[
               SpotlightGuideStepItem(
@@ -375,10 +372,9 @@ void main() {
             ),
             autoScrollOptions: SpotlightGuideAutoScrollOptions(
               enabled: false,
-              onItemChanged:
-                  (SpotlightGuideAutoScrollContext ctx) {
-                    recordAutoScrollIndex(focusedIndices, ctx);
-                  },
+              onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                recordAutoScrollIndex(focusedIndices, details);
+              },
             ),
             items: <SpotlightGuideStepItem>[
               SpotlightGuideStepItem(
@@ -431,10 +427,9 @@ void main() {
             twoItemAutoScrollStep(
               autoScrollOptions: SpotlightGuideAutoScrollOptions(
                 interval: kAutoScrollTestInterval,
-                onItemChanged:
-                    (SpotlightGuideAutoScrollContext ctx) {
-                      recordAutoScrollIndex(focusedIndices, ctx);
-                    },
+                onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                  recordAutoScrollIndex(focusedIndices, details);
+                },
               ),
               items: <SpotlightGuideStepItem>[
                 SpotlightGuideStepItem(
@@ -494,10 +489,9 @@ void main() {
               autoScrollOptions: SpotlightGuideAutoScrollOptions(
                 interval: kAutoScrollTestInterval,
                 onlyWhenNeeded: false,
-                onItemChanged:
-                    (SpotlightGuideAutoScrollContext ctx) {
-                      recordAutoScrollIndex(focusedIndices, ctx);
-                    },
+                onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                  recordAutoScrollIndex(focusedIndices, details);
+                },
               ),
               items: <SpotlightGuideStepItem>[
                 SpotlightGuideStepItem(
@@ -644,10 +638,9 @@ void main() {
               ),
               autoScrollOptions: SpotlightGuideAutoScrollOptions(
                 interval: kAutoScrollTestInterval,
-                onItemChanged:
-                    (SpotlightGuideAutoScrollContext ctx) {
-                      recordAutoScrollIndex(focusedIndices, ctx);
-                    },
+                onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                  recordAutoScrollIndex(focusedIndices, details);
+                },
               ),
               items: <SpotlightGuideStepItem>[
                 SpotlightGuideStepItem(
@@ -742,10 +735,9 @@ void main() {
               ),
               autoScrollOptions: SpotlightGuideAutoScrollOptions(
                 interval: kAutoScrollTestInterval,
-                onItemChanged:
-                    (SpotlightGuideAutoScrollContext ctx) {
-                      recordAutoScrollIndex(focusedIndices, ctx);
-                    },
+                onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                  recordAutoScrollIndex(focusedIndices, details);
+                },
               ),
               items: <SpotlightGuideStepItem>[
                 SpotlightGuideStepItem(
@@ -823,10 +815,9 @@ void main() {
             ),
             autoScrollOptions: SpotlightGuideAutoScrollOptions(
               interval: kAutoScrollTestInterval,
-              onItemChanged:
-                  (SpotlightGuideAutoScrollContext ctx) {
-                    recordAutoScrollIndex(focusedIndices, ctx);
-                  },
+              onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                recordAutoScrollIndex(focusedIndices, details);
+              },
             ),
             items: <SpotlightGuideStepItem>[
               SpotlightGuideStepItem(
@@ -865,72 +856,71 @@ void main() {
     await pumpGuide(tester);
   });
 
-  testWidgets(
-    'onItemChanged exposes item index, target ids, and item key',
-    (tester) async {
-      final SpotlightGuidePortalController controller =
-          SpotlightGuidePortalController();
-      final ScrollController scrollController = ScrollController();
-      final List<SpotlightGuideAutoScrollContext> contexts =
-          <SpotlightGuideAutoScrollContext>[];
-      addTearDown(scrollController.dispose);
+  testWidgets('onItemChanged exposes item index, target ids, and item key', (
+    tester,
+  ) async {
+    final SpotlightGuidePortalController controller =
+        SpotlightGuidePortalController();
+    final ScrollController scrollController = ScrollController();
+    final List<SpotlightGuideAutoScrollDetails> details =
+        <SpotlightGuideAutoScrollDetails>[];
+    addTearDown(scrollController.dispose);
 
-      await tester.pumpWidget(
-        guideApp(
-          controller: controller,
-          child: multiItemScrollableTargets(
-            controller: scrollController,
-            scrollDirection: Axis.vertical,
-            firstId: 'ctx-first',
-            secondId: 'ctx-second',
-          ),
-          steps: <SpotlightGuideStep>[
-            SpotlightGuideStep(
-              revealOptions: const SpotlightGuideRevealOptions(
-                duration: Duration.zero,
-              ),
-              autoScrollOptions: SpotlightGuideAutoScrollOptions(
-                interval: kAutoScrollTestInterval,
-                onItemChanged: contexts.add,
-              ),
-              items: <SpotlightGuideStepItem>[
-                SpotlightGuideStepItem(
-                  key: 'intro',
-                  targetId: 'ctx-first',
-                  targetDecoration: const SpotlightGuideTargetDecoration(
-                    padding: EdgeInsets.zero,
-                  ),
-                  hintBuilder: hint('ctx-first'),
-                ),
-                SpotlightGuideStepItem(
-                  key: 'detail',
-                  targetId: 'ctx-second',
-                  targetDecoration: const SpotlightGuideTargetDecoration(
-                    padding: EdgeInsets.zero,
-                  ),
-                  hintBuilder: hint('ctx-second'),
-                ),
-              ],
-            ),
-          ],
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        child: multiItemScrollableTargets(
+          controller: scrollController,
+          scrollDirection: Axis.vertical,
+          firstId: 'ctx-first',
+          secondId: 'ctx-second',
         ),
-      );
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep(
+            revealOptions: const SpotlightGuideRevealOptions(
+              duration: Duration.zero,
+            ),
+            autoScrollOptions: SpotlightGuideAutoScrollOptions(
+              interval: kAutoScrollTestInterval,
+              onItemChanged: details.add,
+            ),
+            items: <SpotlightGuideStepItem>[
+              SpotlightGuideStepItem(
+                key: 'intro',
+                targetId: 'ctx-first',
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                hintBuilder: hint('ctx-first'),
+              ),
+              SpotlightGuideStepItem(
+                key: 'detail',
+                targetId: 'ctx-second',
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                hintBuilder: hint('ctx-second'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
 
-      controller.reset();
-      await pumpGuideFrames(tester);
-      await pumpAutoScrollInterval(tester);
+    controller.reset();
+    await pumpGuideFrames(tester);
+    await pumpAutoScrollInterval(tester);
 
-      expect(contexts.length, 2);
-      expect(contexts[0].itemIndex, 0);
-      expect(contexts[0].itemTotal, 2);
-      expect(contexts[0].key, 'intro');
-      expect(contexts[0].highlightTargetIds, <Object>['ctx-first']);
-      expect(contexts[0].primaryTargetId, 'ctx-first');
-      expect(contexts[1].itemIndex, 1);
-      expect(contexts[1].key, 'detail');
-      expect(contexts[1].highlightTargetIds, <Object>['ctx-second']);
-    },
-  );
+    expect(details.length, 2);
+    expect(details[0].itemIndex, 0);
+    expect(details[0].itemTotal, 2);
+    expect(details[0].key, 'intro');
+    expect(details[0].highlightTargetIds, <Object>['ctx-first']);
+    expect(details[0].primaryTargetId, 'ctx-first');
+    expect(details[1].itemIndex, 1);
+    expect(details[1].key, 'detail');
+    expect(details[1].highlightTargetIds, <Object>['ctx-second']);
+  });
 
   testWidgets(
     'auto scroll can focus an item that highlights multiple target ids at once',
@@ -940,7 +930,7 @@ void main() {
       final ScrollController scrollController = ScrollController();
       final Map<String, SpotlightGuideStepContext> guideContexts =
           <String, SpotlightGuideStepContext>{};
-      SpotlightGuideAutoScrollContext? secondFocus;
+      SpotlightGuideAutoScrollDetails? secondFocus;
       addTearDown(scrollController.dispose);
 
       await tester.pumpWidget(
@@ -999,12 +989,11 @@ void main() {
               ),
               autoScrollOptions: SpotlightGuideAutoScrollOptions(
                 interval: kAutoScrollTestInterval,
-                onItemChanged:
-                    (SpotlightGuideAutoScrollContext ctx) {
-                      if (ctx.itemIndex == 1) {
-                        secondFocus = ctx;
-                      }
-                    },
+                onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                  if (details.itemIndex == 1) {
+                    secondFocus = details;
+                  }
+                },
               ),
               items: <SpotlightGuideStepItem>[
                 SpotlightGuideStepItem(
@@ -1054,8 +1043,8 @@ void main() {
     (tester) async {
       final SpotlightGuidePortalController controller =
           SpotlightGuidePortalController();
-      final List<SpotlightGuideAutoScrollContext> contexts =
-          <SpotlightGuideAutoScrollContext>[];
+      final List<SpotlightGuideAutoScrollDetails> details =
+          <SpotlightGuideAutoScrollDetails>[];
 
       await tester.pumpWidget(
         guideApp(
@@ -1063,7 +1052,7 @@ void main() {
           steps: <SpotlightGuideStep>[
             SpotlightGuideStep(
               autoScrollOptions: SpotlightGuideAutoScrollOptions(
-                onItemChanged: contexts.add,
+                onItemChanged: details.add,
               ),
               items: <SpotlightGuideStepItem>[
                 SpotlightGuideStepItem(
@@ -1090,7 +1079,7 @@ void main() {
       await pumpGuide(tester);
       await pumpAutoScrollInterval(tester);
 
-      expect(contexts, isEmpty);
+      expect(details, isEmpty);
       expect(find.byKey(const ValueKey<String>('visible-a')), findsOneWidget);
       expect(find.byKey(const ValueKey<String>('visible-b')), findsOneWidget);
     },

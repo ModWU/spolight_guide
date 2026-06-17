@@ -1985,7 +1985,7 @@ class _RebuildingPortalStepsAppState extends State<_RebuildingPortalStepsApp> {
           controller: widget.controller,
           autoStart: false,
           steps: _steps(),
-          onStateChanged: (SpotlightGuideStateContext state) {
+          onStateChanged: (SpotlightGuideStateDetails state) {
             if (state.reason != SpotlightGuideStateChangeReason.shown) {
               return;
             }

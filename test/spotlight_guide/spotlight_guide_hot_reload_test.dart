@@ -712,7 +712,7 @@ void main() {
                         up: 2,
                       )
                     : SpotlightGuidePointerOffset.zero,
-                layer: SpotlightGuidePointerLayer.aboveBubble,
+                paintOrder: SpotlightGuidePointerPaintOrder.aboveBubble,
                 bubbleSide: SpotlightGuideBubbleSide.bottom,
                 child: const SizedBox(
                   key: pointerKey,
@@ -786,7 +786,7 @@ void main() {
                 end: 3,
                 up: 2,
               ),
-              layer: SpotlightGuidePointerLayer.aboveBubble,
+              paintOrder: SpotlightGuidePointerPaintOrder.aboveBubble,
               bubbleSide: SpotlightGuideBubbleSide.bottom,
               child: SizedBox(
                 key: ValueKey<String>('stable-total-pointer'),

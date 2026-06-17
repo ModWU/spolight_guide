@@ -558,11 +558,7 @@ void main() {
           SpotlightGuidePlacement.right: SpotlightGuideDirection.left,
         };
 
-    for (final MapEntry<
-          SpotlightGuidePlacement,
-          SpotlightGuideDirection
-        >
-        entry
+    for (final MapEntry<SpotlightGuidePlacement, SpotlightGuideDirection> entry
         in cases.entries) {
       directions.clear();
       await tester.pumpWidget(

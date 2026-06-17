@@ -570,8 +570,7 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               revealOptions: const SpotlightGuideRevealOptions(
-                targetPolicy:
-                    SpotlightGuideRevealTargetPolicy.anchorTarget,
+                targetPolicy: SpotlightGuideRevealTargetPolicy.anchorTarget,
                 duration: Duration.zero,
               ),
               hintBuilder: hint('anchor-policy-summary-hint'),
@@ -1109,9 +1108,7 @@ void main() {
     },
   );
 
-  testWidgets('same-step scroll reveals hidden vertical items', (
-    tester,
-  ) async {
+  testWidgets('same-step scroll reveals hidden vertical items', (tester) async {
     final SpotlightGuidePortalController controller =
         SpotlightGuidePortalController();
     final ScrollController scrollController = ScrollController();
@@ -1185,127 +1182,126 @@ void main() {
     );
   });
 
-  testWidgets(
-    'same-step scroll defers a later item onReveal until its turn',
-    (tester) async {
-      final SpotlightGuidePortalController controller =
-          SpotlightGuidePortalController();
-      final ScrollController scrollController = ScrollController();
-      final Map<String, SpotlightGuideStepContext> contexts =
-          <String, SpotlightGuideStepContext>{};
-      int secondRevealCount = 0;
-      double? scrollOffsetWhenRevealed;
-      bool? hadTargetBeforeReveal;
-      addTearDown(scrollController.dispose);
+  testWidgets('same-step scroll defers a later item onReveal until its turn', (
+    tester,
+  ) async {
+    final SpotlightGuidePortalController controller =
+        SpotlightGuidePortalController();
+    final ScrollController scrollController = ScrollController();
+    final Map<String, SpotlightGuideStepContext> contexts =
+        <String, SpotlightGuideStepContext>{};
+    int secondRevealCount = 0;
+    double? scrollOffsetWhenRevealed;
+    bool? hadTargetBeforeReveal;
+    addTearDown(scrollController.dispose);
 
-      // Both targets are mounted (a same-step overlay needs every target
-      // present), but the second one is far down and offscreen.
-      await tester.pumpWidget(
-        guideApp(
-          controller: controller,
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: const SizedBox(
-              height: 1400,
-              child: Stack(
-                children: <Widget>[
-                  Positioned(
-                    left: 40,
-                    top: 40,
-                    child: SpotlightGuideTarget(
-                      id: 'defer-first',
-                      child: SizedBox(
-                        width: 100,
-                        height: 50,
-                        child: ColoredBox(color: Colors.red),
-                      ),
+    // Both targets are mounted (a same-step overlay needs every target
+    // present), but the second one is far down and offscreen.
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        child: SingleChildScrollView(
+          controller: scrollController,
+          child: const SizedBox(
+            height: 1400,
+            child: Stack(
+              children: <Widget>[
+                Positioned(
+                  left: 40,
+                  top: 40,
+                  child: SpotlightGuideTarget(
+                    id: 'defer-first',
+                    child: SizedBox(
+                      width: 100,
+                      height: 50,
+                      child: ColoredBox(color: Colors.red),
                     ),
                   ),
-                  Positioned(
-                    left: 40,
-                    top: 1150,
-                    child: SpotlightGuideTarget(
-                      id: 'defer-second',
-                      child: SizedBox(
-                        width: 100,
-                        height: 50,
-                        child: ColoredBox(color: Colors.blue),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          steps: <SpotlightGuideStep>[
-            SpotlightGuideStep(
-              // Default centered alignment keeps the near-top first target at
-              // offset 0 (it cannot scroll above the top), which isolates the
-              // later scroll to the deferred second item.
-              revealOptions: const SpotlightGuideRevealOptions(
-                duration: Duration.zero,
-              ),
-              autoScrollOptions: const SpotlightGuideAutoScrollOptions(
-                interval: Duration(milliseconds: 120),
-              ),
-              items: <SpotlightGuideStepItem>[
-                SpotlightGuideStepItem(
-                  targetId: 'defer-first',
-                  targetDecoration: const SpotlightGuideTargetDecoration(
-                    padding: EdgeInsets.zero,
-                  ),
-                  hintBuilder: hint('defer-first', contexts),
                 ),
-                SpotlightGuideStepItem(
-                  targetId: 'defer-second',
-                  targetDecoration: const SpotlightGuideTargetDecoration(
-                    padding: EdgeInsets.zero,
+                Positioned(
+                  left: 40,
+                  top: 1150,
+                  child: SpotlightGuideTarget(
+                    id: 'defer-second',
+                    child: SizedBox(
+                      width: 100,
+                      height: 50,
+                      child: ColoredBox(color: Colors.blue),
+                    ),
                   ),
-                  onReveal: (SpotlightGuideRevealContext context) {
-                    secondRevealCount++;
-                    hadTargetBeforeReveal = context.hasTargetContext;
-                    scrollOffsetWhenRevealed = scrollController.offset;
-                  },
-                  hintBuilder: hint('defer-second', contexts),
                 ),
               ],
             ),
-          ],
+          ),
         ),
-      );
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep(
+            // Default centered alignment keeps the near-top first target at
+            // offset 0 (it cannot scroll above the top), which isolates the
+            // later scroll to the deferred second item.
+            revealOptions: const SpotlightGuideRevealOptions(
+              duration: Duration.zero,
+            ),
+            autoScrollOptions: const SpotlightGuideAutoScrollOptions(
+              interval: Duration(milliseconds: 120),
+            ),
+            items: <SpotlightGuideStepItem>[
+              SpotlightGuideStepItem(
+                targetId: 'defer-first',
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                hintBuilder: hint('defer-first', contexts),
+              ),
+              SpotlightGuideStepItem(
+                targetId: 'defer-second',
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                onReveal: (SpotlightGuideRevealContext context) {
+                  secondRevealCount++;
+                  hadTargetBeforeReveal = context.hasTargetContext;
+                  scrollOffsetWhenRevealed = scrollController.offset;
+                },
+                hintBuilder: hint('defer-second', contexts),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
 
-      controller.reset();
-      // Pump zero-duration frames so the first hint measures and renders
-      // without advancing the fake clock (which would fire the 120ms timer).
-      for (int i = 0; i < 12; i++) {
-        await tester.pump();
-      }
+    controller.reset();
+    // Pump zero-duration frames so the first hint measures and renders
+    // without advancing the fake clock (which would fire the 120ms timer).
+    for (int i = 0; i < 12; i++) {
+      await tester.pump();
+    }
 
-      // The first item is shown immediately. The second item's onReveal is
-      // deferred, so it has not run and nothing has scrolled away from the
-      // first hint yet.
-      expect(find.byKey(const ValueKey<String>('defer-first')), findsOneWidget);
-      expect(secondRevealCount, 0);
-      expect(scrollController.offset, 0);
+    // The first item is shown immediately. The second item's onReveal is
+    // deferred, so it has not run and nothing has scrolled away from the
+    // first hint yet.
+    expect(find.byKey(const ValueKey<String>('defer-first')), findsOneWidget);
+    expect(secondRevealCount, 0);
+    expect(scrollController.offset, 0);
 
-      await tester.pump(const Duration(milliseconds: 120));
-      await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 120));
+    await tester.pumpAndSettle();
 
-      // After the interval the deferred onReveal runs once, while the page is
-      // still at the first item (offset 0), and then the default reveal scrolls
-      // the second item into view.
-      expect(secondRevealCount, 1);
-      expect(hadTargetBeforeReveal, isTrue);
-      expect(scrollOffsetWhenRevealed, 0);
-      expect(scrollController.offset, greaterThan(0));
-      final SpotlightGuideStepContext guide = contexts['defer-second']!;
-      expect(guide.targetRect.top, greaterThanOrEqualTo(0));
-      expect(
-        guide.targetRect.bottom,
-        lessThanOrEqualTo(guide.overlaySize.height),
-      );
-    },
-  );
+    // After the interval the deferred onReveal runs once, while the page is
+    // still at the first item (offset 0), and then the default reveal scrolls
+    // the second item into view.
+    expect(secondRevealCount, 1);
+    expect(hadTargetBeforeReveal, isTrue);
+    expect(scrollOffsetWhenRevealed, 0);
+    expect(scrollController.offset, greaterThan(0));
+    final SpotlightGuideStepContext guide = contexts['defer-second']!;
+    expect(guide.targetRect.top, greaterThanOrEqualTo(0));
+    expect(
+      guide.targetRect.bottom,
+      lessThanOrEqualTo(guide.overlaySize.height),
+    );
+  });
 
   testWidgets('same-step hides hints while a lazy later target is revealed', (
     tester,
@@ -1512,9 +1508,7 @@ void main() {
     expect(find.byKey(const ValueKey<String>('manual-second')), findsOneWidget);
   });
 
-  testWidgets('same-step scroll shows only one hint at a time', (
-    tester,
-  ) async {
+  testWidgets('same-step scroll shows only one hint at a time', (tester) async {
     final SpotlightGuidePortalController controller =
         SpotlightGuidePortalController();
     final ScrollController scrollController = ScrollController();
@@ -1581,9 +1575,7 @@ void main() {
     expect(find.byKey(const ValueKey<String>('focus-second')), findsOneWidget);
   });
 
-  testWidgets('onItemChanged reports focused item indices', (
-    tester,
-  ) async {
+  testWidgets('onItemChanged reports focused item indices', (tester) async {
     final SpotlightGuidePortalController controller =
         SpotlightGuidePortalController();
     final ScrollController scrollController = ScrollController();
@@ -1606,10 +1598,9 @@ void main() {
             ),
             autoScrollOptions: SpotlightGuideAutoScrollOptions(
               interval: const Duration(milliseconds: 120),
-              onItemChanged:
-                  (SpotlightGuideAutoScrollContext ctx) {
-                    recordAutoScrollIndex(focusedIndices, ctx);
-                  },
+              onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                recordAutoScrollIndex(focusedIndices, details);
+              },
             ),
             items: <SpotlightGuideStepItem>[
               SpotlightGuideStepItem(
@@ -1645,79 +1636,77 @@ void main() {
     expect(focusedIndices.toSet().length, 2);
   });
 
-  testWidgets(
-    'onItemChanged does not run when every item is already visible',
-    (tester) async {
-      final SpotlightGuidePortalController controller =
-          SpotlightGuidePortalController();
-      final List<int> focusedIndices = <int>[];
+  testWidgets('onItemChanged does not run when every item is already visible', (
+    tester,
+  ) async {
+    final SpotlightGuidePortalController controller =
+        SpotlightGuidePortalController();
+    final List<int> focusedIndices = <int>[];
 
-      await tester.pumpWidget(
-        guideApp(
-          controller: controller,
-          steps: <SpotlightGuideStep>[
-            SpotlightGuideStep(
-              autoScrollOptions: SpotlightGuideAutoScrollOptions(
-                onItemChanged:
-                    (SpotlightGuideAutoScrollContext ctx) {
-                      recordAutoScrollIndex(focusedIndices, ctx);
-                    },
-              ),
-              items: <SpotlightGuideStepItem>[
-                SpotlightGuideStepItem(
-                  targetId: 'flush-first',
-                  targetDecoration: const SpotlightGuideTargetDecoration(
-                    padding: EdgeInsets.zero,
-                  ),
-                  hintBuilder: hint('flush-first'),
-                ),
-                SpotlightGuideStepItem(
-                  targetId: 'flush-second',
-                  targetDecoration: const SpotlightGuideTargetDecoration(
-                    padding: EdgeInsets.zero,
-                  ),
-                  hintBuilder: hint('flush-second'),
-                ),
-              ],
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep(
+            autoScrollOptions: SpotlightGuideAutoScrollOptions(
+              onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+                recordAutoScrollIndex(focusedIndices, details);
+              },
             ),
-          ],
-          child: const Stack(
-            children: <Widget>[
-              Positioned(
-                left: 40,
-                top: 40,
-                child: SpotlightGuideTarget(
-                  id: 'flush-first',
-                  child: SizedBox(
-                    width: 100,
-                    height: 40,
-                    child: ColoredBox(color: Colors.red),
-                  ),
+            items: <SpotlightGuideStepItem>[
+              SpotlightGuideStepItem(
+                targetId: 'flush-first',
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
                 ),
+                hintBuilder: hint('flush-first'),
               ),
-              Positioned(
-                left: 40,
-                top: 560,
-                child: SpotlightGuideTarget(
-                  id: 'flush-second',
-                  child: SizedBox(
-                    width: 100,
-                    height: 40,
-                    child: ColoredBox(color: Colors.blue),
-                  ),
+              SpotlightGuideStepItem(
+                targetId: 'flush-second',
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
                 ),
+                hintBuilder: hint('flush-second'),
               ),
             ],
           ),
+        ],
+        child: const Stack(
+          children: <Widget>[
+            Positioned(
+              left: 40,
+              top: 40,
+              child: SpotlightGuideTarget(
+                id: 'flush-first',
+                child: SizedBox(
+                  width: 100,
+                  height: 40,
+                  child: ColoredBox(color: Colors.red),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 40,
+              top: 560,
+              child: SpotlightGuideTarget(
+                id: 'flush-second',
+                child: SizedBox(
+                  width: 100,
+                  height: 40,
+                  child: ColoredBox(color: Colors.blue),
+                ),
+              ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
 
-      controller.reset();
-      await pumpGuide(tester);
+    controller.reset();
+    await pumpGuide(tester);
 
-      expect(focusedIndices, isEmpty);
-    },
-  );
+    expect(focusedIndices, isEmpty);
+  });
 
   testWidgets('same-step scroll reveals hidden horizontal items', (
     tester,
@@ -2439,106 +2428,102 @@ void main() {
     },
   );
 
-  testWidgets(
-    'same-step scroll reveals a target taller than the viewport',
-    (tester) async {
-      final SpotlightGuidePortalController controller =
-          SpotlightGuidePortalController();
-      final ScrollController scrollController = ScrollController();
-      final Map<String, SpotlightGuideStepContext> contexts =
-          <String, SpotlightGuideStepContext>{};
-      addTearDown(scrollController.dispose);
+  testWidgets('same-step scroll reveals a target taller than the viewport', (
+    tester,
+  ) async {
+    final SpotlightGuidePortalController controller =
+        SpotlightGuidePortalController();
+    final ScrollController scrollController = ScrollController();
+    final Map<String, SpotlightGuideStepContext> contexts =
+        <String, SpotlightGuideStepContext>{};
+    addTearDown(scrollController.dispose);
 
-      await tester.pumpWidget(
-        guideApp(
-          controller: controller,
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: const SizedBox(
-              height: 2000,
-              child: Stack(
-                children: <Widget>[
-                  Positioned(
-                    left: 40,
-                    top: 40,
-                    child: SpotlightGuideTarget(
-                      id: 'tall-first',
-                      child: SizedBox(
-                        width: 100,
-                        height: 50,
-                        child: ColoredBox(color: Colors.red),
-                      ),
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        child: SingleChildScrollView(
+          controller: scrollController,
+          child: const SizedBox(
+            height: 2000,
+            child: Stack(
+              children: <Widget>[
+                Positioned(
+                  left: 40,
+                  top: 40,
+                  child: SpotlightGuideTarget(
+                    id: 'tall-first',
+                    child: SizedBox(
+                      width: 100,
+                      height: 50,
+                      child: ColoredBox(color: Colors.red),
                     ),
                   ),
-                  // Taller than the 600px overlay: it can never be fully
-                  // contained, only overlapped once scroll brings it in.
-                  Positioned(
-                    left: 40,
-                    top: 1000,
-                    child: SpotlightGuideTarget(
-                      id: 'tall-second',
-                      child: SizedBox(
-                        width: 100,
-                        height: 800,
-                        child: ColoredBox(color: Colors.blue),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          steps: <SpotlightGuideStep>[
-            SpotlightGuideStep(
-              revealOptions: const SpotlightGuideRevealOptions(
-                duration: Duration.zero,
-              ),
-              autoScrollOptions: const SpotlightGuideAutoScrollOptions(
-                interval: Duration(milliseconds: 120),
-              ),
-              items: <SpotlightGuideStepItem>[
-                SpotlightGuideStepItem(
-                  targetId: 'tall-first',
-                  targetDecoration: const SpotlightGuideTargetDecoration(
-                    padding: EdgeInsets.zero,
-                  ),
-                  hintBuilder: hint('tall-first', contexts),
                 ),
-                SpotlightGuideStepItem(
-                  targetId: 'tall-second',
-                  targetDecoration: const SpotlightGuideTargetDecoration(
-                    padding: EdgeInsets.zero,
+                // Taller than the 600px overlay: it can never be fully
+                // contained, only overlapped once scroll brings it in.
+                Positioned(
+                  left: 40,
+                  top: 1000,
+                  child: SpotlightGuideTarget(
+                    id: 'tall-second',
+                    child: SizedBox(
+                      width: 100,
+                      height: 800,
+                      child: ColoredBox(color: Colors.blue),
+                    ),
                   ),
-                  hintBuilder: hint('tall-second', contexts),
                 ),
               ],
             ),
-          ],
+          ),
         ),
-      );
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep(
+            revealOptions: const SpotlightGuideRevealOptions(
+              duration: Duration.zero,
+            ),
+            autoScrollOptions: const SpotlightGuideAutoScrollOptions(
+              interval: Duration(milliseconds: 120),
+            ),
+            items: <SpotlightGuideStepItem>[
+              SpotlightGuideStepItem(
+                targetId: 'tall-first',
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                hintBuilder: hint('tall-first', contexts),
+              ),
+              SpotlightGuideStepItem(
+                targetId: 'tall-second',
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                hintBuilder: hint('tall-second', contexts),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
 
-      controller.reset();
-      for (int i = 0; i < 12; i++) {
-        await tester.pump();
-      }
-      expect(find.byKey(const ValueKey<String>('tall-first')), findsOneWidget);
-      expect(find.byKey(const ValueKey<String>('tall-second')), findsNothing);
+    controller.reset();
+    for (int i = 0; i < 12; i++) {
+      await tester.pump();
+    }
+    expect(find.byKey(const ValueKey<String>('tall-first')), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('tall-second')), findsNothing);
 
-      await tester.pump(const Duration(milliseconds: 120));
-      await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 120));
+    await tester.pumpAndSettle();
 
-      // Regression: the strict "fully contained" rule kept the oversized target
-      // hidden forever. Auto scroll brings part of it into view and the hint now
-      // appears, overlapping the viewport.
-      expect(scrollController.offset, greaterThan(0));
-      expect(find.byKey(const ValueKey<String>('tall-second')), findsOneWidget);
-      final SpotlightGuideStepContext guide = contexts['tall-second']!;
-      expect(
-        guide.targetRect.overlaps(Offset.zero & guide.overlaySize),
-        isTrue,
-      );
-    },
-  );
+    // Regression: the strict "fully contained" rule kept the oversized target
+    // hidden forever. Auto scroll brings part of it into view and the hint now
+    // appears, overlapping the viewport.
+    expect(scrollController.offset, greaterThan(0));
+    expect(find.byKey(const ValueKey<String>('tall-second')), findsOneWidget);
+    final SpotlightGuideStepContext guide = contexts['tall-second']!;
+    expect(guide.targetRect.overlaps(Offset.zero & guide.overlaySize), isTrue);
+  });
 
   testWidgets(
     'default reveal presentation hides the hint while target scrolls',
@@ -2637,8 +2622,7 @@ void main() {
       await tester.pumpWidget(
         guideApp(
           controller: controller,
-          revealStrategy:
-              const SpotlightGuideLiveReveal(),
+          revealStrategy: const SpotlightGuideLiveReveal(),
           child: SingleChildScrollView(
             controller: scrollController,
             child: const SizedBox(

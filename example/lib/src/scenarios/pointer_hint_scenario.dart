@@ -33,7 +33,7 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
         size: Size(88, 42),
         targetGap: _pointerTargetGap,
         visualOffset: SpotlightGuidePointerOffset.directional(end: 3, up: 2),
-        layer: SpotlightGuidePointerLayer.aboveBubble,
+        paintOrder: SpotlightGuidePointerPaintOrder.aboveBubble,
         bubbleSide: SpotlightGuideBubbleSide.bottom,
       ),
       revealOptions: const SpotlightGuideRevealOptions(
@@ -85,7 +85,7 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
         size: SpotlightGuideTapPointer.defaultSize,
         targetGap: _pointerTargetGap,
         anchorMode: SpotlightGuidePointerAnchorMode.target,
-        layer: SpotlightGuidePointerLayer.aboveBubble,
+        paintOrder: SpotlightGuidePointerPaintOrder.aboveBubble,
       ),
     ),
   ];

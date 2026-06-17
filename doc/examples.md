@@ -215,7 +215,7 @@ SpotlightGuidePortal(
   controller: guideController,
   autoStart: false,
   missingTargetBehavior: SpotlightGuideMissingTargetBehavior.skip,
-  onStateChanged: (SpotlightGuideStateContext state) {
+  onStateChanged: (SpotlightGuideStateDetails state) {
     trackGuideState(
       index: state.index,
       total: state.total,
@@ -346,11 +346,11 @@ The default `SpotlightGuideAutoScrollOptions` scrolls to later hidden mounted it
 SpotlightGuideStep(
   autoScrollOptions: SpotlightGuideAutoScrollOptions(
     interval: const Duration(milliseconds: 900),
-    onItemChanged: (SpotlightGuideAutoScrollContext context) {
+    onItemChanged: (SpotlightGuideAutoScrollDetails details) {
       final String progress =
-          '${context.itemIndex + 1} / ${context.itemTotal}';
-      final Object? analyticsKey = context.key ?? context.primaryTargetId;
-      // context.highlightTargetIds lists every id lit by the focused item
+          '${details.itemIndex + 1} / ${details.itemTotal}';
+      final Object? analyticsKey = details.key ?? details.primaryTargetId;
+      // details.highlightTargetIds lists every id lit by the focused item
     },
   ),
   items: <SpotlightGuideStepItem>[
@@ -404,11 +404,11 @@ SpotlightGuideStepItem(
 )
 
 // Progress copy + analytics in auto scroll
-onItemChanged: (SpotlightGuideAutoScrollContext context) {
-  if (context.highlightsWholePortalChild) {
+onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+  if (details.highlightsWholePortalChild) {
     return;
   }
-  track('guide_focus', context.key ?? context.highlightTargetIds);
+  track('guide_focus', details.key ?? details.highlightTargetIds);
 }
 ```
 

@@ -2,8 +2,8 @@ part of '../../spotlight_guide.dart';
 
 /// Builds the visual hint for one [SpotlightGuideStepItem].
 ///
-/// The [contextInfo] argument contains the resolved target rect, hint rect,
-/// anchor direction, anchor offset and the active
+/// The [guide] argument contains the resolved target rect, hint rect, anchor
+/// direction, anchor offset and the active
 /// [SpotlightGuidePortalController]. Most callers pass it directly to
 /// [SpotlightGuideBubbleHint], but it can also be used to build a completely
 /// custom hint UI. When custom hint content contains async image or animation
@@ -27,10 +27,7 @@ part of '../../spotlight_guide.dart';
 /// )
 /// ```
 typedef SpotlightGuideHintBuilder =
-    Widget Function(
-      BuildContext context,
-      SpotlightGuideStepContext contextInfo,
-    );
+    Widget Function(BuildContext context, SpotlightGuideStepContext guide);
 
 /// Called before a step is shown.
 ///
@@ -56,7 +53,7 @@ typedef SpotlightGuideHintBuilder =
 ///   child: page,
 /// )
 /// ```
-typedef SpotlightGuideStepCallback =
+typedef SpotlightGuideStepWillShowCallback =
     FutureOr<void> Function(int index, SpotlightGuideStep step);
 
 /// Called when the dim barrier is tapped.
@@ -100,8 +97,8 @@ enum SpotlightGuideStateChangeReason {
 }
 
 /// Public state snapshot reported by [SpotlightGuidePortal.onStateChanged].
-class SpotlightGuideStateContext {
-  const SpotlightGuideStateContext({
+class SpotlightGuideStateDetails {
+  const SpotlightGuideStateDetails({
     required this.reason,
     required this.controller,
     required this.isShowing,
@@ -146,7 +143,7 @@ class SpotlightGuideStateContext {
 /// Called when guide visibility, active step, active step count, or target
 /// resolution changes.
 typedef SpotlightGuideStateCallback =
-    void Function(SpotlightGuideStateContext context);
+    void Function(SpotlightGuideStateDetails details);
 
 /// Visual style for the full-screen barrier behind a guide step.
 ///
@@ -302,8 +299,7 @@ class SpotlightGuideRevealOptions {
   const SpotlightGuideRevealOptions({
     this.enabled = true,
     this.scrollPolicy = SpotlightGuideRevealScrollPolicy.onlyIfNeeded,
-    this.targetPolicy = SpotlightGuideRevealTargetPolicy
-        .highlightedAreaIfFits,
+    this.targetPolicy = SpotlightGuideRevealTargetPolicy.highlightedAreaIfFits,
     this.visibilityPadding = EdgeInsets.zero,
     this.alignment = 0.5,
     this.duration = const Duration(milliseconds: 250),
@@ -395,8 +391,8 @@ enum SpotlightGuideRevealMode {
 }
 
 /// Information passed to [SpotlightGuideRevealStrategy].
-class SpotlightGuideRevealState {
-  const SpotlightGuideRevealState({
+class SpotlightGuideRevealDetails {
+  const SpotlightGuideRevealDetails({
     required this.reason,
     required this.stepIndex,
     required this.total,
@@ -449,21 +445,16 @@ class SpotlightGuideRevealState {
 abstract class SpotlightGuideRevealStrategy {
   const SpotlightGuideRevealStrategy();
 
-  SpotlightGuideRevealMode resolve(
-    SpotlightGuideRevealState context,
-  );
+  SpotlightGuideRevealMode resolve(SpotlightGuideRevealDetails details);
 }
 
 /// Default reveal presentation: dim the page first, then show hints after
 /// target preparation settles.
-class SpotlightGuideDeferredReveal
-    extends SpotlightGuideRevealStrategy {
+class SpotlightGuideDeferredReveal extends SpotlightGuideRevealStrategy {
   const SpotlightGuideDeferredReveal();
 
   @override
-  SpotlightGuideRevealMode resolve(
-    SpotlightGuideRevealState context,
-  ) {
+  SpotlightGuideRevealMode resolve(SpotlightGuideRevealDetails details) {
     return SpotlightGuideRevealMode.barrierOnly;
   }
 }
@@ -472,27 +463,24 @@ class SpotlightGuideDeferredReveal
 ///
 /// Use this when an app prefers the guide to visibly track animated scrolling
 /// instead of waiting until the final target position is stable.
-class SpotlightGuideLiveReveal
-    extends SpotlightGuideRevealStrategy {
+class SpotlightGuideLiveReveal extends SpotlightGuideRevealStrategy {
   const SpotlightGuideLiveReveal();
 
   @override
-  SpotlightGuideRevealMode resolve(
-    SpotlightGuideRevealState context,
-  ) {
+  SpotlightGuideRevealMode resolve(SpotlightGuideRevealDetails details) {
     return SpotlightGuideRevealMode.liveOverlay;
   }
 }
 
-/// Context for [SpotlightGuideAutoScrollCallback].
+/// Details for [SpotlightGuideAutoScrollCallback].
 ///
 /// Use [itemIndex] and [itemTotal] for step copy such as "2 / 5". Use
 /// [highlightTargetIds] when the focused item highlights one or more registered
 /// target ids ([SpotlightGuideStepItem.targetId] or [SpotlightGuideStepItem.targetIds]).
 /// Use [key] when the item defines a stable business label. When the item
 /// highlights the whole portal child, [highlightTargetIds] is empty.
-class SpotlightGuideAutoScrollContext {
-  const SpotlightGuideAutoScrollContext({
+class SpotlightGuideAutoScrollDetails {
+  const SpotlightGuideAutoScrollDetails({
     required this.stepIndex,
     required this.itemIndex,
     required this.itemTotal,
@@ -531,12 +519,12 @@ class SpotlightGuideAutoScrollContext {
 
 /// Called when same-step scroll focuses a new item.
 ///
-/// Fires only while sequential auto-scroll presentation is active (a later item
-/// is still hidden). The first item uses [SpotlightGuideAutoScrollContext.itemIndex]
+/// Fires only while sequential same-step scroll is active (a later item
+/// is still hidden). The first item uses [SpotlightGuideAutoScrollDetails.itemIndex]
 /// `0`. The callback does not repeat for the same index across overlay motion
 /// refreshes.
 typedef SpotlightGuideAutoScrollCallback =
-    void Function(SpotlightGuideAutoScrollContext context);
+    void Function(SpotlightGuideAutoScrollDetails details);
 
 /// What to do when a targeted guide item cannot resolve its target.
 ///
@@ -573,9 +561,9 @@ enum SpotlightGuideMissingTargetBehavior {
 /// SpotlightGuideStep(
 ///   autoScrollOptions: SpotlightGuideAutoScrollOptions(
 ///     interval: const Duration(milliseconds: 900),
-///     onItemChanged: (SpotlightGuideAutoScrollContext context) {
-///       // context.itemIndex / context.itemTotal for copy
-///       // context.highlightTargetIds or context.key for analytics
+///     onItemChanged: (SpotlightGuideAutoScrollDetails details) {
+///       // Use details.itemIndex / details.itemTotal for copy.
+///       // Use details.highlightTargetIds or details.key for analytics.
 ///     },
 ///   ),
 ///   items: items,
@@ -598,9 +586,9 @@ class SpotlightGuideAutoScrollOptions {
   /// When true, already fully visible targets are skipped.
   final bool onlyWhenNeeded;
 
-  /// Notifies when sequential auto scroll focuses a new item in the current step.
+  /// Notifies when sequential same-step scroll focuses a new item in the current step.
   ///
-  /// Not called when every item is already on screen (auto scroll does not run).
+  /// Not called when every item is already on screen (same-step scroll does not run).
   final SpotlightGuideAutoScrollCallback? onItemChanged;
 }
 
@@ -1000,7 +988,7 @@ class SpotlightGuideStepItem {
   /// Optional stable label for analytics, copy lookup, or configuration.
   ///
   /// This is not related to [SpotlightGuideTarget.id]. It identifies the step
-  /// item itself and is exposed through [SpotlightGuideAutoScrollContext.key].
+  /// item itself and is exposed through [SpotlightGuideAutoScrollDetails.key].
   final Object? key;
 
   /// Registered [SpotlightGuideTarget.id] values highlighted by this item.

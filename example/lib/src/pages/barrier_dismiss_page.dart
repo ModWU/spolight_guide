@@ -131,13 +131,13 @@ class _BarrierDismissPageState extends State<BarrierDismissPage> {
     });
   }
 
-  void _handleGuideStateChanged(SpotlightGuideStateContext context) {
+  void _handleGuideStateChanged(SpotlightGuideStateDetails details) {
     if (!mounted) {
       return;
     }
     setState(() {
       _guideStatus =
-          '${context.reason.name}: index ${context.index + 1}/${context.total}, '
+          '${details.reason.name}: index ${details.index + 1}/${details.total}, '
           'mode ${_mode.name}';
     });
   }

@@ -290,8 +290,8 @@ void main() {
   testWidgets('removing anchorId rebuilds with the target group anchor', (
     tester,
   ) async {
-    final List<SpotlightGuideStateContext> states =
-        <SpotlightGuideStateContext>[];
+    final List<SpotlightGuideStateDetails> states =
+        <SpotlightGuideStateDetails>[];
     final Map<String, SpotlightGuideStepContext> contexts =
         <String, SpotlightGuideStepContext>{};
     bool useAnchorId = true;
@@ -369,7 +369,7 @@ void main() {
     expect(contexts['dynamic-anchor']?.targetRects.length, 2);
     expect(
       states.any(
-        (SpotlightGuideStateContext state) =>
+        (SpotlightGuideStateDetails state) =>
             state.reason == SpotlightGuideStateChangeReason.targetsChanged,
       ),
       isTrue,
@@ -533,8 +533,8 @@ void main() {
   ) async {
     final SpotlightGuidePortalController controller =
         SpotlightGuidePortalController();
-    final List<SpotlightGuideStateContext> states =
-        <SpotlightGuideStateContext>[];
+    final List<SpotlightGuideStateDetails> states =
+        <SpotlightGuideStateDetails>[];
     bool showSecondTarget = true;
     int firstHintBuilds = 0;
 
@@ -620,7 +620,7 @@ void main() {
     expect(firstHintBuilds, greaterThan(buildsAfterShow));
     expect(
       states.any(
-        (SpotlightGuideStateContext state) =>
+        (SpotlightGuideStateDetails state) =>
             state.reason == SpotlightGuideStateChangeReason.targetsChanged &&
             state.index == 0 &&
             state.total == 1 &&
@@ -855,8 +855,8 @@ void main() {
   ) async {
     final SpotlightGuidePortalController controller =
         SpotlightGuidePortalController();
-    final List<SpotlightGuideStateContext> states =
-        <SpotlightGuideStateContext>[];
+    final List<SpotlightGuideStateDetails> states =
+        <SpotlightGuideStateDetails>[];
     bool showFirstTarget = true;
 
     Widget buildApp() {
@@ -942,7 +942,7 @@ void main() {
     expect(controller.isLast, isTrue);
     expect(
       states.any(
-        (SpotlightGuideStateContext state) =>
+        (SpotlightGuideStateDetails state) =>
             state.reason == SpotlightGuideStateChangeReason.targetsChanged &&
             state.index == 0 &&
             state.total == 1 &&
@@ -952,7 +952,7 @@ void main() {
     );
     expect(
       states.any(
-        (SpotlightGuideStateContext state) =>
+        (SpotlightGuideStateDetails state) =>
             state.reason == SpotlightGuideStateChangeReason.shown &&
             state.index == 0 &&
             state.total == 1 &&
@@ -967,8 +967,8 @@ void main() {
   ) async {
     final SpotlightGuidePortalController controller =
         SpotlightGuidePortalController();
-    final List<SpotlightGuideStateContext> states =
-        <SpotlightGuideStateContext>[];
+    final List<SpotlightGuideStateDetails> states =
+        <SpotlightGuideStateDetails>[];
     bool showThirdTarget = true;
     int secondHintBuilds = 0;
 
@@ -1080,7 +1080,7 @@ void main() {
     expect(controller.isLast, isTrue);
     expect(
       states.any(
-        (SpotlightGuideStateContext state) =>
+        (SpotlightGuideStateDetails state) =>
             state.reason == SpotlightGuideStateChangeReason.targetsChanged &&
             state.index == 1 &&
             state.total == 2 &&

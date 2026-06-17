@@ -58,16 +58,14 @@ class _SameStepScrollPageState extends State<SameStepScrollPage> {
     _guideController.reset();
   }
 
-  void _handleAutoScrollChanged(
-    SpotlightGuideAutoScrollContext context,
-  ) {
+  void _handleAutoScrollChanged(SpotlightGuideAutoScrollDetails details) {
     if (!mounted) {
       return;
     }
     setState(() {
       _autoScrollStatus =
-          'Auto-scroll item ${context.itemIndex + 1}/${context.itemTotal}: '
-          '${context.key ?? context.primaryTargetId ?? 'whole page'}';
+          'Auto-scroll item ${details.itemIndex + 1}/${details.itemTotal}: '
+          '${details.key ?? details.primaryTargetId ?? 'whole page'}';
     });
   }
 }

@@ -78,8 +78,8 @@ void main() {
   ) async {
     final Map<String, SpotlightGuideStepContext> contexts =
         <String, SpotlightGuideStepContext>{};
-    final List<SpotlightGuideTargetPaintContext> paintContexts =
-        <SpotlightGuideTargetPaintContext>[];
+    final List<SpotlightGuideTargetLayerContext> layerContexts =
+        <SpotlightGuideTargetLayerContext>[];
 
     await tester.pumpWidget(
       guideApp(
@@ -110,7 +110,7 @@ void main() {
                   borderRadius: BorderRadius.all(Radius.circular(18)),
                 ),
                 layers: <SpotlightGuideTargetLayer>[
-                  _RecordingTargetLayer(paintContexts),
+                  _RecordingTargetLayer(layerContexts),
                 ],
               ),
               hintBuilder: sizedHint('decorated-hole', 1, 1, contexts),
@@ -123,14 +123,14 @@ void main() {
     await tester.pump();
 
     final SpotlightGuideStepContext guide = contexts['decorated-hole']!;
-    expect(paintContexts, isNotEmpty);
+    expect(layerContexts, isNotEmpty);
 
-    final SpotlightGuideTargetPaintContext paintContext = paintContexts.last;
-    expect(paintContext.rect, guide.targetRect);
-    expect(paintContext.path().contains(paintContext.rect.center), isTrue);
+    final SpotlightGuideTargetLayerContext layerContext = layerContexts.last;
+    expect(layerContext.rect, guide.targetRect);
+    expect(layerContext.path().contains(layerContext.rect.center), isTrue);
     expect(
-      paintContext.path().contains(
-        paintContext.rect.topLeft + const Offset(1, 1),
+      layerContext.path().contains(
+        layerContext.rect.topLeft + const Offset(1, 1),
       ),
       isFalse,
       reason: 'Layer paths should follow the rounded target shape.',
@@ -141,8 +141,8 @@ void main() {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
     const Size size = Size(100, 100);
-    const SpotlightGuideTargetPaintContext context =
-        SpotlightGuideTargetPaintContext(
+    const SpotlightGuideTargetLayerContext context =
+        SpotlightGuideTargetLayerContext(
           rect: Rect.fromLTWH(30, 30, 40, 40),
           overlaySize: size,
           textDirection: TextDirection.ltr,
@@ -191,8 +191,8 @@ void main() {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
     const Size size = Size(100, 100);
-    const SpotlightGuideTargetPaintContext context =
-        SpotlightGuideTargetPaintContext(
+    const SpotlightGuideTargetLayerContext context =
+        SpotlightGuideTargetLayerContext(
           rect: Rect.fromLTWH(20.25, 20.25, 40, 40),
           overlaySize: size,
           textDirection: TextDirection.ltr,
@@ -263,8 +263,8 @@ void main() {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
     const Size size = Size(120, 120);
-    const SpotlightGuideTargetPaintContext context =
-        SpotlightGuideTargetPaintContext(
+    const SpotlightGuideTargetLayerContext context =
+        SpotlightGuideTargetLayerContext(
           rect: Rect.fromLTWH(36, 36, 48, 40),
           overlaySize: size,
           textDirection: TextDirection.ltr,
@@ -312,13 +312,13 @@ void main() {
 }
 
 class _RecordingTargetLayer extends SpotlightGuideTargetLayer {
-  const _RecordingTargetLayer(this.contexts);
+  const _RecordingTargetLayer(this.layerContexts);
 
-  final List<SpotlightGuideTargetPaintContext> contexts;
+  final List<SpotlightGuideTargetLayerContext> layerContexts;
 
   @override
-  void paint(Canvas canvas, SpotlightGuideTargetPaintContext context) {
-    contexts.add(context);
+  void paint(Canvas canvas, SpotlightGuideTargetLayerContext context) {
+    layerContexts.add(context);
   }
 }
 

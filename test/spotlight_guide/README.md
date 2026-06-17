@@ -32,7 +32,7 @@ spotlight_guide_layout_test.dart
 
 spotlight_guide_pointer_test.dart
   Visual pointer alignment for every side, semantic start/end placement in RTL,
-  pointer paint layer ordering, pointer anchor-mode behavior, pointer-to-target
+  pointer paint order, pointer anchor-mode behavior, pointer-to-target
   start/end semantics, pointer-center bubble anchoring, top-placed pointer
   below the bubble, natural-size pointer readiness, stable explicit pointer
   slots, and direct arrow anchoring when no pointer is supplied.
@@ -56,7 +56,7 @@ spotlight_guide_barrier_test.dart
   covering only the target rect and not its padding.
 
 spotlight_guide_target_decoration_test.dart
-  Target decoration shape cutting, target paint context shape resolution,
+  Target decoration shape cutting, target layer context shape resolution,
   glow layer clearing, and outside-only layered ring painting.
 
 spotlight_guide_auto_scroll_test.dart

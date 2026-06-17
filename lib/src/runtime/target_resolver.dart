@@ -2,7 +2,7 @@ part of '../../spotlight_guide.dart';
 
 /// Resolves guide item targets into mounted contexts and overlay geometry.
 ///
-/// Target lookup supports target ids, repeated-id groups, anchor aliases,
+/// Target lookup supports target ids, repeated-id groups, anchor ids,
 /// global keys, and whole-portal highlighting. This resolver keeps those rules
 /// in one place so the portal can focus on guide orchestration.
 class _SpotlightGuideTargetResolver {
