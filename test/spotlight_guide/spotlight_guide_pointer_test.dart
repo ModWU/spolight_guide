@@ -9,7 +9,7 @@ import 'spotlight_guide_test_helpers.dart';
 /// Pointer and arrow anchor relationship tests.
 ///
 /// Run this file when changing [SpotlightGuideBubbleHint],
-/// [SpotlightGuideHintPointer], or the rule that target anchor
+/// [SpotlightGuidePointer], or the rule that target anchor
 /// controls the arrow directly when no pointer is supplied.
 void main() {
   test('pointer direction constructors use up as the zero pose', () {
@@ -90,7 +90,7 @@ void main() {
       final List<
         ({
           SpotlightGuidePlacement placement,
-          SpotlightGuideIndicatorDirection direction,
+          SpotlightGuideDirection direction,
           double rotation,
           double targetLeft,
           double targetTop,
@@ -100,7 +100,7 @@ void main() {
           <
             ({
               SpotlightGuidePlacement placement,
-              SpotlightGuideIndicatorDirection direction,
+              SpotlightGuideDirection direction,
               double rotation,
               double targetLeft,
               double targetTop,
@@ -108,28 +108,28 @@ void main() {
           >[
             (
               placement: SpotlightGuidePlacement.bottom,
-              direction: SpotlightGuideIndicatorDirection.up,
+              direction: SpotlightGuideDirection.up,
               rotation: 0,
               targetLeft: 320,
               targetTop: 120,
             ),
             (
               placement: SpotlightGuidePlacement.top,
-              direction: SpotlightGuideIndicatorDirection.down,
+              direction: SpotlightGuideDirection.down,
               rotation: math.pi,
               targetLeft: 320,
               targetTop: 420,
             ),
             (
               placement: SpotlightGuidePlacement.left,
-              direction: SpotlightGuideIndicatorDirection.right,
+              direction: SpotlightGuideDirection.right,
               rotation: math.pi / 2,
               targetLeft: 560,
               targetTop: 260,
             ),
             (
               placement: SpotlightGuidePlacement.right,
-              direction: SpotlightGuideIndicatorDirection.left,
+              direction: SpotlightGuideDirection.left,
               rotation: -math.pi / 2,
               targetLeft: 80,
               targetTop: 260,
@@ -161,7 +161,7 @@ void main() {
                   targetDecoration: const SpotlightGuideTargetDecoration(
                     padding: EdgeInsets.zero,
                   ),
-                  pointer: SpotlightGuideHintPointer(
+                  pointer: SpotlightGuidePointer(
                     size: const Size(28, 28),
                     child: SizedBox(key: childKey, width: 28, height: 28),
                     builder:
@@ -281,7 +281,7 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: const Size(28, 28),
                   child: const SizedBox(width: 28, height: 28),
                   builder:
@@ -346,7 +346,7 @@ void main() {
         double targetLeft,
         double targetTop,
         SpotlightGuidePlacement expectedPlacement,
-        SpotlightGuideIndicatorDirection expectedDirection,
+        SpotlightGuideDirection expectedDirection,
       })
     >
     cases =
@@ -358,7 +358,7 @@ void main() {
             double targetLeft,
             double targetTop,
             SpotlightGuidePlacement expectedPlacement,
-            SpotlightGuideIndicatorDirection expectedDirection,
+            SpotlightGuideDirection expectedDirection,
           })
         >[
           (
@@ -368,7 +368,7 @@ void main() {
             targetLeft: 320,
             targetTop: 30,
             expectedPlacement: SpotlightGuidePlacement.bottom,
-            expectedDirection: SpotlightGuideIndicatorDirection.up,
+            expectedDirection: SpotlightGuideDirection.up,
           ),
           (
             label: 'vertical-auto-top',
@@ -377,7 +377,7 @@ void main() {
             targetLeft: 320,
             targetTop: 500,
             expectedPlacement: SpotlightGuidePlacement.top,
-            expectedDirection: SpotlightGuideIndicatorDirection.down,
+            expectedDirection: SpotlightGuideDirection.down,
           ),
           (
             label: 'rtl-start',
@@ -386,7 +386,7 @@ void main() {
             targetLeft: 120,
             targetTop: 260,
             expectedPlacement: SpotlightGuidePlacement.right,
-            expectedDirection: SpotlightGuideIndicatorDirection.left,
+            expectedDirection: SpotlightGuideDirection.left,
           ),
         ];
 
@@ -413,7 +413,7 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: const Size(28, 28),
                   child: const SizedBox(width: 28, height: 28),
                   builder:
@@ -448,7 +448,7 @@ void main() {
   });
 
   testWidgets(
-    'pointer builder exposes bubble direction after bubblePlacement',
+    'pointer builder exposes bubble direction after bubbleSide',
     (tester) async {
       final List<SpotlightGuidePointerContext> pointerContexts =
           <SpotlightGuidePointerContext>[];
@@ -470,9 +470,9 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: const Size(28, 28),
-                  bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                  bubbleSide: SpotlightGuideBubbleSide.bottom,
                   child: const SizedBox(width: 28, height: 28),
                   builder:
                       (
@@ -501,11 +501,11 @@ void main() {
       final SpotlightGuidePointerContext pointerContext = pointerContexts.last;
       expect(
         pointerContext.targetDirection,
-        SpotlightGuideIndicatorDirection.right,
+        SpotlightGuideDirection.right,
       );
       expect(
         pointerContext.bubbleDirection,
-        SpotlightGuideIndicatorDirection.down,
+        SpotlightGuideDirection.down,
       );
       expect(
         pointerContext.bubbleRotation,
@@ -519,11 +519,11 @@ void main() {
       );
       expect(
         pointerContext.bubbleAnchorDirection,
-        SpotlightGuideIndicatorDirection.up,
+        SpotlightGuideDirection.up,
       );
       expect(
-        pointerContext.bubblePlacement,
-        SpotlightGuidePointerBubblePlacement.bottom,
+        pointerContext.bubbleSide,
+        SpotlightGuideBubbleSide.bottom,
       );
     },
   );
@@ -535,7 +535,7 @@ void main() {
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
               targetId: 'a',
-              pointer: const SpotlightGuideHintPointer.tap(),
+              pointer: const SpotlightGuidePointer.tap(),
               hintBuilder:
                   (BuildContext context, SpotlightGuideStepContext guide) {
                     return SpotlightGuideTextHint(
@@ -578,7 +578,7 @@ void main() {
               decoration: const SpotlightGuideBubbleDecoration(
                 border: BorderSide(color: Color(0xFF112233), width: 3),
               ),
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(24, 24),
                 child: SizedBox(
                   key: ValueKey<String>('pointer-on-border'),
@@ -627,7 +627,7 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
               ),
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 layer: SpotlightGuidePointerLayer.aboveBubble,
                 size: Size(24, 24),
                 child: SizedBox(
@@ -715,7 +715,7 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: gap,
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: testCase.pointerSize,
                   child: SizedBox(
                     key: pointerKey,
@@ -742,8 +742,8 @@ void main() {
       final SpotlightGuideStepContext guide = contexts[testCase.label]!;
       final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
       final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
-      switch (guide.indicatorDirection) {
-        case SpotlightGuideIndicatorDirection.up:
+      switch (guide.anchorDirection) {
+        case SpotlightGuideDirection.up:
           expect(
             pointerRect.center.dx,
             moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
@@ -758,7 +758,7 @@ void main() {
             bubbleRect.top,
             moreOrLessEquals(pointerRect.bottom + gap, epsilon: 0.5),
           );
-        case SpotlightGuideIndicatorDirection.down:
+        case SpotlightGuideDirection.down:
           expect(
             pointerRect.center.dx,
             moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
@@ -773,7 +773,7 @@ void main() {
             bubbleRect.bottom,
             moreOrLessEquals(pointerRect.top - gap, epsilon: 0.5),
           );
-        case SpotlightGuideIndicatorDirection.left:
+        case SpotlightGuideDirection.left:
           expect(
             pointerRect.center.dy,
             moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
@@ -788,7 +788,7 @@ void main() {
             bubbleRect.left,
             moreOrLessEquals(pointerRect.right + gap, epsilon: 0.5),
           );
-        case SpotlightGuideIndicatorDirection.right:
+        case SpotlightGuideDirection.right:
           expect(
             pointerRect.center.dy,
             moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
@@ -872,7 +872,7 @@ void main() {
                       padding: EdgeInsets.zero,
                     ),
                     gap: 10,
-                    pointer: SpotlightGuideHintPointer(
+                    pointer: SpotlightGuidePointer(
                       size: testCase.pointerSize,
                       pointerAnchorPosition: pointerAnchor,
                       child: SizedBox(
@@ -908,8 +908,8 @@ void main() {
           final SpotlightGuideAnchorGeometry anchorGeometry =
               _bubbleAnchorGeometry(tester);
           final bool horizontalAnchorAxis =
-              guide.indicatorDirection == SpotlightGuideIndicatorDirection.up ||
-              guide.indicatorDirection == SpotlightGuideIndicatorDirection.down;
+              guide.anchorDirection == SpotlightGuideDirection.up ||
+              guide.anchorDirection == SpotlightGuideDirection.down;
           final double pointerTargetAxis = _pointerAnchorAxisPosition(
             pointerRect,
             pointerAnchor,
@@ -965,7 +965,7 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 0,
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 child: SizedBox(
                   key: ValueKey<String>('auto-size-pointer'),
                   width: 34,
@@ -1026,7 +1026,7 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   child: SizedBox(
                     key: const ValueKey<String>('unstable-natural-pointer'),
                     width: 68,
@@ -1112,7 +1112,7 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
               ),
-              pointer: SpotlightGuideHintPointer(
+              pointer: SpotlightGuidePointer(
                 size: const Size(68, 102),
                 child: SizedBox(
                   key: const ValueKey<String>('stable-slot-pointer'),
@@ -1223,7 +1223,7 @@ void main() {
                       padding: EdgeInsets.zero,
                     ),
                     gap: pointerToBubbleGap,
-                    pointer: SpotlightGuideHintPointer(
+                    pointer: SpotlightGuidePointer(
                       targetGap: targetGap,
                       size: testCase.pointerSize,
                       child: SizedBox(
@@ -1256,8 +1256,8 @@ void main() {
           final Rect bubbleRect = tester.getRect(
             find.byType(SpotlightGuideBubble),
           );
-          switch (guide.indicatorDirection) {
-            case SpotlightGuideIndicatorDirection.up:
+          switch (guide.anchorDirection) {
+            case SpotlightGuideDirection.up:
               expect(
                 pointerRect.top,
                 moreOrLessEquals(
@@ -1272,7 +1272,7 @@ void main() {
                   epsilon: 0.5,
                 ),
               );
-            case SpotlightGuideIndicatorDirection.down:
+            case SpotlightGuideDirection.down:
               expect(
                 pointerRect.bottom,
                 moreOrLessEquals(
@@ -1287,7 +1287,7 @@ void main() {
                   epsilon: 0.5,
                 ),
               );
-            case SpotlightGuideIndicatorDirection.left:
+            case SpotlightGuideDirection.left:
               expect(
                 pointerRect.left,
                 moreOrLessEquals(
@@ -1302,7 +1302,7 @@ void main() {
                   epsilon: 0.5,
                 ),
               );
-            case SpotlightGuideIndicatorDirection.right:
+            case SpotlightGuideDirection.right:
               expect(
                 pointerRect.right,
                 moreOrLessEquals(
@@ -1330,7 +1330,7 @@ void main() {
         ({
           SpotlightGuidePlacement placement,
           SpotlightGuidePlacement expected,
-          SpotlightGuideIndicatorDirection direction,
+          SpotlightGuideDirection direction,
         })
       >
       cases =
@@ -1338,28 +1338,28 @@ void main() {
             ({
               SpotlightGuidePlacement placement,
               SpotlightGuidePlacement expected,
-              SpotlightGuideIndicatorDirection direction,
+              SpotlightGuideDirection direction,
             })
           >[
             (
               placement: SpotlightGuidePlacement.left,
               expected: SpotlightGuidePlacement.left,
-              direction: SpotlightGuideIndicatorDirection.right,
+              direction: SpotlightGuideDirection.right,
             ),
             (
               placement: SpotlightGuidePlacement.right,
               expected: SpotlightGuidePlacement.right,
-              direction: SpotlightGuideIndicatorDirection.left,
+              direction: SpotlightGuideDirection.left,
             ),
             (
               placement: SpotlightGuidePlacement.start,
               expected: SpotlightGuidePlacement.right,
-              direction: SpotlightGuideIndicatorDirection.left,
+              direction: SpotlightGuideDirection.left,
             ),
             (
               placement: SpotlightGuidePlacement.end,
               expected: SpotlightGuidePlacement.left,
-              direction: SpotlightGuideIndicatorDirection.right,
+              direction: SpotlightGuideDirection.right,
             ),
           ];
 
@@ -1388,7 +1388,7 @@ void main() {
                   targetDecoration: const SpotlightGuideTargetDecoration(
                     padding: EdgeInsets.zero,
                   ),
-                  pointer: SpotlightGuideHintPointer(
+                  pointer: SpotlightGuidePointer(
                     size: const Size(28, 40),
                     child: SizedBox(
                       key: pointerKey,
@@ -1415,7 +1415,7 @@ void main() {
         final SpotlightGuideStepContext guide = contexts[label]!;
         final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
         expect(guide.placement, testCase.expected);
-        expect(guide.indicatorDirection, testCase.direction);
+        expect(guide.anchorDirection, testCase.direction);
         expect(
           pointerRect.center.dy,
           moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
@@ -1459,7 +1459,7 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 16,
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 anchorMode: SpotlightGuidePointerAnchorMode.target,
                 size: Size(36, 36),
                 child: SizedBox(
@@ -1500,7 +1500,7 @@ void main() {
       moreOrLessEquals(guide.targetRect.bottom + guide.gap, epsilon: 0.5),
     );
     expect(
-      bubbleRect.left + guide.indicatorOffset,
+      bubbleRect.left + guide.anchorOffset,
       moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
     );
     expect(
@@ -1566,7 +1566,7 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: gap,
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: testCase.pointerSize,
                   child: SizedBox(
                     key: pointerKey,
@@ -1593,8 +1593,8 @@ void main() {
       final SpotlightGuideStepContext guide = contexts[testCase.label]!;
       final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
       final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
-      switch (guide.indicatorDirection) {
-        case SpotlightGuideIndicatorDirection.up:
+      switch (guide.anchorDirection) {
+        case SpotlightGuideDirection.up:
           expect(
             pointerRect.top,
             moreOrLessEquals(guide.targetRect.bottom, epsilon: 0.5),
@@ -1603,7 +1603,7 @@ void main() {
             bubbleRect.top,
             moreOrLessEquals(pointerRect.bottom + gap, epsilon: 0.5),
           );
-        case SpotlightGuideIndicatorDirection.down:
+        case SpotlightGuideDirection.down:
           expect(
             pointerRect.bottom,
             moreOrLessEquals(guide.targetRect.top, epsilon: 0.5),
@@ -1612,7 +1612,7 @@ void main() {
             bubbleRect.bottom,
             moreOrLessEquals(pointerRect.top - gap, epsilon: 0.5),
           );
-        case SpotlightGuideIndicatorDirection.left:
+        case SpotlightGuideDirection.left:
           expect(
             pointerRect.left,
             moreOrLessEquals(guide.targetRect.right, epsilon: 0.5),
@@ -1621,7 +1621,7 @@ void main() {
             bubbleRect.left,
             moreOrLessEquals(pointerRect.right + gap, epsilon: 0.5),
           );
-        case SpotlightGuideIndicatorDirection.right:
+        case SpotlightGuideDirection.right:
           expect(
             pointerRect.right,
             moreOrLessEquals(guide.targetRect.left, epsilon: 0.5),
@@ -1665,11 +1665,11 @@ void main() {
                 gap: gap,
                 minWidth: 180,
                 maxWidth: 300,
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: const Size(128, 144),
                   pointerAnchorPosition:
                       const SpotlightGuideAnchorPosition.end(),
-                  bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                  bubbleSide: SpotlightGuideBubbleSide.bottom,
                   child: SizedBox(
                     key: pointerKey,
                     width: 128,
@@ -1733,7 +1733,7 @@ void main() {
                 anchor: SpotlightGuideNoAnchor(),
               ),
               gap: gap,
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(40, 24),
                 child: SizedBox(
                   key: ValueKey<String>('no-anchor-pointer'),
@@ -1834,7 +1834,7 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: gap,
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: testCase.pointerSize,
                   visualOffset: visualOffset,
                   child: SizedBox(
@@ -1862,8 +1862,8 @@ void main() {
       final SpotlightGuideStepContext guide = contexts[testCase.label]!;
       final Rect visualPointerRect = tester.getRect(find.byKey(pointerKey));
       final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
-      switch (guide.indicatorDirection) {
-        case SpotlightGuideIndicatorDirection.up:
+      switch (guide.anchorDirection) {
+        case SpotlightGuideDirection.up:
           final double slotTop = guide.targetRect.bottom;
           expect(
             visualPointerRect.center.dx,
@@ -1884,10 +1884,10 @@ void main() {
             ),
           );
           expect(
-            bubbleRect.left + guide.indicatorOffset,
+            bubbleRect.left + guide.anchorOffset,
             moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
           );
-        case SpotlightGuideIndicatorDirection.down:
+        case SpotlightGuideDirection.down:
           final double slotBottom = guide.targetRect.top;
           expect(
             visualPointerRect.center.dx,
@@ -1908,10 +1908,10 @@ void main() {
             ),
           );
           expect(
-            bubbleRect.left + guide.indicatorOffset,
+            bubbleRect.left + guide.anchorOffset,
             moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
           );
-        case SpotlightGuideIndicatorDirection.left:
+        case SpotlightGuideDirection.left:
           final double slotLeft = guide.targetRect.right;
           expect(
             visualPointerRect.center.dy,
@@ -1932,10 +1932,10 @@ void main() {
             ),
           );
           expect(
-            bubbleRect.top + guide.indicatorOffset,
+            bubbleRect.top + guide.anchorOffset,
             moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
           );
-        case SpotlightGuideIndicatorDirection.right:
+        case SpotlightGuideDirection.right:
           final double slotRight = guide.targetRect.left;
           expect(
             visualPointerRect.center.dy,
@@ -1956,7 +1956,7 @@ void main() {
             ),
           );
           expect(
-            bubbleRect.top + guide.indicatorOffset,
+            bubbleRect.top + guide.anchorOffset,
             moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
           );
       }
@@ -1988,7 +1988,7 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 0,
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(40, 24),
                 visualOffset: SpotlightGuidePointerOffset.directional(
                   end: 6,
@@ -2031,54 +2031,54 @@ void main() {
       moreOrLessEquals(guide.targetRect.bottom - 3, epsilon: 0.5),
     );
     expect(
-      bubbleRect.left + guide.indicatorOffset,
+      bubbleRect.left + guide.anchorOffset,
       moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
     );
   });
 
   testWidgets(
-    'bubblePlacement controls the bubble side after pointer placement',
+    'bubbleSide controls the bubble side after pointer placement',
     (tester) async {
       const double gap = 10;
-      final List<_BubblePlacementCase> cases = <_BubblePlacementCase>[
-        const _BubblePlacementCase(
+      final List<_BubbleSideCase> cases = <_BubbleSideCase>[
+        const _BubbleSideCase(
           label: 'bubble-below-side-pointer',
           stepPlacement: SpotlightGuidePlacement.left,
-          bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
-          expectedAnchorDirection: SpotlightGuideIndicatorDirection.up,
+          bubbleSide: SpotlightGuideBubbleSide.bottom,
+          expectedAnchorDirection: SpotlightGuideDirection.up,
           targetLeft: 520,
           targetTop: 220,
           targetWidth: 120,
           targetHeight: 96,
           pointerSize: Size(36, 36),
         ),
-        const _BubblePlacementCase(
+        const _BubbleSideCase(
           label: 'bubble-above-side-pointer',
           stepPlacement: SpotlightGuidePlacement.left,
-          bubblePlacement: SpotlightGuidePointerBubblePlacement.top,
-          expectedAnchorDirection: SpotlightGuideIndicatorDirection.down,
+          bubbleSide: SpotlightGuideBubbleSide.top,
+          expectedAnchorDirection: SpotlightGuideDirection.down,
           targetLeft: 520,
           targetTop: 260,
           targetWidth: 120,
           targetHeight: 96,
           pointerSize: Size(36, 36),
         ),
-        const _BubblePlacementCase(
+        const _BubbleSideCase(
           label: 'bubble-left-below-pointer',
           stepPlacement: SpotlightGuidePlacement.bottom,
-          bubblePlacement: SpotlightGuidePointerBubblePlacement.left,
-          expectedAnchorDirection: SpotlightGuideIndicatorDirection.right,
+          bubbleSide: SpotlightGuideBubbleSide.left,
+          expectedAnchorDirection: SpotlightGuideDirection.right,
           targetLeft: 300,
           targetTop: 120,
           targetWidth: 128,
           targetHeight: 70,
           pointerSize: Size(34, 34),
         ),
-        const _BubblePlacementCase(
+        const _BubbleSideCase(
           label: 'bubble-right-below-pointer',
           stepPlacement: SpotlightGuidePlacement.bottom,
-          bubblePlacement: SpotlightGuidePointerBubblePlacement.right,
-          expectedAnchorDirection: SpotlightGuideIndicatorDirection.left,
+          bubbleSide: SpotlightGuideBubbleSide.right,
+          expectedAnchorDirection: SpotlightGuideDirection.left,
           targetLeft: 300,
           targetTop: 120,
           targetWidth: 128,
@@ -2087,7 +2087,7 @@ void main() {
         ),
       ];
 
-      for (final _BubblePlacementCase testCase in cases) {
+      for (final _BubbleSideCase testCase in cases) {
         final Map<String, SpotlightGuideStepContext> contexts =
             <String, SpotlightGuideStepContext>{};
         final ValueKey<String> pointerKey = ValueKey<String>(
@@ -2113,9 +2113,9 @@ void main() {
                     padding: EdgeInsets.zero,
                   ),
                   gap: gap,
-                  pointer: SpotlightGuideHintPointer(
+                  pointer: SpotlightGuidePointer(
                     size: testCase.pointerSize,
-                    bubblePlacement: testCase.bubblePlacement,
+                    bubbleSide: testCase.bubbleSide,
                     child: SizedBox(
                       key: pointerKey,
                       width: testCase.pointerSize.width,
@@ -2147,8 +2147,8 @@ void main() {
             _bubbleAnchorGeometry(tester);
 
         expect(anchorGeometry.direction, testCase.expectedAnchorDirection);
-        switch (testCase.bubblePlacement) {
-          case SpotlightGuidePointerBubblePlacement.bottom:
+        switch (testCase.bubbleSide) {
+          case SpotlightGuideBubbleSide.bottom:
             expect(
               pointerRect.right,
               moreOrLessEquals(guide.targetRect.left, epsilon: 0.5),
@@ -2165,7 +2165,7 @@ void main() {
               bubbleRect.left + anchorGeometry.offset,
               moreOrLessEquals(pointerRect.center.dx, epsilon: 0.5),
             );
-          case SpotlightGuidePointerBubblePlacement.top:
+          case SpotlightGuideBubbleSide.top:
             expect(
               pointerRect.right,
               moreOrLessEquals(guide.targetRect.left, epsilon: 0.5),
@@ -2182,7 +2182,7 @@ void main() {
               bubbleRect.left + anchorGeometry.offset,
               moreOrLessEquals(pointerRect.center.dx, epsilon: 0.5),
             );
-          case SpotlightGuidePointerBubblePlacement.left:
+          case SpotlightGuideBubbleSide.left:
             expect(
               pointerRect.top,
               moreOrLessEquals(guide.targetRect.bottom, epsilon: 0.5),
@@ -2199,7 +2199,7 @@ void main() {
               bubbleRect.top + anchorGeometry.offset,
               moreOrLessEquals(pointerRect.center.dy, epsilon: 0.5),
             );
-          case SpotlightGuidePointerBubblePlacement.right:
+          case SpotlightGuideBubbleSide.right:
             expect(
               pointerRect.top,
               moreOrLessEquals(guide.targetRect.bottom, epsilon: 0.5),
@@ -2216,55 +2216,55 @@ void main() {
               bubbleRect.top + anchorGeometry.offset,
               moreOrLessEquals(pointerRect.center.dy, epsilon: 0.5),
             );
-          case SpotlightGuidePointerBubblePlacement.start ||
-              SpotlightGuidePointerBubblePlacement.end ||
-              SpotlightGuidePointerBubblePlacement.alongPlacement:
+          case SpotlightGuideBubbleSide.start ||
+              SpotlightGuideBubbleSide.end ||
+              SpotlightGuideBubbleSide.along:
             fail('semantic and along placements are not used by this case');
         }
       }
     },
   );
 
-  testWidgets('same-axis bubblePlacement matches alongPlacement geometry', (
+  testWidgets('same-axis bubbleSide matches along geometry', (
     tester,
   ) async {
     const double gap = 10;
-    final List<_SameAxisBubblePlacementCase> cases =
-        <_SameAxisBubblePlacementCase>[
-          const _SameAxisBubblePlacementCase(
+    final List<_SameAxisBubbleSideCase> cases =
+        <_SameAxisBubbleSideCase>[
+          const _SameAxisBubbleSideCase(
             label: 'top',
             placement: SpotlightGuidePlacement.top,
-            bubblePlacement: SpotlightGuidePointerBubblePlacement.top,
+            bubbleSide: SpotlightGuideBubbleSide.top,
             targetLeft: 300,
             targetTop: 420,
             targetWidth: 128,
             targetHeight: 70,
             pointerSize: Size(88, 42),
           ),
-          const _SameAxisBubblePlacementCase(
+          const _SameAxisBubbleSideCase(
             label: 'bottom',
             placement: SpotlightGuidePlacement.bottom,
-            bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+            bubbleSide: SpotlightGuideBubbleSide.bottom,
             targetLeft: 300,
             targetTop: 90,
             targetWidth: 128,
             targetHeight: 70,
             pointerSize: Size(88, 42),
           ),
-          const _SameAxisBubblePlacementCase(
+          const _SameAxisBubbleSideCase(
             label: 'left',
             placement: SpotlightGuidePlacement.left,
-            bubblePlacement: SpotlightGuidePointerBubblePlacement.left,
+            bubbleSide: SpotlightGuideBubbleSide.left,
             targetLeft: 560,
             targetTop: 250,
             targetWidth: 120,
             targetHeight: 86,
             pointerSize: Size(42, 88),
           ),
-          const _SameAxisBubblePlacementCase(
+          const _SameAxisBubbleSideCase(
             label: 'right',
             placement: SpotlightGuidePlacement.right,
-            bubblePlacement: SpotlightGuidePointerBubblePlacement.right,
+            bubbleSide: SpotlightGuideBubbleSide.right,
             targetLeft: 90,
             targetTop: 250,
             targetWidth: 120,
@@ -2274,10 +2274,10 @@ void main() {
         ];
 
     Future<({Rect bubble, Rect pointer})> pumpLayout(
-      _SameAxisBubblePlacementCase testCase,
-      SpotlightGuidePointerBubblePlacement bubblePlacement,
+      _SameAxisBubbleSideCase testCase,
+      SpotlightGuideBubbleSide bubbleSide,
     ) async {
-      final String label = '${testCase.label}-${bubblePlacement.name}';
+      final String label = '${testCase.label}-${bubbleSide.name}';
       final ValueKey<String> pointerKey = ValueKey<String>('$label-pointer');
 
       await tester.pumpWidget(
@@ -2299,9 +2299,9 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: gap,
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: testCase.pointerSize,
-                  bubblePlacement: bubblePlacement,
+                  bubbleSide: bubbleSide,
                   child: SizedBox(
                     key: pointerKey,
                     width: testCase.pointerSize.width,
@@ -2328,14 +2328,14 @@ void main() {
       );
     }
 
-    for (final _SameAxisBubblePlacementCase testCase in cases) {
+    for (final _SameAxisBubbleSideCase testCase in cases) {
       final ({Rect bubble, Rect pointer}) along = await pumpLayout(
         testCase,
-        SpotlightGuidePointerBubblePlacement.alongPlacement,
+        SpotlightGuideBubbleSide.along,
       );
       final ({Rect bubble, Rect pointer}) explicit = await pumpLayout(
         testCase,
-        testCase.bubblePlacement,
+        testCase.bubbleSide,
       );
 
       _expectRectsNearlyEqual(explicit.bubble, along.bubble, <String>[
@@ -2377,10 +2377,10 @@ void main() {
               margin: const EdgeInsets.all(16),
               minWidth: 180,
               maxWidth: 300,
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(88, 42),
                 targetGap: 4,
-                bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                bubbleSide: SpotlightGuideBubbleSide.bottom,
                 child: SizedBox(
                   key: ValueKey<String>('explicit-bottom-pointer'),
                   width: 88,
@@ -2451,38 +2451,38 @@ void main() {
     );
   });
 
-  testWidgets('bubblePlacement start and end resolve against Directionality', (
+  testWidgets('bubbleSide start and end resolve against Directionality', (
     tester,
   ) async {
-    final List<_SemanticBubblePlacementCase> cases =
-        <_SemanticBubblePlacementCase>[
-          const _SemanticBubblePlacementCase(
+    final List<_SemanticBubbleSideCase> cases =
+        <_SemanticBubbleSideCase>[
+          const _SemanticBubbleSideCase(
             label: 'ltr-start-bubble',
             textDirection: TextDirection.ltr,
-            bubblePlacement: SpotlightGuidePointerBubblePlacement.start,
-            expectedAnchorDirection: SpotlightGuideIndicatorDirection.right,
+            bubbleSide: SpotlightGuideBubbleSide.start,
+            expectedAnchorDirection: SpotlightGuideDirection.right,
           ),
-          const _SemanticBubblePlacementCase(
+          const _SemanticBubbleSideCase(
             label: 'ltr-end-bubble',
             textDirection: TextDirection.ltr,
-            bubblePlacement: SpotlightGuidePointerBubblePlacement.end,
-            expectedAnchorDirection: SpotlightGuideIndicatorDirection.left,
+            bubbleSide: SpotlightGuideBubbleSide.end,
+            expectedAnchorDirection: SpotlightGuideDirection.left,
           ),
-          const _SemanticBubblePlacementCase(
+          const _SemanticBubbleSideCase(
             label: 'rtl-start-bubble',
             textDirection: TextDirection.rtl,
-            bubblePlacement: SpotlightGuidePointerBubblePlacement.start,
-            expectedAnchorDirection: SpotlightGuideIndicatorDirection.left,
+            bubbleSide: SpotlightGuideBubbleSide.start,
+            expectedAnchorDirection: SpotlightGuideDirection.left,
           ),
-          const _SemanticBubblePlacementCase(
+          const _SemanticBubbleSideCase(
             label: 'rtl-end-bubble',
             textDirection: TextDirection.rtl,
-            bubblePlacement: SpotlightGuidePointerBubblePlacement.end,
-            expectedAnchorDirection: SpotlightGuideIndicatorDirection.right,
+            bubbleSide: SpotlightGuideBubbleSide.end,
+            expectedAnchorDirection: SpotlightGuideDirection.right,
           ),
         ];
 
-    for (final _SemanticBubblePlacementCase testCase in cases) {
+    for (final _SemanticBubbleSideCase testCase in cases) {
       final Map<String, SpotlightGuideStepContext> contexts =
           <String, SpotlightGuideStepContext>{};
       final ValueKey<String> pointerKey = ValueKey<String>(
@@ -2509,9 +2509,9 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 gap: 8,
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: const Size(34, 34),
-                  bubblePlacement: testCase.bubblePlacement,
+                  bubbleSide: testCase.bubbleSide,
                   child: SizedBox(
                     key: pointerKey,
                     width: 34,
@@ -2541,7 +2541,7 @@ void main() {
       );
       final bool bubbleIsOnLeft =
           testCase.expectedAnchorDirection ==
-          SpotlightGuideIndicatorDirection.right;
+          SpotlightGuideDirection.right;
 
       expect(anchorGeometry.direction, testCase.expectedAnchorDirection);
       if (bubbleIsOnLeft) {
@@ -2605,11 +2605,11 @@ void main() {
                     padding: EdgeInsets.zero,
                   ),
                   targetAnchorPosition: testCase.pointerAnchorPosition,
-                  pointer: SpotlightGuideHintPointer(
+                  pointer: SpotlightGuidePointer(
                     size: const Size(40, 24),
                     pointerAnchorPosition: testCase.pointerAnchorPosition,
-                    bubblePlacement:
-                        SpotlightGuidePointerBubblePlacement.bottom,
+                    bubbleSide:
+                        SpotlightGuideBubbleSide.bottom,
                     child: SizedBox(
                       key: pointerKey,
                       width: 40,
@@ -2660,7 +2660,7 @@ void main() {
           bubbleRect.left + anchorGeometry.offset,
           moreOrLessEquals(bubbleAnchorX, epsilon: 0.5),
         );
-        expect(anchorGeometry.direction, SpotlightGuideIndicatorDirection.up);
+        expect(anchorGeometry.direction, SpotlightGuideDirection.up);
       }
     },
   );
@@ -2736,7 +2736,7 @@ void main() {
                   ),
                   targetAnchorPosition: testCase.anchorPosition,
                   gap: 10,
-                  pointer: SpotlightGuideHintPointer(
+                  pointer: SpotlightGuidePointer(
                     size: const Size(40, 28),
                     child: SizedBox(
                       key: pointerKey,
@@ -2768,8 +2768,8 @@ void main() {
         final SpotlightGuideAnchorGeometry anchorGeometry =
             _bubbleAnchorGeometry(tester);
         final bool horizontalAnchorAxis =
-            guide.indicatorDirection == SpotlightGuideIndicatorDirection.up ||
-            guide.indicatorDirection == SpotlightGuideIndicatorDirection.down;
+            guide.anchorDirection == SpotlightGuideDirection.up ||
+            guide.anchorDirection == SpotlightGuideDirection.down;
         final double pointerTargetAxis = horizontalAnchorAxis
             ? pointerRect.center.dx
             : pointerRect.center.dy;
@@ -2825,10 +2825,10 @@ void main() {
               decoration: const SpotlightGuideBubbleDecoration(
                 borderRadius: 28,
               ),
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(40, 24),
                 pointerAnchorPosition: SpotlightGuideAnchorPosition.start(),
-                bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                bubbleSide: SpotlightGuideBubbleSide.bottom,
                 child: SizedBox(
                   key: ValueKey<String>('safe-pointer'),
                   width: 40,
@@ -2879,7 +2879,7 @@ void main() {
     );
   });
 
-  testWidgets('anchorMode target ignores bubblePlacement for bubble layout', (
+  testWidgets('anchorMode target ignores bubbleSide for bubble layout', (
     tester,
   ) async {
     final Map<String, SpotlightGuideStepContext> contexts =
@@ -2903,9 +2903,9 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 14,
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 anchorMode: SpotlightGuidePointerAnchorMode.target,
-                bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                bubbleSide: SpotlightGuideBubbleSide.bottom,
                 size: Size(36, 24),
                 child: SizedBox(
                   key: ValueKey<String>('target-mode-pointer'),
@@ -2935,7 +2935,7 @@ void main() {
       tester,
     );
 
-    expect(anchorGeometry.direction, guide.indicatorDirection);
+    expect(anchorGeometry.direction, guide.anchorDirection);
     expect(
       bubbleRect.top,
       moreOrLessEquals(guide.targetRect.bottom + guide.gap, epsilon: 0.5),
@@ -2971,7 +2971,7 @@ void main() {
               ),
               gap: 0,
               targetAnchorPosition: const SpotlightGuideAnchorPosition.center(),
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(40, 24),
                 child: SizedBox(
                   key: ValueKey<String>('pointer'),
@@ -3049,7 +3049,7 @@ void main() {
                 gap: 0,
                 targetAnchorPosition:
                     const SpotlightGuideAnchorPosition.center(),
-                pointer: SpotlightGuideHintPointer(
+                pointer: SpotlightGuidePointer(
                   size: const Size(24, 40),
                   child: SizedBox(
                     key: pointerKey,
@@ -3118,7 +3118,7 @@ void main() {
 
     final SpotlightGuideStepContext guide = contexts['no-pointer-anchor']!;
     expect(
-      guide.hintRect.left + guide.indicatorOffset,
+      guide.hintRect.left + guide.anchorOffset,
       moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
     );
   });
@@ -3147,7 +3147,7 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               gap: 0,
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(40, 24),
                 child: SizedBox(
                   key: ValueKey<String>('pointer-top'),
@@ -3172,7 +3172,7 @@ void main() {
     await pumpGuide(tester);
 
     final SpotlightGuideStepContext guide = contexts['pointer-top']!;
-    expect(guide.indicatorDirection, SpotlightGuideIndicatorDirection.down);
+    expect(guide.anchorDirection, SpotlightGuideDirection.down);
     final Rect pointerRect = tester.getRect(
       find.byKey(const ValueKey<String>('pointer-top')),
     );
@@ -3209,7 +3209,7 @@ void main() {
               ),
               gap: 0,
               targetAnchorPosition: const SpotlightGuideAnchorPosition.center(),
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(40, 24),
                 pointerAnchorPosition: SpotlightGuideAnchorPosition.end(),
                 child: SizedBox(
@@ -3349,7 +3349,7 @@ void main() {
                 minWidth: 180,
                 maxWidth: 300,
                 gap: 10,
-                pointer: const SpotlightGuideHintPointer(
+                pointer: const SpotlightGuidePointer(
                   size: Size(32, 48),
                   targetGap: 4,
                   child: SizedBox(
@@ -3472,11 +3472,11 @@ class _PointerTargetAnchorOffsetCase {
   final TextDirection textDirection;
 }
 
-class _BubblePlacementCase {
-  const _BubblePlacementCase({
+class _BubbleSideCase {
+  const _BubbleSideCase({
     required this.label,
     required this.stepPlacement,
-    required this.bubblePlacement,
+    required this.bubbleSide,
     required this.expectedAnchorDirection,
     required this.targetLeft,
     required this.targetTop,
@@ -3487,8 +3487,8 @@ class _BubblePlacementCase {
 
   final String label;
   final SpotlightGuidePlacement stepPlacement;
-  final SpotlightGuidePointerBubblePlacement bubblePlacement;
-  final SpotlightGuideIndicatorDirection expectedAnchorDirection;
+  final SpotlightGuideBubbleSide bubbleSide;
+  final SpotlightGuideDirection expectedAnchorDirection;
   final double targetLeft;
   final double targetTop;
   final double targetWidth;
@@ -3496,11 +3496,11 @@ class _BubblePlacementCase {
   final Size pointerSize;
 }
 
-class _SameAxisBubblePlacementCase {
-  const _SameAxisBubblePlacementCase({
+class _SameAxisBubbleSideCase {
+  const _SameAxisBubbleSideCase({
     required this.label,
     required this.placement,
-    required this.bubblePlacement,
+    required this.bubbleSide,
     required this.targetLeft,
     required this.targetTop,
     required this.targetWidth,
@@ -3510,7 +3510,7 @@ class _SameAxisBubblePlacementCase {
 
   final String label;
   final SpotlightGuidePlacement placement;
-  final SpotlightGuidePointerBubblePlacement bubblePlacement;
+  final SpotlightGuideBubbleSide bubbleSide;
   final double targetLeft;
   final double targetTop;
   final double targetWidth;
@@ -3518,18 +3518,18 @@ class _SameAxisBubblePlacementCase {
   final Size pointerSize;
 }
 
-class _SemanticBubblePlacementCase {
-  const _SemanticBubblePlacementCase({
+class _SemanticBubbleSideCase {
+  const _SemanticBubbleSideCase({
     required this.label,
     required this.textDirection,
-    required this.bubblePlacement,
+    required this.bubbleSide,
     required this.expectedAnchorDirection,
   });
 
   final String label;
   final TextDirection textDirection;
-  final SpotlightGuidePointerBubblePlacement bubblePlacement;
-  final SpotlightGuideIndicatorDirection expectedAnchorDirection;
+  final SpotlightGuideBubbleSide bubbleSide;
+  final SpotlightGuideDirection expectedAnchorDirection;
 }
 
 class _PointerAnchorRtlCase {
@@ -3555,14 +3555,14 @@ void _expectPointerMainAxisTouchesTarget(
   Rect pointerRect,
   SpotlightGuideStepContext guide,
 ) {
-  switch (guide.indicatorDirection) {
-    case SpotlightGuideIndicatorDirection.up:
+  switch (guide.anchorDirection) {
+    case SpotlightGuideDirection.up:
       expect(pointerRect.top, moreOrLessEquals(guide.targetRect.bottom));
-    case SpotlightGuideIndicatorDirection.down:
+    case SpotlightGuideDirection.down:
       expect(pointerRect.bottom, moreOrLessEquals(guide.targetRect.top));
-    case SpotlightGuideIndicatorDirection.left:
+    case SpotlightGuideDirection.left:
       expect(pointerRect.left, moreOrLessEquals(guide.targetRect.right));
-    case SpotlightGuideIndicatorDirection.right:
+    case SpotlightGuideDirection.right:
       expect(pointerRect.right, moreOrLessEquals(guide.targetRect.left));
   }
 }
@@ -3598,11 +3598,11 @@ double _bubbleAnchorGlobalAxis(
   SpotlightGuideAnchorGeometry anchorGeometry,
 ) {
   return switch (anchorGeometry.direction) {
-    SpotlightGuideIndicatorDirection.up ||
-    SpotlightGuideIndicatorDirection.down =>
+    SpotlightGuideDirection.up ||
+    SpotlightGuideDirection.down =>
       bubbleRect.left + anchorGeometry.offset,
-    SpotlightGuideIndicatorDirection.left ||
-    SpotlightGuideIndicatorDirection.right =>
+    SpotlightGuideDirection.left ||
+    SpotlightGuideDirection.right =>
       bubbleRect.top + anchorGeometry.offset,
   };
 }
@@ -3617,7 +3617,7 @@ class _PointerVisibleGeometry {
 
   final Rect pointer;
   final Rect bubble;
-  final SpotlightGuideIndicatorDirection anchorDirection;
+  final SpotlightGuideDirection anchorDirection;
   final double anchorOffset;
 }
 

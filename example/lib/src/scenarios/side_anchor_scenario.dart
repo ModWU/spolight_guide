@@ -35,7 +35,7 @@ SpotlightGuideStepItem _item({
     placement: SpotlightGuidePlacement.horizontalAuto,
     targetDecoration: const SpotlightGuideTargetDecoration(
       padding: EdgeInsets.all(5),
-      shape: SpotlightGuideRoundedRectTargetShape(
+      shape: SpotlightGuideRoundedRectShape(
         borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
     ),

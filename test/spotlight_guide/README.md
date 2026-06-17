@@ -61,7 +61,7 @@ spotlight_guide_target_decoration_test.dart
 
 spotlight_guide_auto_scroll_test.dart
   Zero interval, three-item index sequencing, finish/next/reset cancellation,
-  single-item and disabled auto scroll, onAutoScrollItemChanged deduplication,
+  single-item and disabled auto scroll, onItemChanged deduplication,
   onlyWhenNeeded false, horizontal axis, partially visible later targets, lazy
   target with onReveal, reset callback restart. Uses [kAutoScrollTestInterval],
   [pumpGuideFrames], and [pumpAutoScrollInterval] for stable timer-driven pumps.
@@ -70,7 +70,7 @@ spotlight_guide_reveal_test.dart
   Default ensureVisible, only-if-needed reveal, always reveal, configurable
   reveal scroll target policy, large target group anchor-priority reveal,
   anchorId reveal for repeated target groups, targetKey reveal, all fixed
-  placements, vertical and horizontal same-step auto scroll, deferred later-item
+  placements, vertical and horizontal same-step scroll, deferred later-item
   onReveal at auto-scroll turn, lazy later targets hiding outgoing hints while
   they are revealed, offscreen same-step hints staying hidden until their target
   is visible, a same-step target taller than the viewport still revealing its
@@ -79,10 +79,10 @@ spotlight_guide_reveal_test.dart
   geometry, lazy list reveal, manual item reveal with default reveal disabled,
   disabled reveal, item reveal options inherited from the step, onStepWillShow
   ordering, disabled auto scroll up-front reveal, edge-flush no-auto-scroll
-  regression, async item reveal cancellation, same-step auto scroll transition
+  regression, async item reveal cancellation, same-step scroll transition
   hiding while animated reveal runs,
   same-step one-hint-at-a-time focus during auto scroll,
-  onAutoScrollItemChanged context fields, targetIds item during auto scroll,
+  onItemChanged context fields, targetIds item during auto scroll,
   all-visible multi-hint without callbacks.
 
 spotlight_guide_controller_test.dart
@@ -99,7 +99,7 @@ spotlight_guide_controller_test.dart
 
 spotlight_guide_direction_test.dart
   Direction semantics matrix: SpotlightGuidePlacement fixed/auto/semantic
-  resolution, SpotlightGuidePointerBubblePlacement physical and semantic sides,
+  resolution, SpotlightGuideBubbleSide physical and semantic sides,
   LTR/RTL start/end behavior, anchor positions, pointer direction rotations,
   visual offsets, pointer-bubble anchor direction relationships, and a
   lightweight screenshot pixel smoke test for rendered pointer/bubble output.

@@ -314,7 +314,7 @@ void main() {
     await tester.pumpWidget(
       guideApp(
         controller: controller,
-        blockInteractionDuringPreparation: false,
+        blockDuringPreparation: false,
         onStepWillShow: (int index, SpotlightGuideStep step) {
           return completer.future;
         },
@@ -388,7 +388,7 @@ void main() {
     await tester.pumpWidget(
       guideApp(
         controller: controller,
-        blockInteractionDuringPreparation: false,
+        blockDuringPreparation: false,
         steps: <SpotlightGuideStep>[
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(
@@ -1149,7 +1149,7 @@ void main() {
     await tester.pumpWidget(
       guideApp(
         controller: controller,
-        barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.onComplete,
+        barrierDismissBehavior: SpotlightGuideDismissBehavior.onComplete,
         onFinish: () => finishCount++,
         steps: <SpotlightGuideStep>[
           SpotlightGuideStep.item(
@@ -1203,7 +1203,7 @@ void main() {
     await tester.pumpWidget(
       guideApp(
         controller: controller,
-        barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.anytime,
+        barrierDismissBehavior: SpotlightGuideDismissBehavior.anytime,
         onFinish: () => finishCount++,
         steps: <SpotlightGuideStep>[
           SpotlightGuideStep.item(

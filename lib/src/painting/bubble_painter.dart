@@ -68,7 +68,7 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
         ..addRRect(RRect.fromRectAndRadius(body, Radius.circular(radius)));
     }
     return switch (connection.direction) {
-      SpotlightGuideIndicatorDirection.up => _buildTopAnchorPath(
+      SpotlightGuideDirection.up => _buildTopAnchorPath(
         body,
         radius,
         connection,
@@ -76,7 +76,7 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
         size,
         geometry,
       ),
-      SpotlightGuideIndicatorDirection.down => _buildBottomAnchorPath(
+      SpotlightGuideDirection.down => _buildBottomAnchorPath(
         body,
         radius,
         connection,
@@ -84,7 +84,7 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
         size,
         geometry,
       ),
-      SpotlightGuideIndicatorDirection.left => _buildLeftAnchorPath(
+      SpotlightGuideDirection.left => _buildLeftAnchorPath(
         body,
         radius,
         connection,
@@ -92,7 +92,7 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
         size,
         geometry,
       ),
-      SpotlightGuideIndicatorDirection.right => _buildRightAnchorPath(
+      SpotlightGuideDirection.right => _buildRightAnchorPath(
         body,
         radius,
         connection,
@@ -114,25 +114,25 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
     final double bodyWidth = math.max(0, size.width - depth);
     final double bodyHeight = math.max(0, size.height - depth);
     return switch (geometry?.direction) {
-      SpotlightGuideIndicatorDirection.up => Rect.fromLTWH(
+      SpotlightGuideDirection.up => Rect.fromLTWH(
         offset.dx,
         offset.dy + depth,
         size.width,
         bodyHeight,
       ),
-      SpotlightGuideIndicatorDirection.down => Rect.fromLTWH(
+      SpotlightGuideDirection.down => Rect.fromLTWH(
         offset.dx,
         offset.dy,
         size.width,
         bodyHeight,
       ),
-      SpotlightGuideIndicatorDirection.left => Rect.fromLTWH(
+      SpotlightGuideDirection.left => Rect.fromLTWH(
         offset.dx + depth,
         offset.dy,
         bodyWidth,
         size.height,
       ),
-      SpotlightGuideIndicatorDirection.right => Rect.fromLTWH(
+      SpotlightGuideDirection.right => Rect.fromLTWH(
         offset.dx,
         offset.dy,
         bodyWidth,

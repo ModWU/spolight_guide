@@ -23,7 +23,7 @@ class _SameStepHintsPageState extends State<SameStepHintsPage> {
       title: 'Same-step hints',
       controller: _guideController,
       steps: buildSameStepHintsScenario(),
-      barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.onComplete,
+      barrierDismissBehavior: SpotlightGuideDismissBehavior.onComplete,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         children: const <Widget>[

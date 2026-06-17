@@ -33,11 +33,11 @@ SpotlightGuideHintBuilder sizedHint(
 
 /// Returns the side length that owns the arrow for the resolved placement.
 double arrowSideExtent(SpotlightGuideStepContext guide) {
-  return switch (guide.indicatorDirection) {
-    SpotlightGuideIndicatorDirection.up ||
-    SpotlightGuideIndicatorDirection.down => guide.hintRect.width,
-    SpotlightGuideIndicatorDirection.left ||
-    SpotlightGuideIndicatorDirection.right => guide.hintRect.height,
+  return switch (guide.anchorDirection) {
+    SpotlightGuideDirection.up ||
+    SpotlightGuideDirection.down => guide.hintRect.width,
+    SpotlightGuideDirection.left ||
+    SpotlightGuideDirection.right => guide.hintRect.height,
   };
 }
 
@@ -54,12 +54,12 @@ Widget guideApp({
   SpotlightGuideStateCallback? onStateChanged,
   VoidCallback? onFinish,
   SpotlightGuideBarrierTapCallback? onBarrierTap,
-  SpotlightGuideBarrierDismissBehavior barrierDismissBehavior =
-      SpotlightGuideBarrierDismissBehavior.disabled,
+  SpotlightGuideDismissBehavior barrierDismissBehavior =
+      SpotlightGuideDismissBehavior.disabled,
   SpotlightGuideBarrierStyle barrier = const SpotlightGuideBarrierStyle(),
-  bool blockInteractionDuringPreparation = true,
-  SpotlightGuideRevealPresentationStrategy revealPresentationStrategy =
-      const SpotlightGuideDeferredRevealPresentationStrategy(),
+  bool blockDuringPreparation = true,
+  SpotlightGuideRevealStrategy revealStrategy =
+      const SpotlightGuideDeferredReveal(),
   TextDirection textDirection = TextDirection.ltr,
   bool enabled = true,
   bool? autoStart,
@@ -86,9 +86,9 @@ Widget guideApp({
             onBarrierTap: onBarrierTap,
             barrierDismissBehavior: barrierDismissBehavior,
             barrier: barrier,
-            blockInteractionDuringPreparation:
-                blockInteractionDuringPreparation,
-            revealPresentationStrategy: revealPresentationStrategy,
+            blockDuringPreparation:
+                blockDuringPreparation,
+            revealStrategy: revealStrategy,
             child:
                 child ??
                 Stack(
@@ -284,10 +284,10 @@ Future<void> pumpGuideFrames(WidgetTester tester, {int count = 12}) async {
   }
 }
 
-/// Records [SpotlightGuideAutoScrollItemContext.itemIndex] for tests.
-void recordAutoScrollItemIndex(
+/// Records [SpotlightGuideAutoScrollContext.itemIndex] for tests.
+void recordAutoScrollIndex(
   List<int> indices,
-  SpotlightGuideAutoScrollItemContext context,
+  SpotlightGuideAutoScrollContext context,
 ) {
   indices.add(context.itemIndex);
 }
@@ -304,7 +304,7 @@ Future<void> pumpAutoScrollInterval(
 
 /// Builds two mounted targets far apart on one scroll axis.
 ///
-/// Used by same-step auto-scroll tests where the first item opens the step and
+/// Used by same-step scroll tests where the first item opens the step and
 /// the second item should be revealed after the configured interval.
 Widget multiItemScrollableTargets({
   required ScrollController controller,

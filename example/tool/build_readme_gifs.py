@@ -26,7 +26,7 @@ def main() -> None:
         "same_step_scroll.gif",
         [
             *[
-                (f"same_step_scroll_{index:02}.png", "Same-step auto scroll")
+                (f"same_step_scroll_{index:02}.png", "Same-step scroll")
                 for index in range(1, 22)
             ],
             *[

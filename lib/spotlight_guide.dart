@@ -20,7 +20,7 @@ part 'src/runtime/reveal_scroll_strategy.dart';
 part 'src/hints/bubble.dart';
 part 'src/hints/bubble_hint.dart';
 part 'src/hints/bubble_decoration.dart';
-part 'src/hints/pointer_indicator.dart';
+part 'src/hints/tap_pointer.dart';
 part 'src/hints/paint_gate.dart';
 part 'src/hints/text_hint.dart';
 part 'src/layout/overlay_layout.dart';

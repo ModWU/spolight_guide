@@ -8,7 +8,7 @@ part of '../../spotlight_guide.dart';
 class SpotlightGuideTargetDecoration {
   const SpotlightGuideTargetDecoration({
     this.padding = const EdgeInsets.all(6),
-    this.shape = const SpotlightGuideRoundedRectTargetShape(),
+    this.shape = const SpotlightGuideRoundedRectShape(),
     this.layers = const <SpotlightGuideTargetLayer>[],
   });
 
@@ -90,8 +90,8 @@ abstract class SpotlightGuideTargetShape {
 }
 
 /// Rounded rectangle spotlight target shape.
-class SpotlightGuideRoundedRectTargetShape extends SpotlightGuideTargetShape {
-  const SpotlightGuideRoundedRectTargetShape({
+class SpotlightGuideRoundedRectShape extends SpotlightGuideTargetShape {
+  const SpotlightGuideRoundedRectShape({
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
   });
 
@@ -135,7 +135,7 @@ class SpotlightGuideRoundedRectTargetShape extends SpotlightGuideTargetShape {
 
   @override
   bool operator ==(Object other) {
-    return other is SpotlightGuideRoundedRectTargetShape &&
+    return other is SpotlightGuideRoundedRectShape &&
         other.borderRadius == borderRadius;
   }
 
@@ -144,8 +144,8 @@ class SpotlightGuideRoundedRectTargetShape extends SpotlightGuideTargetShape {
 }
 
 /// Oval spotlight target shape.
-class SpotlightGuideOvalTargetShape extends SpotlightGuideTargetShape {
-  const SpotlightGuideOvalTargetShape();
+class SpotlightGuideOvalShape extends SpotlightGuideTargetShape {
+  const SpotlightGuideOvalShape();
 
   @override
   Path createPath({
@@ -183,7 +183,7 @@ class SpotlightGuideOvalTargetShape extends SpotlightGuideTargetShape {
   }
 
   @override
-  bool operator ==(Object other) => other is SpotlightGuideOvalTargetShape;
+  bool operator ==(Object other) => other is SpotlightGuideOvalShape;
 
   @override
   int get hashCode => runtimeType.hashCode;
@@ -306,8 +306,8 @@ class SpotlightGuideTargetRingLayer extends SpotlightGuideTargetLayer {
 }
 
 /// Draws a dashed outline that follows the target shape.
-class SpotlightGuideTargetDashedOutlineLayer extends SpotlightGuideTargetLayer {
-  const SpotlightGuideTargetDashedOutlineLayer({
+class SpotlightGuideTargetOutlineLayer extends SpotlightGuideTargetLayer {
+  const SpotlightGuideTargetOutlineLayer({
     required this.color,
     this.width = 2,
     this.dashLength = 10,
@@ -358,7 +358,7 @@ class SpotlightGuideTargetDashedOutlineLayer extends SpotlightGuideTargetLayer {
 
   @override
   bool operator ==(Object other) {
-    return other is SpotlightGuideTargetDashedOutlineLayer &&
+    return other is SpotlightGuideTargetOutlineLayer &&
         other.color == color &&
         other.width == width &&
         other.dashLength == dashLength &&

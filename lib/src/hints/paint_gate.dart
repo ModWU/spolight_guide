@@ -47,7 +47,7 @@ class SpotlightGuidePaintGate extends SingleChildRenderObjectWidget {
 }
 
 class _RenderSpotlightGuidePaintGate extends RenderProxyBox
-    implements _SpotlightGuideHintLayoutParticipant {
+    implements _HintLayoutParticipant {
   _RenderSpotlightGuidePaintGate({
     required bool ready,
     required bool requireNonEmptySize,

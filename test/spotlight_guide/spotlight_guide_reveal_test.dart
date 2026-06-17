@@ -9,7 +9,7 @@ import 'spotlight_guide_test_helpers.dart';
 /// Reveal and scroll preparation tests.
 ///
 /// Run this file when changing [SpotlightGuideRevealOptions],
-/// [SpotlightGuideStepAutoScrollOptions], [SpotlightGuideStep.onReveal],
+/// [SpotlightGuideAutoScrollOptions], [SpotlightGuideStep.onReveal],
 /// [SpotlightGuideStepItem.onReveal], default `Scrollable.ensureVisible`
 /// behavior, lazy-list handling, or same-step multi-item auto scroll.
 void main() {
@@ -185,7 +185,7 @@ void main() {
               ),
               placement: SpotlightGuidePlacement.bottom,
               gap: 24,
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(56, 96),
                 targetGap: 12,
                 child: SizedBox(
@@ -518,8 +518,8 @@ void main() {
                   padding: EdgeInsets.zero,
                 ),
                 revealOptions: const SpotlightGuideRevealOptions(
-                  scrollTargetPolicy:
-                      SpotlightGuideRevealScrollTargetPolicy.highlightedArea,
+                  targetPolicy:
+                      SpotlightGuideRevealTargetPolicy.highlightedArea,
                   duration: Duration.zero,
                 ),
                 hintBuilder: hint('policy-summary-hint'),
@@ -570,8 +570,8 @@ void main() {
                 padding: EdgeInsets.zero,
               ),
               revealOptions: const SpotlightGuideRevealOptions(
-                scrollTargetPolicy:
-                    SpotlightGuideRevealScrollTargetPolicy.anchorTarget,
+                targetPolicy:
+                    SpotlightGuideRevealTargetPolicy.anchorTarget,
                 duration: Duration.zero,
               ),
               hintBuilder: hint('anchor-policy-summary-hint'),
@@ -1109,7 +1109,7 @@ void main() {
     },
   );
 
-  testWidgets('same-step auto scroll reveals hidden vertical items', (
+  testWidgets('same-step scroll reveals hidden vertical items', (
     tester,
   ) async {
     final SpotlightGuidePortalController controller =
@@ -1133,7 +1133,7 @@ void main() {
             revealOptions: const SpotlightGuideRevealOptions(
               duration: Duration.zero,
             ),
-            autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+            autoScrollOptions: const SpotlightGuideAutoScrollOptions(
               interval: Duration(milliseconds: 120),
             ),
             items: <SpotlightGuideStepItem>[
@@ -1186,7 +1186,7 @@ void main() {
   });
 
   testWidgets(
-    'same-step auto scroll defers a later item onReveal until its turn',
+    'same-step scroll defers a later item onReveal until its turn',
     (tester) async {
       final SpotlightGuidePortalController controller =
           SpotlightGuidePortalController();
@@ -1245,7 +1245,7 @@ void main() {
               revealOptions: const SpotlightGuideRevealOptions(
                 duration: Duration.zero,
               ),
-              autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+              autoScrollOptions: const SpotlightGuideAutoScrollOptions(
                 interval: Duration(milliseconds: 120),
               ),
               items: <SpotlightGuideStepItem>[
@@ -1364,7 +1364,7 @@ void main() {
             revealOptions: const SpotlightGuideRevealOptions(
               duration: Duration.zero,
             ),
-            autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+            autoScrollOptions: const SpotlightGuideAutoScrollOptions(
               interval: Duration(milliseconds: 120),
             ),
             items: <SpotlightGuideStepItem>[
@@ -1448,7 +1448,7 @@ void main() {
     );
   });
 
-  testWidgets('same-step auto scroll refreshes after manual item reveal', (
+  testWidgets('same-step scroll refreshes after manual item reveal', (
     tester,
   ) async {
     final SpotlightGuidePortalController controller =
@@ -1467,7 +1467,7 @@ void main() {
         ),
         steps: <SpotlightGuideStep>[
           SpotlightGuideStep(
-            autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+            autoScrollOptions: const SpotlightGuideAutoScrollOptions(
               interval: Duration(milliseconds: 120),
             ),
             items: <SpotlightGuideStepItem>[
@@ -1512,7 +1512,7 @@ void main() {
     expect(find.byKey(const ValueKey<String>('manual-second')), findsOneWidget);
   });
 
-  testWidgets('same-step auto scroll shows only one hint at a time', (
+  testWidgets('same-step scroll shows only one hint at a time', (
     tester,
   ) async {
     final SpotlightGuidePortalController controller =
@@ -1534,7 +1534,7 @@ void main() {
             revealOptions: const SpotlightGuideRevealOptions(
               duration: Duration.zero,
             ),
-            autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+            autoScrollOptions: const SpotlightGuideAutoScrollOptions(
               interval: Duration(milliseconds: 120),
             ),
             items: <SpotlightGuideStepItem>[
@@ -1581,7 +1581,7 @@ void main() {
     expect(find.byKey(const ValueKey<String>('focus-second')), findsOneWidget);
   });
 
-  testWidgets('onAutoScrollItemChanged reports focused item indices', (
+  testWidgets('onItemChanged reports focused item indices', (
     tester,
   ) async {
     final SpotlightGuidePortalController controller =
@@ -1604,11 +1604,11 @@ void main() {
             revealOptions: const SpotlightGuideRevealOptions(
               duration: Duration.zero,
             ),
-            autoScrollOptions: SpotlightGuideStepAutoScrollOptions(
+            autoScrollOptions: SpotlightGuideAutoScrollOptions(
               interval: const Duration(milliseconds: 120),
-              onAutoScrollItemChanged:
-                  (SpotlightGuideAutoScrollItemContext ctx) {
-                    recordAutoScrollItemIndex(focusedIndices, ctx);
+              onItemChanged:
+                  (SpotlightGuideAutoScrollContext ctx) {
+                    recordAutoScrollIndex(focusedIndices, ctx);
                   },
             ),
             items: <SpotlightGuideStepItem>[
@@ -1646,7 +1646,7 @@ void main() {
   });
 
   testWidgets(
-    'onAutoScrollItemChanged does not run when every item is already visible',
+    'onItemChanged does not run when every item is already visible',
     (tester) async {
       final SpotlightGuidePortalController controller =
           SpotlightGuidePortalController();
@@ -1657,10 +1657,10 @@ void main() {
           controller: controller,
           steps: <SpotlightGuideStep>[
             SpotlightGuideStep(
-              autoScrollOptions: SpotlightGuideStepAutoScrollOptions(
-                onAutoScrollItemChanged:
-                    (SpotlightGuideAutoScrollItemContext ctx) {
-                      recordAutoScrollItemIndex(focusedIndices, ctx);
+              autoScrollOptions: SpotlightGuideAutoScrollOptions(
+                onItemChanged:
+                    (SpotlightGuideAutoScrollContext ctx) {
+                      recordAutoScrollIndex(focusedIndices, ctx);
                     },
               ),
               items: <SpotlightGuideStepItem>[
@@ -1719,7 +1719,7 @@ void main() {
     },
   );
 
-  testWidgets('same-step auto scroll reveals hidden horizontal items', (
+  testWidgets('same-step scroll reveals hidden horizontal items', (
     tester,
   ) async {
     final SpotlightGuidePortalController controller =
@@ -1743,7 +1743,7 @@ void main() {
             revealOptions: const SpotlightGuideRevealOptions(
               duration: Duration.zero,
             ),
-            autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+            autoScrollOptions: const SpotlightGuideAutoScrollOptions(
               interval: Duration(milliseconds: 120),
             ),
             items: <SpotlightGuideStepItem>[
@@ -2323,7 +2323,7 @@ void main() {
             revealOptions: const SpotlightGuideRevealOptions(
               duration: Duration.zero,
             ),
-            autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+            autoScrollOptions: const SpotlightGuideAutoScrollOptions(
               enabled: false,
             ),
             items: <SpotlightGuideStepItem>[
@@ -2440,7 +2440,7 @@ void main() {
   );
 
   testWidgets(
-    'same-step auto scroll reveals a target taller than the viewport',
+    'same-step scroll reveals a target taller than the viewport',
     (tester) async {
       final SpotlightGuidePortalController controller =
           SpotlightGuidePortalController();
@@ -2471,7 +2471,7 @@ void main() {
                     ),
                   ),
                   // Taller than the 600px overlay: it can never be fully
-                  // contained, only overlapped once auto scroll brings it in.
+                  // contained, only overlapped once scroll brings it in.
                   Positioned(
                     left: 40,
                     top: 1000,
@@ -2493,7 +2493,7 @@ void main() {
               revealOptions: const SpotlightGuideRevealOptions(
                 duration: Duration.zero,
               ),
-              autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+              autoScrollOptions: const SpotlightGuideAutoScrollOptions(
                 interval: Duration(milliseconds: 120),
               ),
               items: <SpotlightGuideStepItem>[
@@ -2637,8 +2637,8 @@ void main() {
       await tester.pumpWidget(
         guideApp(
           controller: controller,
-          revealPresentationStrategy:
-              const SpotlightGuideLiveRevealPresentationStrategy(),
+          revealStrategy:
+              const SpotlightGuideLiveReveal(),
           child: SingleChildScrollView(
             controller: scrollController,
             child: const SizedBox(
@@ -2709,7 +2709,7 @@ void main() {
   );
 
   testWidgets(
-    'same-step auto scroll hides the outgoing hint during animated reveal',
+    'same-step scroll hides the outgoing hint during animated reveal',
     (tester) async {
       final SpotlightGuidePortalController controller =
           SpotlightGuidePortalController();
@@ -2731,7 +2731,7 @@ void main() {
                 duration: Duration(milliseconds: 250),
                 alignment: 0.5,
               ),
-              autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+              autoScrollOptions: const SpotlightGuideAutoScrollOptions(
                 interval: Duration(milliseconds: 200),
               ),
               items: <SpotlightGuideStepItem>[

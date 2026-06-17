@@ -1,7 +1,7 @@
 part of '../../spotlight_guide.dart';
 
 /// A small built-in tap pointer that can be used in
-/// [SpotlightGuideHintPointer.child].
+/// [SpotlightGuidePointer.child].
 ///
 /// It avoids requiring an image asset for the common "tap here" guide pattern.
 /// Use a custom widget or `Image.asset` when the pointer should match product
@@ -17,7 +17,7 @@ class SpotlightGuideTapPointer extends StatelessWidget {
     this.shadowColor = const Color(0x33000000),
   });
 
-  /// Recommended [SpotlightGuideHintPointer.size].
+  /// Recommended [SpotlightGuidePointer.size].
   static const Size defaultSize = Size(64, 64);
 
   /// Natural direction of the built-in tap icon before any rotation is applied.

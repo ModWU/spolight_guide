@@ -9,14 +9,14 @@ enum BarrierDismissDemoMode {
   onComplete,
   disabled;
 
-  SpotlightGuideBarrierDismissBehavior get behavior {
+  SpotlightGuideDismissBehavior get behavior {
     return switch (this) {
       BarrierDismissDemoMode.anytime =>
-        SpotlightGuideBarrierDismissBehavior.anytime,
+        SpotlightGuideDismissBehavior.anytime,
       BarrierDismissDemoMode.onComplete =>
-        SpotlightGuideBarrierDismissBehavior.onComplete,
+        SpotlightGuideDismissBehavior.onComplete,
       BarrierDismissDemoMode.disabled =>
-        SpotlightGuideBarrierDismissBehavior.disabled,
+        SpotlightGuideDismissBehavior.disabled,
     };
   }
 

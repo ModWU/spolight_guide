@@ -66,7 +66,7 @@ void main() {
     expect(find.text('Back'), findsOneWidget);
   });
 
-  testWidgets('bubble reserves indicator-side padding around its child', (
+  testWidgets('bubble reserves anchor-side padding around its child', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -79,7 +79,7 @@ void main() {
                 anchor: SpotlightGuideTriangleAnchor(
                   size: Size(14, 8),
                   geometry: SpotlightGuideAnchorGeometry(
-                    direction: SpotlightGuideIndicatorDirection.up,
+                    direction: SpotlightGuideDirection.up,
                     offset: 30,
                   ),
                 ),
@@ -149,7 +149,7 @@ void main() {
                 anchor: SpotlightGuideTriangleAnchor(
                   size: Size(20, 20),
                   geometry: SpotlightGuideAnchorGeometry(
-                    direction: SpotlightGuideIndicatorDirection.up,
+                    direction: SpotlightGuideDirection.up,
                     offset: 20,
                   ),
                 ),
@@ -548,19 +548,19 @@ void main() {
   testWidgets('path anchor builder exposes resolved physical direction', (
     tester,
   ) async {
-    final List<SpotlightGuideIndicatorDirection> directions =
-        <SpotlightGuideIndicatorDirection>[];
-    final Map<SpotlightGuidePlacement, SpotlightGuideIndicatorDirection> cases =
-        <SpotlightGuidePlacement, SpotlightGuideIndicatorDirection>{
-          SpotlightGuidePlacement.top: SpotlightGuideIndicatorDirection.down,
-          SpotlightGuidePlacement.bottom: SpotlightGuideIndicatorDirection.up,
-          SpotlightGuidePlacement.left: SpotlightGuideIndicatorDirection.right,
-          SpotlightGuidePlacement.right: SpotlightGuideIndicatorDirection.left,
+    final List<SpotlightGuideDirection> directions =
+        <SpotlightGuideDirection>[];
+    final Map<SpotlightGuidePlacement, SpotlightGuideDirection> cases =
+        <SpotlightGuidePlacement, SpotlightGuideDirection>{
+          SpotlightGuidePlacement.top: SpotlightGuideDirection.down,
+          SpotlightGuidePlacement.bottom: SpotlightGuideDirection.up,
+          SpotlightGuidePlacement.left: SpotlightGuideDirection.right,
+          SpotlightGuidePlacement.right: SpotlightGuideDirection.left,
         };
 
     for (final MapEntry<
           SpotlightGuidePlacement,
-          SpotlightGuideIndicatorDirection
+          SpotlightGuideDirection
         >
         entry
         in cases.entries) {
@@ -692,7 +692,7 @@ void main() {
     const SpotlightGuidePathAnchor anchor = SpotlightGuidePathAnchor(
       shape: shape,
       geometry: SpotlightGuideAnchorGeometry(
-        direction: SpotlightGuideIndicatorDirection.up,
+        direction: SpotlightGuideDirection.up,
         offset: 40,
       ),
     );
@@ -794,7 +794,7 @@ class _WideVisualAnchorShape extends SpotlightGuidePathAnchorShape {
 class _RecordingPathAnchorShape extends SpotlightGuidePathAnchorShape {
   const _RecordingPathAnchorShape(this.directions);
 
-  final List<SpotlightGuideIndicatorDirection> directions;
+  final List<SpotlightGuideDirection> directions;
 
   @override
   Size get preferredSize => const Size(16, 10);

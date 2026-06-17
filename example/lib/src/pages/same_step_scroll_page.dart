@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spotlight_guide/spotlight_guide.dart';
 
-import '../scenarios/same_step_auto_scroll_scenario.dart';
+import '../scenarios/same_step_scroll_scenario.dart';
 import '../widgets/demo_sections.dart';
 import '../widgets/example_cards.dart';
 import '../widgets/guide_scenario_scaffold.dart';
@@ -17,7 +17,7 @@ class _SameStepScrollPageState extends State<SameStepScrollPage> {
   final SpotlightGuidePortalController _guideController =
       SpotlightGuidePortalController();
   final ScrollController _wideController = ScrollController();
-  String _autoScrollStatus = 'Waiting for same-step auto-scroll';
+  String _autoScrollStatus = 'Waiting for same-step scroll';
 
   @override
   void dispose() {
@@ -30,8 +30,8 @@ class _SameStepScrollPageState extends State<SameStepScrollPage> {
     return GuideScenarioScaffold(
       title: 'Same-step scroll',
       controller: _guideController,
-      steps: buildSameStepAutoScrollScenario(
-        onAutoScrollItemChanged: _handleAutoScrollItemChanged,
+      steps: buildSameStepScrollScenario(
+        onItemChanged: _handleAutoScrollChanged,
       ),
       onReplay: _replayGuide,
       child: ListView(
@@ -53,13 +53,13 @@ class _SameStepScrollPageState extends State<SameStepScrollPage> {
       _wideController.jumpTo(0);
     }
     setState(() {
-      _autoScrollStatus = 'Waiting for same-step auto-scroll';
+      _autoScrollStatus = 'Waiting for same-step scroll';
     });
     _guideController.reset();
   }
 
-  void _handleAutoScrollItemChanged(
-    SpotlightGuideAutoScrollItemContext context,
+  void _handleAutoScrollChanged(
+    SpotlightGuideAutoScrollContext context,
   ) {
     if (!mounted) {
       return;
@@ -67,7 +67,7 @@ class _SameStepScrollPageState extends State<SameStepScrollPage> {
     setState(() {
       _autoScrollStatus =
           'Auto-scroll item ${context.itemIndex + 1}/${context.itemTotal}: '
-          '${context.key ?? context.primaryHighlightTargetId ?? 'whole page'}';
+          '${context.key ?? context.primaryTargetId ?? 'whole page'}';
     });
   }
 }

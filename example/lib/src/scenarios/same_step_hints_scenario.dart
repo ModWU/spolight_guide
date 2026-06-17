@@ -7,7 +7,7 @@ import '../widgets/guide_hint.dart';
 List<SpotlightGuideStep> buildSameStepHintsScenario() {
   return <SpotlightGuideStep>[
     SpotlightGuideStep(
-      autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(
+      autoScrollOptions: const SpotlightGuideAutoScrollOptions(
         enabled: false,
       ),
       items: <SpotlightGuideStepItem>[

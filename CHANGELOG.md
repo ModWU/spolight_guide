@@ -14,29 +14,6 @@ This file records the current component contract for maintainers.
   `SpotlightGuidePaintGate`, keeping target holes and hints hidden together
   until the rendered hint subtree is ready.
 
-Migration from 0.1.x:
-
-```dart
-// Before
-SpotlightGuideTextHint(
-  guide: guide,
-  title: 'Tap here',
-  pointer: SpotlightGuideHintPointer.tap(),
-)
-
-// After
-SpotlightGuideStepItem(
-  targetId: 'button',
-  pointer: const SpotlightGuideHintPointer.tap(),
-  hintBuilder: (context, guide) {
-    return SpotlightGuideTextHint(
-      guide: guide,
-      title: 'Tap here',
-    );
-  },
-)
-```
-
 ## 0.1.6
 
 - Stabilized visible guides across Flutter hot reload/reassemble and parent
@@ -50,7 +27,7 @@ SpotlightGuideStepItem(
   sequence automatically. Use `wait` when a target is intentionally expected to
   appear later.
 - Clarified pointer semantics for `gap`, `targetGap`, `visualOffset`,
-  `bubblePlacement`, and `anchorMode`, and expanded pointer examples around
+  `bubbleSide`, and `anchorMode`, and expanded pointer examples around
   target, pointer, and bubble anchor relationships.
 - Hardened target decoration, reveal scrolling helpers, and bubble decoration
   inputs against invalid numeric values.
@@ -81,9 +58,9 @@ SpotlightGuideStepItem(
   layers.
 - Added shape-aware target hole decoration APIs:
   `SpotlightGuideTargetDecoration`, `SpotlightGuideTargetShape`,
-  `SpotlightGuideRoundedRectTargetShape`, `SpotlightGuideOvalTargetShape`,
+  `SpotlightGuideRoundedRectShape`, `SpotlightGuideOvalShape`,
   `SpotlightGuideTargetLayer`, `SpotlightGuideTargetRingLayer`,
-  `SpotlightGuideTargetDashedOutlineLayer`,
+  `SpotlightGuideTargetOutlineLayer`,
   `SpotlightGuideTargetGlowLayer`, and `SpotlightGuideTargetShadowLayer`.
 - Added an example target decoration scenario showing layered rounded rings and
   reusable glow and dashed outline effects.
@@ -98,7 +75,7 @@ SpotlightGuideStepItem(
 
 ## 0.1.2
 
-- Added `SpotlightGuidePortal.blockInteractionDuringPreparation`, which blocks
+- Added `SpotlightGuidePortal.blockDuringPreparation`, which blocks
   page interaction during step preparation by default while keeping the existing
   delayed hint presentation after route transitions and reveal scrolling settle.
 - When preparation blocking is disabled, reveal scrolling now stays pass-through
@@ -166,13 +143,13 @@ Initial standalone Flutter package release.
   item-level reveal, then default reveal scrolling. Default reveal uses
   `SpotlightGuideRevealScrollPolicy.onlyIfNeeded`; set `always` to force
   realignment.
-- `SpotlightGuideRevealOptions.scrollTargetPolicy` controls which area drives
+- `SpotlightGuideRevealOptions.targetPolicy` controls which area drives
   reveal scrolling: highlighted area, anchor target, or the default large-group
   anchor fallback.
 - For `targetIds` with `anchorTargetId`, default reveal prioritizes the full
   highlighted group only when it can fit in the viewport; otherwise the anchor
   target controls whether scrolling is needed.
-- Same-step auto scroll is a viewing aid. It does not advance the controller
+- Same-step scroll is a viewing aid. It does not advance the controller
   index and it keeps later lazy/offscreen hints hidden until their targets can
   be visually connected.
 - Barrier holes are de-duplicated and merged before painting. Target

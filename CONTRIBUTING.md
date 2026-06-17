@@ -16,7 +16,7 @@ spotlight_guide/src/api/models.dart
 
 spotlight_guide/src/api/portal.dart
   Public SpotlightGuidePortal widget, configuration fields, private State,
-  overlay host, guide orchestration, reveal pipeline, same-step auto scroll,
+  overlay host, guide orchestration, reveal pipeline, same-step scroll,
   and overlay rendering. Keep the widget and its State together unless there is
   a strong Flutter-specific reason to split them.
 
@@ -107,6 +107,17 @@ test/spotlight_guide/spotlight_guide_hint_test.dart
 - Keep public API simple for product code. Runtime details may be composed
   internally, but callers should usually set portal defaults, define steps, and
   use controller or guide-context commands.
+- Keep names short where the owner already gives context. In owner-scoped API,
+  use names such as `SpotlightGuidePointer`,
+  `SpotlightGuideAutoScrollOptions`, and
+  `SpotlightGuideRevealOptions.targetPolicy` instead of repeating the owner or
+  field concept. Preserve extra words only when they prevent a real collision
+  between target, pointer, bubble, and portal concepts.
+- Follow Flutter naming shape: nouns for value objects, `Options` for passive
+  configuration, `Policy` for selection rules, `Behavior` for user interaction,
+  `Strategy` for overridable algorithms, and `Context` only for callback data.
+  Avoid repeating the package, owner, and field names inside the same public
+  identifier.
 - Business decisions stay outside the component. The component can reveal,
   filter unavailable targets, and report state; product pages decide which
   server response, tab, list index, or feature flag matters.
@@ -142,15 +153,15 @@ test/spotlight_guide/spotlight_guide_hint_test.dart
   `anchorTargetId` at it, so dynamic target registration still drives rebuilds
   and `onStateChanged`.
 - Reveal scrolling has two public decisions: `scrollPolicy` says when to scroll,
-  and `scrollTargetPolicy` says which area drives the decision. Keep those
+  and `targetPolicy` says which area drives the decision. Keep those
   dimensions separate when adding new behavior.
 - For `targetIds` with `anchorTargetId`, the default
-  `scrollTargetPolicy` should keep the whole group visible only when that group
+  `targetPolicy` should keep the whole group visible only when that group
   can fit in the viewport. If the group is too large, anchor visibility is the
   priority.
 - `SpotlightGuidePlacement.verticalAuto` is the default. `auto` may choose any side based on target and hint relative position.
 - `SpotlightGuideAnchorPosition.start/end` are semantic and must respect RTL.
-- The indicator tip position is the visual anchor. Arrow safe-area logic may shift or expand the bubble body, but it must not move the target anchor.
+- The anchor tip position is the visual anchor. Arrow safe-area logic may shift or expand the bubble body, but it must not move the target anchor.
 - Bubble arrows are painted as one continuous path with the bubble body. Avoid drawing a separate triangle widget for the common bubble implementation.
 - `SpotlightGuidePortal.barrier` owns shared background atmosphere such as dim
   color and blur. `SpotlightGuideStep.barrier` may partially override it.
@@ -177,12 +188,12 @@ When a step is shown:
 
 1. `SpotlightGuidePortal.onStepWillShow`
 2. `SpotlightGuideStep.onReveal`
-3. `SpotlightGuideStepItem.onReveal` for the first item, or for every item when same-step auto scroll is disabled. Later items in an auto-scroll step defer their `onReveal` to step 6.
-4. Default reveal scrolling for the first item, or for every item when same-step auto scroll is disabled. The default `SpotlightGuideRevealScrollPolicy.onlyIfNeeded` calls `Scrollable.ensureVisible` only when a mounted target is outside the padded visible viewport. `always` restores unconditional alignment. The overlay is shown before this reveal pass so animated scrolling is visible. While a non-zero reveal duration runs, the portal schedules per-frame `setState` rebuilds until scroll positions settle.
+3. `SpotlightGuideStepItem.onReveal` for the first item, or for every item when same-step scroll is disabled. Later items in an auto-scroll step defer their `onReveal` to step 6.
+4. Default reveal scrolling for the first item, or for every item when same-step scroll is disabled. The default `SpotlightGuideRevealScrollPolicy.onlyIfNeeded` calls `Scrollable.ensureVisible` only when a mounted target is outside the padded visible viewport. `always` restores unconditional alignment. The overlay is shown before this reveal pass so animated scrolling is visible. While a non-zero reveal duration runs, the portal schedules per-frame `setState` rebuilds until scroll positions settle.
 5. Overlay show
-6. Same-step auto scroll optionally visits later hidden items after `autoScrollOptions.interval`, running each deferred `onReveal` then `ensureVisible`. A later item that is not mounted yet still qualifies when it has an `onReveal` hook. `onAutoScrollItemChanged` fires when the sequentially focused `itemIndex` changes (`0` first, then each later item as auto scroll advances).
+6. Same-step scroll optionally visits later hidden items after `autoScrollOptions.interval`, running each deferred `onReveal` then `ensureVisible`. A later item that is not mounted yet still qualifies when it has an `onReveal` hook. `onItemChanged` fires when the sequentially focused `itemIndex` changes (`0` first, then each later item as auto scroll advances).
 
-The auto-scroll aid does not advance the controller index. It only moves scrollables so hidden hints can be seen. A same-step auto-scroll overlay renders each item whose target resolves and overlaps the viewport, then skips unresolved or entirely off-screen items until auto scroll brings any part of them into view. When a later item is still hidden, only the highest renderable `itemIndex` is painted so two hints never overlap during a scroll transition. The skip uses viewport overlap, not full containment, so a target larger than the viewport still shows its hint. This prevents a hint from being clamped onto the screen while its target is elsewhere. `SpotlightGuideStepContext.itemTotal` reports the full step item count regardless of how many items currently render.
+The scroll aid does not advance the controller index. It only moves scrollables so hidden hints can be seen. A same-step scroll overlay renders each item whose target resolves and overlaps the viewport, then skips unresolved or entirely off-screen items until scroll brings any part of them into view. When a later item is still hidden, only the highest renderable `itemIndex` is painted so two hints never overlap during a scroll transition. The skip uses viewport overlap, not full containment, so a target larger than the viewport still shows its hint. This prevents a hint from being clamped onto the screen while its target is elsewhere. `SpotlightGuideStepContext.itemTotal` reports the full step item count regardless of how many items currently render.
 
 ## Change Matrix
 
@@ -193,10 +204,10 @@ The auto-scroll aid does not advance the controller index. It only moves scrolla
 | Missing target wait/skip behavior | `src/runtime/missing_target_policy.dart`, `src/api/models.dart`, `src/api/portal.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `doc/examples.md` for API-driven guides | `spotlight_guide_targets_test.dart`, `spotlight_guide_controller_test.dart` when active step metadata changes |
 | Step, controller, next/previous/goTo/finish/hide/reset, dynamic steps/items, `onBarrierTap` | `src/api/controller.dart`, `src/api/portal.dart`, `src/runtime/step_source.dart` | `CONTRIBUTING.md`, `CHANGELOG.md`, `doc/reference.md` and `README.md` when user-facing | `spotlight_guide_controller_test.dart` |
 | `SpotlightGuideBarrierStyle`, blur, color, hole pass-through, barrier hit testing | `src/api/models.dart`, `src/layout/overlay_layout.dart`, `src/painting/barrier_painter.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `README.md`, `CHANGELOG.md` | `spotlight_guide_barrier_test.dart` |
-| Reveal, scroll, lazy list, same-step auto scroll | `src/api/portal.dart`, `src/api/models.dart`, `src/runtime/reveal_scroll_strategy.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `doc/examples.md` for integration changes, `CHANGELOG.md` | `spotlight_guide_reveal_test.dart`, `spotlight_guide_auto_scroll_test.dart` |
+| Reveal, scroll, lazy list, same-step scroll | `src/api/portal.dart`, `src/api/models.dart`, `src/runtime/reveal_scroll_strategy.dart` | `doc/reference.md`, `doc/troubleshooting.md`, `doc/examples.md` for integration changes, `CHANGELOG.md` | `spotlight_guide_reveal_test.dart`, `spotlight_guide_auto_scroll_test.dart` |
 | Placement, constraints, margin, min/max size, RTL anchor semantics | `src/layout/overlay_layout.dart`, `src/api/models.dart` | `doc/reference.md`, `doc/troubleshooting.md` for known symptoms | `spotlight_guide_layout_test.dart` |
-| Arrow safe area, indicator size, indicator tip, connected path, barrier holes | `src/layout/overlay_layout.dart`, `src/painting/`, `src/hints/` | `doc/reference.md`, `doc/troubleshooting.md` if hint-facing | `spotlight_guide_layout_test.dart`, pointer tests if pointer alignment can move |
-| Pointer widget, `SpotlightGuideBubbleHint`, `SpotlightGuideHintPointer`, pointer alignment | `src/hints/bubble_hint.dart` | `doc/reference.md`, `doc/examples.md` if usage changes | `spotlight_guide_pointer_test.dart` |
+| Arrow safe area, anchor size, anchor tip, connected path, barrier holes | `src/layout/overlay_layout.dart`, `src/painting/`, `src/hints/` | `doc/reference.md`, `doc/troubleshooting.md` if hint-facing | `spotlight_guide_layout_test.dart`, pointer tests if pointer alignment can move |
+| Pointer widget, `SpotlightGuideBubbleHint`, `SpotlightGuidePointer`, pointer alignment | `src/hints/bubble_hint.dart` | `doc/reference.md`, `doc/examples.md` if usage changes | `spotlight_guide_pointer_test.dart` |
 | Built-in hint type added, renamed, or behavior changed | `src/hints/` | `doc/reference.md`, `README.md`, `doc/examples.md`, `CHANGELOG.md` | `spotlight_guide_hint_test.dart`, plus pointer/layout tests when alignment can move |
 | Target decoration shape, ring, glow, shadow, or dashed layer behavior | `src/api/target_decoration.dart`, `src/painting/barrier_painter.dart` | `doc/reference.md`, `doc/troubleshooting.md` if symptoms change | `spotlight_guide_target_decoration_test.dart` |
 | Low-level bubble decoration or painter behavior | `src/hints/bubble_decoration.dart`, `src/painting/` | `doc/reference.md`, `doc/troubleshooting.md` if symptoms change | Layout/pointer tests that inspect geometry |

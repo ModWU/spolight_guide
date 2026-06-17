@@ -12,7 +12,7 @@ List<SpotlightGuideStep> buildTargetDecorationScenario() {
         placement: SpotlightGuidePlacement.verticalAuto,
         targetDecoration: const SpotlightGuideTargetDecoration(
           padding: EdgeInsets.all(2),
-          shape: SpotlightGuideRoundedRectTargetShape(
+          shape: SpotlightGuideRoundedRectShape(
             borderRadius: BorderRadius.all(Radius.circular(18)),
           ),
           layers: <SpotlightGuideTargetLayer>[
@@ -39,7 +39,7 @@ List<SpotlightGuideStep> buildTargetDecorationScenario() {
         placement: SpotlightGuidePlacement.verticalAuto,
         targetDecoration: const SpotlightGuideTargetDecoration(
           padding: EdgeInsets.all(6),
-          shape: SpotlightGuideRoundedRectTargetShape(
+          shape: SpotlightGuideRoundedRectShape(
             borderRadius: BorderRadius.all(Radius.circular(20)),
           ),
           layers: <SpotlightGuideTargetLayer>[
@@ -68,7 +68,7 @@ List<SpotlightGuideStep> buildTargetDecorationScenario() {
         placement: SpotlightGuidePlacement.verticalAuto,
         targetDecoration: const SpotlightGuideTargetDecoration(
           padding: EdgeInsets.all(10),
-          shape: SpotlightGuideOvalTargetShape(),
+          shape: SpotlightGuideOvalShape(),
           layers: <SpotlightGuideTargetLayer>[
             SpotlightGuideTargetGlowLayer(
               color: Color(0xE6FFC107),
@@ -95,11 +95,11 @@ List<SpotlightGuideStep> buildTargetDecorationScenario() {
         placement: SpotlightGuidePlacement.verticalAuto,
         targetDecoration: const SpotlightGuideTargetDecoration(
           padding: EdgeInsets.all(6),
-          shape: SpotlightGuideRoundedRectTargetShape(
+          shape: SpotlightGuideRoundedRectShape(
             borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
           layers: <SpotlightGuideTargetLayer>[
-            SpotlightGuideTargetDashedOutlineLayer(
+            SpotlightGuideTargetOutlineLayer(
               color: Color(0xFFFFFFFF),
               width: 3,
               dashLength: 10,

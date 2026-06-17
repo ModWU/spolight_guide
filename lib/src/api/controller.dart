@@ -31,8 +31,8 @@ part of '../../spotlight_guide.dart';
 /// ```
 class SpotlightGuidePortalController {
   _SpotlightGuidePortalState? _state;
-  final List<_SpotlightGuidePortalControllerCommand> _pendingCommands =
-      <_SpotlightGuidePortalControllerCommand>[];
+  final List<_ControllerCommand> _pendingCommands =
+      <_ControllerCommand>[];
   List<SpotlightGuideStep>? _steps;
   int _index = 0;
   bool _active = false;
@@ -72,8 +72,8 @@ class SpotlightGuidePortalController {
   /// [finish] is called automatically.
   void next() {
     _runOrPending(
-      const _SpotlightGuidePortalControllerCommand(
-        _SpotlightGuidePortalControllerCommandType.next,
+      const _ControllerCommand(
+        _ControllerCommandType.next,
       ),
     );
   }
@@ -84,8 +84,8 @@ class SpotlightGuidePortalController {
   /// [finish].
   void previous() {
     _runOrPending(
-      const _SpotlightGuidePortalControllerCommand(
-        _SpotlightGuidePortalControllerCommandType.previous,
+      const _ControllerCommand(
+        _ControllerCommandType.previous,
       ),
     );
   }
@@ -96,8 +96,8 @@ class SpotlightGuidePortalController {
   /// it is shown at that step.
   void goTo(int index) {
     _runOrPending(
-      _SpotlightGuidePortalControllerCommand(
-        _SpotlightGuidePortalControllerCommandType.goTo,
+      _ControllerCommand(
+        _ControllerCommandType.goTo,
         index,
       ),
     );
@@ -106,8 +106,8 @@ class SpotlightGuidePortalController {
   /// Finish the guide immediately.
   void finish() {
     _runOrPending(
-      const _SpotlightGuidePortalControllerCommand(
-        _SpotlightGuidePortalControllerCommandType.finish,
+      const _ControllerCommand(
+        _ControllerCommandType.finish,
       ),
     );
   }
@@ -115,8 +115,8 @@ class SpotlightGuidePortalController {
   /// Hide the guide without calling [SpotlightGuidePortal.onFinish].
   void hide() {
     _runOrPending(
-      const _SpotlightGuidePortalControllerCommand(
-        _SpotlightGuidePortalControllerCommandType.hide,
+      const _ControllerCommand(
+        _ControllerCommandType.hide,
       ),
     );
   }
@@ -124,8 +124,8 @@ class SpotlightGuidePortalController {
   /// Restart from the first step and show the guide.
   void reset() {
     _runOrPending(
-      const _SpotlightGuidePortalControllerCommand(
-        _SpotlightGuidePortalControllerCommandType.reset,
+      const _ControllerCommand(
+        _ControllerCommandType.reset,
       ),
     );
   }
@@ -133,8 +133,8 @@ class SpotlightGuidePortalController {
   /// Show [SpotlightGuidePortal.steps].
   void showPortal({int index = 0}) {
     _runOrPending(
-      _SpotlightGuidePortalControllerCommand(
-        _SpotlightGuidePortalControllerCommandType.showPortal,
+      _ControllerCommand(
+        _ControllerCommandType.showPortal,
         index,
       ),
     );
@@ -150,8 +150,8 @@ class SpotlightGuidePortalController {
     final List<SpotlightGuideStep> runtimeSteps =
         List<SpotlightGuideStep>.unmodifiable(steps);
     _runOrPending(
-      _SpotlightGuidePortalControllerCommand(
-        _SpotlightGuidePortalControllerCommandType.showSteps,
+      _ControllerCommand(
+        _ControllerCommandType.showSteps,
         index,
         runtimeSteps,
       ),
@@ -172,13 +172,13 @@ class SpotlightGuidePortalController {
 
   void _attach(_SpotlightGuidePortalState state) {
     _state = state;
-    final List<_SpotlightGuidePortalControllerCommand> commands =
-        List<_SpotlightGuidePortalControllerCommand>.of(_pendingCommands);
+    final List<_ControllerCommand> commands =
+        List<_ControllerCommand>.of(_pendingCommands);
     _pendingCommands.clear();
     if (commands.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_state == state && state.mounted) {
-          for (final _SpotlightGuidePortalControllerCommand command
+          for (final _ControllerCommand command
               in commands) {
             state._handleControllerCommand(command);
           }
@@ -201,37 +201,37 @@ class SpotlightGuidePortalController {
     }
   }
 
-  void _runOrPending(_SpotlightGuidePortalControllerCommand command) {
+  void _runOrPending(_ControllerCommand command) {
     final _SpotlightGuidePortalState? state = _state;
     if (state == null) {
       _pendingCommands.add(command);
       switch (command.type) {
-        case _SpotlightGuidePortalControllerCommandType.finish:
-        case _SpotlightGuidePortalControllerCommandType.hide:
+        case _ControllerCommandType.finish:
+        case _ControllerCommandType.hide:
           _active = false;
           break;
-        case _SpotlightGuidePortalControllerCommandType.reset:
+        case _ControllerCommandType.reset:
           _active = true;
           _index = 0;
           break;
-        case _SpotlightGuidePortalControllerCommandType.goTo:
+        case _ControllerCommandType.goTo:
           _active = true;
           _index = command.index ?? 0;
           break;
-        case _SpotlightGuidePortalControllerCommandType.showPortal:
+        case _ControllerCommandType.showPortal:
           _steps = null;
           _active = true;
           _index = command.index ?? 0;
           break;
-        case _SpotlightGuidePortalControllerCommandType.showSteps:
+        case _ControllerCommandType.showSteps:
           _steps = command.steps == null || command.steps!.isEmpty
               ? null
               : command.steps;
           _active = command.steps != null && command.steps!.isNotEmpty;
           _index = command.index ?? 0;
           break;
-        case _SpotlightGuidePortalControllerCommandType.next:
-        case _SpotlightGuidePortalControllerCommandType.previous:
+        case _ControllerCommandType.next:
+        case _ControllerCommandType.previous:
           _active = true;
           break;
       }
@@ -271,7 +271,7 @@ class SpotlightGuidePortalController {
   }
 }
 
-enum _SpotlightGuidePortalControllerCommandType {
+enum _ControllerCommandType {
   next,
   previous,
   finish,
@@ -283,14 +283,14 @@ enum _SpotlightGuidePortalControllerCommandType {
 }
 
 /// One queued controller action, optionally carrying a target step index.
-class _SpotlightGuidePortalControllerCommand {
-  const _SpotlightGuidePortalControllerCommand(
+class _ControllerCommand {
+  const _ControllerCommand(
     this.type, [
     this.index,
     this.steps,
   ]);
 
-  final _SpotlightGuidePortalControllerCommandType type;
+  final _ControllerCommandType type;
   final int? index;
   final List<SpotlightGuideStep>? steps;
 }

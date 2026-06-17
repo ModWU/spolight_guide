@@ -12,15 +12,15 @@ List<SpotlightGuideStep> buildLargeGroupAnchorScenario() {
         anchorTargetId: metricCostAnchorId,
         targetDecoration: const SpotlightGuideTargetDecoration(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: SpotlightGuideRoundedRectTargetShape(
+          shape: SpotlightGuideRoundedRectShape(
             borderRadius: BorderRadius.all(Radius.circular(18)),
           ),
         ),
         placement: SpotlightGuidePlacement.verticalAuto,
         margin: kExampleGuideMargin,
         revealOptions: const SpotlightGuideRevealOptions(
-          scrollTargetPolicy: SpotlightGuideRevealScrollTargetPolicy
-              .anchorTargetWhenHighlightedAreaCannotFit,
+          targetPolicy: SpotlightGuideRevealTargetPolicy
+              .highlightedAreaIfFits,
         ),
         hintBuilder: (context, guide) {
           return buildGuideHint(

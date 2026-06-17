@@ -14,7 +14,7 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
       message:
           'Top placement puts the pointer between the bubble and the target '
           'top edge.',
-      pointer: const SpotlightGuideHintPointer(
+      pointer: const SpotlightGuidePointer(
         builder: _buildDirectionalTapPointer,
         child: _whiteTapPointer,
         size: Size(56, 56),
@@ -28,13 +28,13 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
       message:
           'A pointer can be an image, animation, CustomPaint, icon, badge, or '
           'any widget that should visually connect the hint to the target.',
-      pointer: const SpotlightGuideHintPointer(
+      pointer: const SpotlightGuidePointer(
         child: _CustomPointerBadge(),
         size: Size(88, 42),
         targetGap: _pointerTargetGap,
         visualOffset: SpotlightGuidePointerOffset.directional(end: 3, up: 2),
         layer: SpotlightGuidePointerLayer.aboveBubble,
-        bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+        bubbleSide: SpotlightGuideBubbleSide.bottom,
       ),
       revealOptions: const SpotlightGuideRevealOptions(
         scrollPolicy: SpotlightGuideRevealScrollPolicy.always,
@@ -49,7 +49,7 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
           'Move the bubble anchor toward the pointer edge while the pointer '
           'stays centered on the target.',
       targetAnchorPosition: const SpotlightGuideAnchorPosition.start(12),
-      pointer: const SpotlightGuideHintPointer(
+      pointer: const SpotlightGuidePointer(
         builder: _buildDirectionalTapPointer,
         child: _whiteTapPointer,
         size: SpotlightGuideTapPointer.defaultSize,
@@ -64,7 +64,7 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
           'Use auto horizontal placement when a localized layout can move the '
           'target. The bubble and pointer choose the side with more visible '
           'space.',
-      pointer: const SpotlightGuideHintPointer(
+      pointer: const SpotlightGuidePointer(
         builder: _buildDirectionalTapPointer,
         child: _whiteTapPointer,
         size: SpotlightGuideTapPointer.defaultSize,
@@ -79,7 +79,7 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
           'Set pointer.anchorMode to target when the pointer is decorative and '
           'the bubble anchor should still connect directly to the target. Auto '
           'placement keeps the decorative pointer inside the visible area.',
-      pointer: const SpotlightGuideHintPointer(
+      pointer: const SpotlightGuidePointer(
         builder: _buildDirectionalTapPointer,
         child: _whiteTapPointer,
         size: SpotlightGuideTapPointer.defaultSize,
@@ -99,14 +99,14 @@ SpotlightGuideStep _leftTargetPointerStep() {
     message:
         'The pointer stays on the target left side and points at the target '
         'vertical center. The explanation bubble sits below it.',
-    pointer: SpotlightGuideHintPointer(
+    pointer: SpotlightGuidePointer(
       builder: _buildConnectedTapPointer,
       child: _whiteTapPointer,
       size: Size(_ConnectedTapPointer.size, _ConnectedTapPointer.height),
       pointerAnchorPosition: SpotlightGuideAnchorPosition.start(
         _ConnectedTapPointer.size / 2,
       ),
-      bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+      bubbleSide: SpotlightGuideBubbleSide.bottom,
       targetGap: _pointerTargetGap,
     ),
     gap: 0,
@@ -119,7 +119,7 @@ SpotlightGuideStep _pointerStep({
   required SpotlightGuidePlacement placement,
   required String title,
   required String message,
-  required SpotlightGuideHintPointer pointer,
+  required SpotlightGuidePointer pointer,
   SpotlightGuideAnchorPosition targetAnchorPosition =
       const SpotlightGuideAnchorPosition.center(),
   SpotlightGuideRevealOptions? revealOptions,
@@ -165,7 +165,7 @@ const double _pointerTargetGap = 4;
 const SpotlightGuideTargetDecoration _pointerTargetDecoration =
     SpotlightGuideTargetDecoration(
       padding: EdgeInsets.all(6),
-      shape: SpotlightGuideRoundedRectTargetShape(
+      shape: SpotlightGuideRoundedRectShape(
         borderRadius: BorderRadius.all(Radius.circular(14)),
       ),
       layers: <SpotlightGuideTargetLayer>[

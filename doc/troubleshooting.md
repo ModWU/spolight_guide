@@ -90,7 +90,7 @@ uses the target or anchor rect expanded by `targetDecoration.padding`, and
 ## A Live Reveal Leaves Only The Spotlight Hole
 
 The default reveal presentation hides hints and holes until scrolling settles.
-When `SpotlightGuideLiveRevealPresentationStrategy` is used, the portal rebuilds
+When `SpotlightGuideLiveReveal` is used, the portal rebuilds
 while the target scrolls so the hole tracks the moving widget. The hint
 measurement cache must survive those geometry-only updates; otherwise the
 barrier can keep painting while the visible hint waits forever for a size that
@@ -126,29 +126,29 @@ flutter test --no-pub test/spotlight_guide/spotlight_guide_layout_test.dart
 Remember the anchor chain:
 
 ```text
-SpotlightGuideHintPointer.pointerAnchorPosition -> targetGap -> pointer layout slot -> targetAnchorPosition -> gap -> bubble anchor tip
+SpotlightGuidePointer.pointerAnchorPosition -> targetGap -> pointer layout slot -> targetAnchorPosition -> gap -> bubble anchor tip
 ```
 
-If there is no pointer, `SpotlightGuideHintPointer.pointerAnchorPosition` is not used and `targetAnchorPosition` resolves on the target directly.
+If there is no pointer, `SpotlightGuidePointer.pointerAnchorPosition` is not used and `targetAnchorPosition` resolves on the target directly.
 
 With the default pointer chain, `pointerAnchorPosition` chooses which point
 inside the pointer attaches to the target. `targetAnchorPosition` then chooses
 which point inside the pointer the bubble anchor attaches to. The pointer
 touches the target side and `SpotlightGuideStepItem.gap` is the
-pointer-to-bubble-anchor distance. Use `SpotlightGuideHintPointer.targetGap`
+pointer-to-bubble-anchor distance. Use `SpotlightGuidePointer.targetGap`
 for the target-to-pointer distance: positive values move the pointer away from
 the target, negative values pull it back toward the target, and zero keeps it
 touching. If the bubble has no anchor, the hint edge is treated as the anchor
 tip. Without a pointer, `gap` is still the target-to-bubble distance.
 
 If only the pointer artwork needs a tiny nudge, use
-`SpotlightGuideHintPointer.visualOffset`. It moves only the pointer child paint,
+`SpotlightGuidePointer.visualOffset`. It moves only the pointer child paint,
 so it should not be used to fix target, pointer, or bubble anchor alignment. Use
 `SpotlightGuidePointerOffset.directional` when the horizontal nudge should
 mirror in RTL.
 
 If a pointer is present but should not become part of the anchor chain, set
-`SpotlightGuideHintPointer(anchorMode: SpotlightGuidePointerAnchorMode.target,
+`SpotlightGuidePointer(anchorMode: SpotlightGuidePointerAnchorMode.target,
 ...)`. The pointer still renders, but the bubble anchor stays aligned directly
 with the target and `gap` stays the target-to-bubble distance.
 
@@ -169,7 +169,7 @@ before decode, then relayout after the image dimensions are known. When the
 dimensions are known, prefer:
 
 ```dart
-SpotlightGuideHintPointer(
+SpotlightGuidePointer(
   size: const Size(68, 103),
   child: Image.asset(
     'assets/guide_pointer.png',
@@ -186,7 +186,7 @@ For large pointer images, set `cacheWidth` and `cacheHeight` near the displayed
 pixel size so Flutter decodes a smaller bitmap. This improves memory use
 without changing the guide layout slot.
 
-If `SpotlightGuideHintPointer.size` is omitted, the pointer can still use its
+If `SpotlightGuidePointer.size` is omitted, the pointer can still use its
 natural child size, but automatic reveal scrolling cannot reserve that final
 pointer width or height before the hint render pass.
 
@@ -295,7 +295,7 @@ If the product really wants the large highlighted area to drive scrolling, set:
 
 ```dart
 revealOptions: const SpotlightGuideRevealOptions(
-  scrollTargetPolicy: SpotlightGuideRevealScrollTargetPolicy.highlightedArea,
+  targetPolicy: SpotlightGuideRevealTargetPolicy.highlightedArea,
 )
 ```
 
@@ -318,7 +318,7 @@ SpotlightGuideStepItem(
 
 ## Same-Step Multi-Item Scroll Does Not Happen
 
-Same-step auto scroll starts only when:
+Same-step scroll starts only when:
 
 - `SpotlightGuideStep.items.length > 1`.
 - `autoScrollOptions.enabled` is true.
@@ -337,12 +337,12 @@ during initial step preparation, so it cannot scroll away from the first hint.
 
 ## A Later Same-Step Hint Does Not Appear
 
-A same-step auto-scroll overlay renders each item whose target has resolved and
+A same-step scroll overlay renders each item whose target has resolved and
 overlaps the viewport when live reveal presentation is used. With the default
 presentation, the outgoing hint is hidden before scrolling starts and the later
 hint appears after scrolling settles. It skips unresolved targets and targets
 that are entirely off-screen so a hint is not clamped onto the screen while its
-target is elsewhere. The later hint appears once auto scroll brings any part of
+target is elsewhere. The later hint appears once scroll brings any part of
 its target into view (a target larger than the viewport counts as soon as it
 overlaps). If a later
 hint never appears, check that the item either keeps its target mounted or
@@ -380,8 +380,8 @@ flutter test --no-pub test/spotlight_guide/spotlight_guide_controller_test.dart
 This is intentional. The barrier absorbs taps so they cannot reach the page
 behind the guide. If you want a tap on the dim area to close the guide only
 after the flow is complete, set
-`barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.onComplete`.
-Use `SpotlightGuideBarrierDismissBehavior.anytime` only when closing mid-flow is
+`barrierDismissBehavior: SpotlightGuideDismissBehavior.onComplete`.
+Use `SpotlightGuideDismissBehavior.anytime` only when closing mid-flow is
 intentional.
 
 For custom behavior such as tap-anywhere-to-continue, set

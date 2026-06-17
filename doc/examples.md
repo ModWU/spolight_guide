@@ -35,7 +35,7 @@ SpotlightGuideTextHint(
 
 ## Built-In Tap Pointer
 
-Use `SpotlightGuideHintPointer` when the guide needs a visual cue between the
+Use `SpotlightGuidePointer` when the guide needs a visual cue between the
 target and bubble. The pointer child can be anything: `SpotlightGuideTapPointer`
 for a simple built-in tap cue, `Image.asset`, a Lottie animation, an icon badge,
 or custom paint.
@@ -43,7 +43,7 @@ or custom paint.
 With the default pointer chain, the pointer touches the target side and `gap`
 is the signed distance from the pointer's far edge to the bubble anchor tip. If
 the bubble uses `SpotlightGuideNoAnchor`, the hint edge is treated as that tip.
-Use `SpotlightGuideHintPointer.targetGap` when the pointer itself should move
+Use `SpotlightGuidePointer.targetGap` when the pointer itself should move
 away from or back toward the target. Custom pointers can omit `size` to use
 their child layout size, or provide `size` when an asset needs a stable slot.
 Use `visualOffset` only when the pointer asset needs a tiny paint-only nudge;
@@ -53,12 +53,9 @@ Configure pointers on `SpotlightGuideStepItem.pointer`. The portal can then
 reserve pointer `targetGap`, fixed pointer `size`, and pointer-to-bubble `gap`
 before automatic reveal scrolling decides whether the hint can fit.
 
-When migrating from `0.1.x`, move `pointer:` from `SpotlightGuideBubbleHint` or
-`SpotlightGuideTextHint` to the surrounding `SpotlightGuideStepItem`.
-
 For image pointers, use a stable slot. Flutter images that only specify width
 or height can change layout after the image decodes, so set
-`SpotlightGuideHintPointer.size` and give the image matching dimensions, or wrap
+`SpotlightGuidePointer.size` and give the image matching dimensions, or wrap
 the image in another tight layout when the dimensions are known. If the asset is
 much larger than its display size, pass `cacheWidth` and `cacheHeight` to
 `Image` so Flutter decodes a more appropriate bitmap size.
@@ -67,7 +64,7 @@ reveal scrolling cannot reserve the final pointer extent until the hint has
 rendered.
 
 ```dart
-SpotlightGuideHintPointer(
+SpotlightGuidePointer(
   size: const Size(68, 103),
   child: Image.asset(
     'assets/guide_pointer.png',
@@ -102,7 +99,7 @@ resolved `SpotlightGuidePointerContext`.
 SpotlightGuideStepItem(
   targetId: 'more-button',
   gap: 10,
-  pointer: SpotlightGuideHintPointer.tap(
+  pointer: SpotlightGuidePointer.tap(
     visualOffset: SpotlightGuidePointerOffset.directional(end: 2),
     builder: (
       BuildContext context,
@@ -164,7 +161,7 @@ SpotlightGuidePortal(
             tipArcAngle: 0.35,
           ),
         ),
-        pointer: SpotlightGuideHintPointer(
+        pointer: SpotlightGuidePointer(
           child: Image.asset('assets/guide_pointer.png'),
           size: const Size(70, 54),
           pointerAnchorPosition: const SpotlightGuideAnchorPosition.end(14),
@@ -279,7 +276,7 @@ close the guide:
 
 ```dart
 SpotlightGuidePortal(
-  barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.onComplete,
+  barrierDismissBehavior: SpotlightGuideDismissBehavior.onComplete,
   steps: steps,
   child: page,
 )
@@ -291,7 +288,7 @@ user may dismiss immediately:
 
 ```dart
 SpotlightGuidePortal(
-  barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.anytime,
+  barrierDismissBehavior: SpotlightGuideDismissBehavior.anytime,
   steps: steps,
   child: page,
 )
@@ -334,8 +331,8 @@ SpotlightGuideStepItem(
   targetIds: const <Object>['summary-row', 'summary-cost'],
   anchorTargetId: 'summary-cost',
   revealOptions: const SpotlightGuideRevealOptions(
-    scrollTargetPolicy:
-        SpotlightGuideRevealScrollTargetPolicy.anchorTargetWhenHighlightedAreaCannotFit,
+    targetPolicy:
+        SpotlightGuideRevealTargetPolicy.highlightedAreaIfFits,
   ),
   hintBuilder: buildCostHint,
 )
@@ -343,16 +340,16 @@ SpotlightGuideStepItem(
 
 ## Same Step With Distant Targets
 
-The default `SpotlightGuideStepAutoScrollOptions` scrolls to later hidden mounted items after a short interval. Override it only when the step should remain static.
+The default `SpotlightGuideAutoScrollOptions` scrolls to later hidden mounted items after a short interval. Override it only when the step should remain static.
 
 ```dart
 SpotlightGuideStep(
-  autoScrollOptions: SpotlightGuideStepAutoScrollOptions(
+  autoScrollOptions: SpotlightGuideAutoScrollOptions(
     interval: const Duration(milliseconds: 900),
-    onAutoScrollItemChanged: (SpotlightGuideAutoScrollItemContext context) {
+    onItemChanged: (SpotlightGuideAutoScrollContext context) {
       final String progress =
           '${context.itemIndex + 1} / ${context.itemTotal}';
-      final Object? analyticsKey = context.key ?? context.primaryHighlightTargetId;
+      final Object? analyticsKey = context.key ?? context.primaryTargetId;
       // context.highlightTargetIds lists every id lit by the focused item
     },
   ),
@@ -367,7 +364,7 @@ Disable the aid:
 
 ```dart
 SpotlightGuideStep(
-  autoScrollOptions: const SpotlightGuideStepAutoScrollOptions(enabled: false),
+  autoScrollOptions: const SpotlightGuideAutoScrollOptions(enabled: false),
   items: items,
 )
 ```
@@ -380,7 +377,7 @@ SpotlightGuideStep(
 | Highlight every mounted instance of the same kind | Reuse one `SpotlightGuideTarget.id`; the instances become one target group |
 | Highlight a repeated group but point at one chosen instance | Set `SpotlightGuideTarget.anchorId` on that instance and use `anchorTargetId` |
 | Several hints at once (all on screen) | Multiple items in one step; auto scroll stays off when nothing is hidden |
-| Several distant areas, explained one by one | Multiple items + default `autoScrollOptions`; use `onAutoScrollItemChanged` for copy/analytics |
+| Several distant areas, explained one by one | Multiple items + default `autoScrollOptions`; use `onItemChanged` for copy/analytics |
 | Stable business label independent of target id | `SpotlightGuideStepItem(key: 'your-key', targetId: 'widget-id', ...)` |
 | Scroll to a lazy row, then highlight it | Later item `onReveal` + default auto scroll (deferred until its turn) |
 
@@ -407,7 +404,7 @@ SpotlightGuideStepItem(
 )
 
 // Progress copy + analytics in auto scroll
-onAutoScrollItemChanged: (SpotlightGuideAutoScrollItemContext context) {
+onItemChanged: (SpotlightGuideAutoScrollContext context) {
   if (context.highlightsWholePortalChild) {
     return;
   }
@@ -451,7 +448,7 @@ SpotlightGuideStep.item(
     placement: SpotlightGuidePlacement.verticalAuto,
     targetDecoration: const SpotlightGuideTargetDecoration(
       padding: EdgeInsets.all(8),
-      shape: SpotlightGuideRoundedRectTargetShape(
+      shape: SpotlightGuideRoundedRectShape(
         borderRadius: BorderRadius.all(Radius.circular(18)),
       ),
       layers: <SpotlightGuideTargetLayer>[
@@ -474,7 +471,7 @@ Use an oval shape for circular controls or avatars:
 ```dart
 targetDecoration: const SpotlightGuideTargetDecoration(
   padding: EdgeInsets.all(10),
-  shape: SpotlightGuideOvalTargetShape(),
+  shape: SpotlightGuideOvalShape(),
   layers: <SpotlightGuideTargetLayer>[
     SpotlightGuideTargetGlowLayer(
       color: Color(0x99FFC107),
@@ -492,11 +489,11 @@ or temporarily marked:
 ```dart
 targetDecoration: const SpotlightGuideTargetDecoration(
   padding: EdgeInsets.all(6),
-  shape: SpotlightGuideRoundedRectTargetShape(
+  shape: SpotlightGuideRoundedRectShape(
     borderRadius: BorderRadius.all(Radius.circular(16)),
   ),
   layers: <SpotlightGuideTargetLayer>[
-    SpotlightGuideTargetDashedOutlineLayer(
+    SpotlightGuideTargetOutlineLayer(
       color: Colors.white,
       width: 3,
       dashLength: 10,

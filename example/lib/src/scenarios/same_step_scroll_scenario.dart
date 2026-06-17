@@ -4,14 +4,14 @@ import 'package:spotlight_guide/spotlight_guide.dart';
 import '../guide_target_ids.dart';
 import '../widgets/guide_hint.dart';
 
-List<SpotlightGuideStep> buildSameStepAutoScrollScenario({
-  required SpotlightGuideAutoScrollItemCallback onAutoScrollItemChanged,
+List<SpotlightGuideStep> buildSameStepScrollScenario({
+  required SpotlightGuideAutoScrollCallback onItemChanged,
 }) {
   return <SpotlightGuideStep>[
     SpotlightGuideStep(
-      autoScrollOptions: SpotlightGuideStepAutoScrollOptions(
+      autoScrollOptions: SpotlightGuideAutoScrollOptions(
         interval: const Duration(milliseconds: 900),
-        onAutoScrollItemChanged: onAutoScrollItemChanged,
+        onItemChanged: onItemChanged,
       ),
       items: <SpotlightGuideStepItem>[
         _item(

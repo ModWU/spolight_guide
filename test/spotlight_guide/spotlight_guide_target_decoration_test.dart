@@ -46,7 +46,7 @@ void main() {
               targetId: 'oval',
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
-                shape: SpotlightGuideOvalTargetShape(),
+                shape: SpotlightGuideOvalShape(),
               ),
               hintBuilder: sizedHint('oval-hole', 1, 1, contexts),
             ),
@@ -106,7 +106,7 @@ void main() {
               targetId: 'decorated',
               targetDecoration: SpotlightGuideTargetDecoration(
                 padding: const EdgeInsets.fromLTRB(3, 5, 7, 11),
-                shape: const SpotlightGuideRoundedRectTargetShape(
+                shape: const SpotlightGuideRoundedRectShape(
                   borderRadius: BorderRadius.all(Radius.circular(18)),
                 ),
                 layers: <SpotlightGuideTargetLayer>[
@@ -146,7 +146,7 @@ void main() {
           rect: Rect.fromLTWH(30, 30, 40, 40),
           overlaySize: size,
           textDirection: TextDirection.ltr,
-          shape: SpotlightGuideRoundedRectTargetShape(
+          shape: SpotlightGuideRoundedRectShape(
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
         );
@@ -196,7 +196,7 @@ void main() {
           rect: Rect.fromLTWH(20.25, 20.25, 40, 40),
           overlaySize: size,
           textDirection: TextDirection.ltr,
-          shape: SpotlightGuideRoundedRectTargetShape(
+          shape: SpotlightGuideRoundedRectShape(
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
         );
@@ -268,20 +268,20 @@ void main() {
           rect: Rect.fromLTWH(36, 36, 48, 40),
           overlaySize: size,
           textDirection: TextDirection.ltr,
-          shape: SpotlightGuideRoundedRectTargetShape(
+          shape: SpotlightGuideRoundedRectShape(
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
         );
 
     expect(() {
-      const SpotlightGuideTargetDashedOutlineLayer(
+      const SpotlightGuideTargetOutlineLayer(
         color: Colors.white,
         width: 1,
         dashLength: double.minPositive,
         gapLength: double.minPositive,
         phase: double.nan,
       ).paint(canvas, context);
-      const SpotlightGuideTargetDashedOutlineLayer(
+      const SpotlightGuideTargetOutlineLayer(
         color: Colors.white,
         width: double.infinity,
         dashLength: double.infinity,

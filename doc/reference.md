@@ -64,7 +64,7 @@ spotlight hole. Overlapping or nested holes are merged before the barrier is
 painted, so a child target inside a larger highlighted area stays clear instead
 of becoming dim again. Placement uses `anchorTargetId` or the matching
 `anchorId`; reveal scrolling uses
-`SpotlightGuideRevealOptions.scrollTargetPolicy` to decide whether the
+`SpotlightGuideRevealOptions.targetPolicy` to decide whether the
 highlighted area or the anchor target drives visibility. This supports cases
 such as highlighting a whole summary row while aiming the bubble anchor at the
 center card in that row.
@@ -78,10 +78,10 @@ hole and optional layers painted by the overlay.
 | Parameter | Owner | Meaning |
 | --- | --- | --- |
 | `padding` | `SpotlightGuideTargetDecoration` | Expands the target rect before the hole is cut and before placement is computed. Directional padding resolves with `Directionality`. |
-| `shape` | `SpotlightGuideTargetDecoration` | Builds the hole path. Built-ins include `SpotlightGuideRoundedRectTargetShape` and `SpotlightGuideOvalTargetShape`. |
+| `shape` | `SpotlightGuideTargetDecoration` | Builds the hole path. Built-ins include `SpotlightGuideRoundedRectShape` and `SpotlightGuideOvalShape`. |
 | `layers` | `SpotlightGuideTargetDecoration` | Paints visual effects around the hole in list order above the barrier and before hints. |
 | `SpotlightGuideTargetRingLayer` | `SpotlightGuideTargetLayer` | Draws an outside-only ring that follows `shape`. Use translucent rings for crisp border-style halos or multiple rings for layered borders. |
-| `SpotlightGuideTargetDashedOutlineLayer` | `SpotlightGuideTargetLayer` | Draws a reusable dashed outline that follows `shape`. Useful for selected, reviewed, or temporary attention states. |
+| `SpotlightGuideTargetOutlineLayer` | `SpotlightGuideTargetLayer` | Draws a reusable dashed outline that follows `shape`. Useful for selected, reviewed, or temporary attention states. |
 | `SpotlightGuideTargetGlowLayer` | `SpotlightGuideTargetLayer` | Draws a soft glow that follows `shape` and is cleared away from the real target. Its default `spreadRadius` is zero; positive spread creates a stronger border-like core before blur. |
 | `SpotlightGuideTargetShadowLayer` | `SpotlightGuideTargetLayer` | Draws an offset shadow that follows `shape`. |
 
@@ -91,7 +91,7 @@ translucent ring when the target needs a crisp border-style halo:
 ```dart
 targetDecoration: const SpotlightGuideTargetDecoration(
   padding: EdgeInsets.all(8),
-  shape: SpotlightGuideRoundedRectTargetShape(
+  shape: SpotlightGuideRoundedRectShape(
     borderRadius: BorderRadius.all(Radius.circular(18)),
   ),
   layers: <SpotlightGuideTargetLayer>[
@@ -140,7 +140,7 @@ sequence.
 | --- | --- | --- |
 | `onStepWillShow` | `SpotlightGuidePortal` | Page-level async preparation before a step is revealed. |
 | `autoStart` | `SpotlightGuidePortal` | Controls startup. By default, a portal without an external controller auto-starts, and a portal with an external controller waits for controller commands. Set true to auto-start even with a controller, or false to show only through controller commands. |
-| `blockInteractionDuringPreparation` | `SpotlightGuidePortal` | Blocks page taps while the guide is preparing before hints and spotlight holes are ready. Defaults to `true`. Route push transitions still settle before the barrier appears, and a guide waiting for a missing target does not keep an empty barrier active. Set false to preserve pass-through behavior until the visible overlay is ready. |
+| `blockDuringPreparation` | `SpotlightGuidePortal` | Blocks page taps while the guide is preparing before hints and spotlight holes are ready. Defaults to `true`. Route push transitions still settle before the barrier appears, and a guide waiting for a missing target does not keep an empty barrier active. Set false to preserve pass-through behavior until the visible overlay is ready. |
 | `onStateChanged` | `SpotlightGuidePortal` | Fires after a step is shown, after the guide hides, after active portal steps change, and after targets register or unregister while the guide is active. The callback receives `index`, `total`, `isFirst`, `isLast`, `isShowing`, and `resolvedItemCount`. |
 | `onFinish` | `SpotlightGuidePortal` | Called once when the guide finishes through `next` on the last step, `finish`, or when the steps become empty while active. Not called when `enabled` is toggled off. |
 | `barrierDismissBehavior` | `SpotlightGuidePortal` | Built-in empty-space close behavior. Defaults to `disabled`; `onComplete` finishes only after the last step/final same-step item is presented; `anytime` finishes even mid-flow. |
@@ -191,7 +191,7 @@ built-in fallback -> SpotlightGuidePortal.barrier -> SpotlightGuideStep.barrier
 
 `SpotlightGuidePlacement.left` and `right` are physical screen sides. Use `SpotlightGuidePlacement.start` or `end` when the side should follow `Directionality`; in RTL, `start` resolves to physical right and `end` resolves to physical left.
 
-`SpotlightGuideIndicatorDirection.up/down/left/right` is physical screen direction. It is not mirrored by RTL; semantic side placement is represented by `SpotlightGuidePlacement.start` and `end`.
+`SpotlightGuideDirection.up/down/left/right` is physical screen direction. It is not mirrored by RTL; semantic side placement is represented by `SpotlightGuidePlacement.start` and `end`.
 
 `margin` is applied before visual fallback adjustments. When a pointer is part
 of the chain, the bubble first shifts its anchor offset to keep the bubble
@@ -203,18 +203,18 @@ the anchor away from rounded-corner unsafe areas.
 | Parameter | Owner | Meaning |
 | --- | --- | --- |
 | `pointer` | `SpotlightGuideStepItem` | Layout-aware pointer metadata for built-in bubble/text hints. Keep pointer config here so reveal scrolling, auto placement, and margin safety can reserve pointer space before `hintBuilder` runs. |
-| `SpotlightGuideHintPointer` | `SpotlightGuideStepItem.pointer` | Groups the pointer widget, optional builder, optional size, pointer anchor, target gap, paint layer, bubble side, and paint offset. |
-| `SpotlightGuideTapPointer` | `SpotlightGuideHintPointer.child` | Built-in pointer widget for simple tap cues when an app does not want to ship an image asset. |
-| `SpotlightGuideHintPointer.builder` | `SpotlightGuideHintPointer` | Optional wrapper for `child` that receives `SpotlightGuidePointerContext`, useful for rotating or swapping directional pointer artwork after auto and RTL placement resolve. |
-| `SpotlightGuidePointerContext.targetDirection` | `SpotlightGuideHintPointer.builder` | Physical direction from the pointer toward the target. |
-| `SpotlightGuidePointerContext.targetRotation` | `SpotlightGuideHintPointer.builder` | Shortcut for rotating artwork whose natural pose points up so it points toward the target. |
-| `SpotlightGuidePointerContext.rotationToTarget(from: ...)` | `SpotlightGuideHintPointer.builder` | Rotates artwork from its declared `SpotlightGuidePointerDirection` source pose toward the target. Opposite target sides mirror clockwise/counterclockwise turns automatically. |
+| `SpotlightGuidePointer` | `SpotlightGuideStepItem.pointer` | Groups the pointer widget, optional builder, optional size, pointer anchor, target gap, paint layer, bubble side, and paint offset. |
+| `SpotlightGuideTapPointer` | `SpotlightGuidePointer.child` | Built-in pointer widget for simple tap cues when an app does not want to ship an image asset. |
+| `SpotlightGuidePointer.builder` | `SpotlightGuidePointer` | Optional wrapper for `child` that receives `SpotlightGuidePointerContext`, useful for rotating or swapping directional pointer artwork after auto and RTL placement resolve. |
+| `SpotlightGuidePointerContext.targetDirection` | `SpotlightGuidePointer.builder` | Physical direction from the pointer toward the target. |
+| `SpotlightGuidePointerContext.targetRotation` | `SpotlightGuidePointer.builder` | Shortcut for rotating artwork whose natural pose points up so it points toward the target. |
+| `SpotlightGuidePointerContext.rotationToTarget(from: ...)` | `SpotlightGuidePointer.builder` | Rotates artwork from its declared `SpotlightGuidePointerDirection` source pose toward the target. Opposite target sides mirror clockwise/counterclockwise turns automatically. |
 | `SpotlightGuidePointerDirection` | `SpotlightGuidePointerContext.rotationToTarget` | Describes an unrotated pointer asset pose. `up()` is the default source pose, `upRight()` describes a northeast-facing asset, `upRight(0)` is identical to `upRight()`, and constructors such as `right(pi / 2)` add a clockwise offset from that named pose. |
-| `SpotlightGuideHintPointer.size` | `SpotlightGuideHintPointer` | Optional fixed pointer layout slot. When null, the pointer uses its child widget's laid-out size; for image or animation pointers, provide a stable size or tight child dimensions to avoid decode-time layout changes. |
-| `SpotlightGuideHintPointer.pointerAnchorPosition` | `SpotlightGuideHintPointer` | Point inside the pointer that aligns with the target contact point. The bubble anchor alignment is controlled separately by `targetAnchorPosition`. |
-| `SpotlightGuideHintPointer.targetGap` | `SpotlightGuideHintPointer` | Signed target-to-pointer distance. Positive values move the pointer away from the target, negative values pull it back toward the target, and zero keeps it touching. |
-| `SpotlightGuideHintPointer.anchorMode` | `SpotlightGuideHintPointer` | Use `pointer` for the default target -> pointer -> bubble chain. Use `target` when the pointer is decorative and the bubble anchor should still point directly at the target. |
-| `SpotlightGuideHintPointer.visualOffset` | `SpotlightGuideHintPointer` | Visual-only child nudge for custom pointer assets. It does not move the target anchor, pointer layout slot, bubble anchor, or bubble position. |
+| `SpotlightGuidePointer.size` | `SpotlightGuidePointer` | Optional fixed pointer layout slot. When null, the pointer uses its child widget's laid-out size; for image or animation pointers, provide a stable size or tight child dimensions to avoid decode-time layout changes. |
+| `SpotlightGuidePointer.pointerAnchorPosition` | `SpotlightGuidePointer` | Point inside the pointer that aligns with the target contact point. The bubble anchor alignment is controlled separately by `targetAnchorPosition`. |
+| `SpotlightGuidePointer.targetGap` | `SpotlightGuidePointer` | Signed target-to-pointer distance. Positive values move the pointer away from the target, negative values pull it back toward the target, and zero keeps it touching. |
+| `SpotlightGuidePointer.anchorMode` | `SpotlightGuidePointer` | Use `pointer` for the default target -> pointer -> bubble chain. Use `target` when the pointer is decorative and the bubble anchor should still point directly at the target. |
+| `SpotlightGuidePointer.visualOffset` | `SpotlightGuidePointer` | Visual-only child nudge for custom pointer assets. It does not move the target anchor, pointer layout slot, bubble anchor, or bubble position. |
 | `SpotlightGuidePointerOffset.physical` | `SpotlightGuidePointerOffset` | Left/right/up/down nudge in physical screen directions. |
 | `SpotlightGuidePointerOffset.directional` | `SpotlightGuidePointerOffset` | Start/end/up/down nudge where start/end mirror with `Directionality`. |
 | `SpotlightGuidePaintGate` | Custom hint child | Optional render-level gate that keeps target holes and hints hidden until custom async visual content is ready. Use `requireNonEmptySize` for natural-size images whose height is unknown before decode. |
@@ -232,11 +232,11 @@ the anchor away from rounded-corner unsafe areas.
 Anchor chain:
 
 ```text
-SpotlightGuideHintPointer.pointerAnchorPosition -> targetGap -> pointer layout slot -> targetAnchorPosition -> gap -> bubble anchor tip
+SpotlightGuidePointer.pointerAnchorPosition -> targetGap -> pointer layout slot -> targetAnchorPosition -> gap -> bubble anchor tip
 ```
 
 If a custom pointer image has transparent padding or a painted tip that is not
-on the widget edge, wrap it or provide `SpotlightGuideHintPointer.size` so its
+on the widget edge, wrap it or provide `SpotlightGuidePointer.size` so its
 layout edge represents the desired visual contact point. Fixed item-level
 pointer sizes are also included in the default reveal-space estimate. If the
 bubble uses `SpotlightGuideNoAnchor`, the bubble edge is the endpoint used by
@@ -248,7 +248,7 @@ natural pointer frames. While a rendered hint is not ready, the overlay keeps
 that step's target holes and hints hidden as one visual unit, so a target hole
 does not appear before its bubble. The component still cannot know an arbitrary
 image's future aspect ratio before decode, so give
-`SpotlightGuideHintPointer.size` or give the image both width and height when
+`SpotlightGuidePointer.size` or give the image both width and height when
 the first visible frame or reveal-scroll space estimate must be exact. For
 large raster assets, use Flutter's `Image.cacheWidth` and `Image.cacheHeight`
 to decode closer to the rendered size instead of caching an unnecessarily large
@@ -260,7 +260,7 @@ visually complete. `requireNonEmptySize` waits for the child to lay out with a
 non-empty size, which is useful when an image only receives a width and the
 height should remain aspect-ratio driven.
 
-For small last-mile visual nudges, use `SpotlightGuideHintPointer.visualOffset`.
+For small last-mile visual nudges, use `SpotlightGuidePointer.visualOffset`.
 It translates only the pointer child paint. The anchor chain still uses the
 unmoved pointer layout slot, so target, pointer, and bubble alignment remain
 stable.
@@ -292,25 +292,25 @@ Margins reduce the available space before min/max constraints are applied.
 | Parameter | Owner | Meaning |
 | --- | --- | --- |
 | `onStepWillShow` | `SpotlightGuidePortal` | Page-level preparation hook before reveal. |
-| `revealPresentationStrategy` | `SpotlightGuidePortal` | Controls whether hints/holes are hidden or kept live while reveal scrolling prepares a target. The default hides content until scrolling/layout settles. |
+| `revealStrategy` | `SpotlightGuidePortal` | Controls whether hints/holes are hidden or kept live while reveal scrolling prepares a target. The default hides content until scrolling/layout settles. |
 | `onReveal` | `SpotlightGuideStep` | Step-level preparation, such as switching tabs or jumping close to a lazy list target. |
 | `onReveal` | `SpotlightGuideStepItem` | Item-level preparation before default ensureVisible. For the first item it runs during step preparation; for later items in an auto-scroll step it is deferred until that item's auto-scroll turn. |
 | `revealOptions` | `SpotlightGuideStep` | Default reveal behavior inherited by items. |
 | `revealOptions` | `SpotlightGuideStepItem` | Item-specific reveal behavior. |
 | `scrollPolicy` | `SpotlightGuideRevealOptions` | `onlyIfNeeded` by default, so default reveal scrolls only when a mounted target is outside the padded visible viewport. `always` calls `Scrollable.ensureVisible` every time. |
-| `scrollTargetPolicy` | `SpotlightGuideRevealOptions` | Which area drives reveal scrolling: the full highlighted area, the anchor target, or the default anchor fallback when the highlighted area is too large to fit. |
+| `targetPolicy` | `SpotlightGuideRevealOptions` | Which area drives reveal scrolling: the full highlighted area, the anchor target, or the default anchor fallback when the highlighted area is too large to fit. |
 | `visibilityPadding` | `SpotlightGuideRevealOptions` | Insets applied to the viewport before the `onlyIfNeeded` visibility check. Use it for sticky headers, bottom bars, or visual edge padding. |
 | `autoScrollOptions` | `SpotlightGuideStep` | Same-step multi-item viewing aid for later hidden targets. |
-| `autoScrollOptions.onAutoScrollItemChanged` | `SpotlightGuideStepAutoScrollOptions` | Fires with [SpotlightGuideAutoScrollItemContext] when sequential auto scroll focuses a new item (`itemIndex` starts at `0`). Exposes `highlightTargetIds`, `primaryHighlightTargetId`, and optional [SpotlightGuideStepItem.key]. Not called when every item is already on screen. |
+| `autoScrollOptions.onItemChanged` | `SpotlightGuideAutoScrollOptions` | Fires with [SpotlightGuideAutoScrollContext] when sequential auto scroll focuses a new item (`itemIndex` starts at `0`). Exposes `highlightTargetIds`, `primaryTargetId`, and optional [SpotlightGuideStepItem.key]. Not called when every item is already on screen. |
 | `key` | `SpotlightGuideStepItem` | Optional stable item label for copy or analytics. Not the same as [SpotlightGuideTarget.id]. |
 | `highlightTargetIds` | `SpotlightGuideStepItem` | Read-only view of the registered target ids highlighted by the item (`targetId` or `targetIds`). |
 
 Default reveal uses `Scrollable.ensureVisible` for already mounted targets only
 when the target is not fully visible under `onlyIfNeeded`. The default
-`SpotlightGuideDeferredRevealPresentationStrategy` shows only the barrier while
+`SpotlightGuideDeferredReveal` shows only the barrier while
 reveal scrolling or lazy-target preparation runs, then paints hints and holes
-after layout settles. Use `SpotlightGuideLiveRevealPresentationStrategy`, or a
-custom `SpotlightGuideRevealPresentationStrategy`, to keep resolved overlay
+after layout settles. Use `SpotlightGuideLiveReveal`, or a
+custom `SpotlightGuideRevealStrategy`, to keep resolved overlay
 content live during reveal movement.
 For an item with `targetIds` and `anchorTargetId`, `onlyIfNeeded` first tries to
 keep the whole highlighted group visible when that group can fit in the padded
@@ -318,11 +318,11 @@ viewport. If the group is too large to fit, it uses the anchor target as the
 visibility priority; a fully visible anchor will not scroll just because the
 larger highlighted area extends outside the viewport.
 
-`SpotlightGuideRevealScrollTargetPolicy.highlightedArea` keeps the highlighted
+`SpotlightGuideRevealTargetPolicy.highlightedArea` keeps the highlighted
 area as the reveal subject. `anchorTarget` uses the anchor target whenever it is
 available in the current highlighted item. If `anchorTargetId` is missing or
 does not belong to the item, reveal falls back to the highlighted area.
-`anchorTargetWhenHighlightedAreaCannotFit` is the default, balancing complete
+`highlightedAreaIfFits` is the default, balancing complete
 context for compact groups with stable anchor-first behavior for large groups.
 Even with `highlightedArea`, an oversized target cannot become fully visible;
 prefer the default or `anchorTarget` when the anchor is the important visual
@@ -338,9 +338,9 @@ common lazy-list preparation:
 | `scrollToIndex(controller, index, itemExtent, ...)` | Convenience wrapper for fixed-extent lazy lists. |
 | `waitForLayout(frames: 1)` | Wait for one or more layout frames before the portal resolves targets again. |
 
-Same-step auto scroll is enabled by default. It starts when a later item is not fully visible, including a not-yet-built later item that provides an `onReveal` hook. For later items, `onReveal` runs at auto-scroll time (after the configured interval) instead of during initial preparation, so the first hint is seen before the guide scrolls on and a lazy target is only built when it is about to be revealed.
+Same-step scroll is enabled by default. It starts when a later item is not fully visible, including a not-yet-built later item that provides an `onReveal` hook. For later items, `onReveal` runs at auto-scroll time (after the configured interval) instead of during initial preparation, so the first hint is seen before the guide scrolls on and a lazy target is only built when it is about to be revealed.
 
-With the default reveal presentation strategy, a same-step auto-scroll overlay hides the outgoing hint before scrolling starts and shows the next hint only after that target settles. With live reveal presentation, the overlay renders only the items whose targets have resolved and currently overlap the viewport. When a later item is still hidden, only the highest renderable `itemIndex` is shown so users see one hint at a time. When every item is already on screen, all hints render together. Unresolved targets and targets that are entirely off-screen are skipped until auto scroll brings any part of them into view, so a hint is not clamped onto the screen while its target is elsewhere. (Overlap, not full containment, is used so a target larger than the viewport still shows its hint.) `SpotlightGuideStepContext.itemTotal` always reports the full step item count, even while only a subset is on screen.
+With the default reveal presentation strategy, a same-step scroll overlay hides the outgoing hint before scrolling starts and shows the next hint only after that target settles. With live reveal presentation, the overlay renders only the items whose targets have resolved and currently overlap the viewport. When a later item is still hidden, only the highest renderable `itemIndex` is shown so users see one hint at a time. When every item is already on screen, all hints render together. Unresolved targets and targets that are entirely off-screen are skipped until scroll brings any part of them into view, so a hint is not clamped onto the screen while its target is elsewhere. (Overlap, not full containment, is used so a target larger than the viewport still shows its hint.) `SpotlightGuideStepContext.itemTotal` always reports the full step item count, even while only a subset is on screen.
 
 ## Built-In Hint Types
 
@@ -355,7 +355,7 @@ src/hints/bubble_hint.dart
   SpotlightGuideBubbleHint
   A higher-level hint that renders the step-level pointer, when configured, with SpotlightGuideBubble.
 
-  SpotlightGuideHintPointer
+  SpotlightGuidePointer
   Pointer configuration for any widget, including images, icons, animations,
   CustomPaint, or SpotlightGuideTapPointer.
 
@@ -368,7 +368,7 @@ src/hints/text_hint.dart
   SpotlightGuideTextHint
   A ready-to-use title/message/progress/action hint built on SpotlightGuideBubbleHint.
 
-src/hints/pointer_indicator.dart
+src/hints/tap_pointer.dart
   SpotlightGuideTapPointer
   A small built-in tap pointer widget for lightweight pointer hints.
 
@@ -390,7 +390,7 @@ Use `SpotlightGuideBubbleDecoration` when you want a custom widget tree but stil
 
 Return a custom widget from `hintBuilder` when the guide is image-based, product-specific, animated, or does not look like a bubble.
 
-Use `SpotlightGuideStepContext.indicatorDirection` when a fully custom hint
+Use `SpotlightGuideStepContext.anchorDirection` when a fully custom hint
 needs to draw differently for top, bottom, left, or right anchors. Use
 `SpotlightGuideAnchorPathBuilder.direction` inside
 `SpotlightGuidePathAnchorShape.addToPath` when only the bubble anchor shape

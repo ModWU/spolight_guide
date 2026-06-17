@@ -165,7 +165,7 @@ void main() {
               placement: SpotlightGuidePlacement.bottom,
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
-                shape: SpotlightGuideRoundedRectTargetShape(
+                shape: SpotlightGuideRoundedRectShape(
                   borderRadius: BorderRadius.zero,
                 ),
               ),
@@ -233,7 +233,7 @@ void main() {
               targetId: 'oversized',
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.all(6),
-                shape: SpotlightGuideRoundedRectTargetShape(
+                shape: SpotlightGuideRoundedRectShape(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
                 ),
               ),

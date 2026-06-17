@@ -8,7 +8,7 @@ class SpotlightGuideAnchorGeometry {
   });
 
   /// Direction in which the anchor points from the bubble toward the target.
-  final SpotlightGuideIndicatorDirection direction;
+  final SpotlightGuideDirection direction;
 
   /// Offset from the physical leading edge of the anchor side to the anchor tip
   /// center.
@@ -145,7 +145,7 @@ class SpotlightGuideAnchorPathBuilder {
   /// Use this when a custom shape needs side-specific geometry beyond the
   /// normalized coordinate transform. For example, a custom arrow can switch
   /// control points when the bubble anchor is on the left or right side.
-  final SpotlightGuideIndicatorDirection direction;
+  final SpotlightGuideDirection direction;
 
   /// Normalized side value for the connection start on the bubble body edge.
   final double startSide;
@@ -251,10 +251,10 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
     }
     final double inset = math.max(0, preferredSize.height);
     return switch (resolved.direction) {
-      SpotlightGuideIndicatorDirection.up => EdgeInsets.only(top: inset),
-      SpotlightGuideIndicatorDirection.down => EdgeInsets.only(bottom: inset),
-      SpotlightGuideIndicatorDirection.left => EdgeInsets.only(left: inset),
-      SpotlightGuideIndicatorDirection.right => EdgeInsets.only(right: inset),
+      SpotlightGuideDirection.up => EdgeInsets.only(top: inset),
+      SpotlightGuideDirection.down => EdgeInsets.only(bottom: inset),
+      SpotlightGuideDirection.left => EdgeInsets.only(left: inset),
+      SpotlightGuideDirection.right => EdgeInsets.only(right: inset),
     };
   }
 
@@ -270,15 +270,15 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
       return null;
     }
     return switch (resolved.direction) {
-      SpotlightGuideIndicatorDirection.up ||
-      SpotlightGuideIndicatorDirection.down =>
+      SpotlightGuideDirection.up ||
+      SpotlightGuideDirection.down =>
         SpotlightGuideAnchorConnection.horizontal(
           direction: resolved.direction,
           center: body.left + resolved.offset,
           halfWidth: connectionHalfExtent,
         ),
-      SpotlightGuideIndicatorDirection.left ||
-      SpotlightGuideIndicatorDirection.right =>
+      SpotlightGuideDirection.left ||
+      SpotlightGuideDirection.right =>
         SpotlightGuideAnchorConnection.vertical(
           direction: resolved.direction,
           center: body.top + resolved.offset,
@@ -315,7 +315,7 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
 
     final SpotlightGuideAnchorPathBuilder builder = switch (resolved
         .direction) {
-      SpotlightGuideIndicatorDirection.up => SpotlightGuideAnchorPathBuilder(
+      SpotlightGuideDirection.up => SpotlightGuideAnchorPathBuilder(
         direction: resolved.direction,
         startSide: startSide,
         endSide: endSide,
@@ -324,7 +324,7 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
           body.top - (body.top - paintOffset.dy) * outward,
         ),
       ),
-      SpotlightGuideIndicatorDirection.down => SpotlightGuideAnchorPathBuilder(
+      SpotlightGuideDirection.down => SpotlightGuideAnchorPathBuilder(
         direction: resolved.direction,
         startSide: startSide,
         endSide: endSide,
@@ -334,7 +334,7 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
               (paintOffset.dy + paintSize.height - body.bottom) * outward,
         ),
       ),
-      SpotlightGuideIndicatorDirection.left => SpotlightGuideAnchorPathBuilder(
+      SpotlightGuideDirection.left => SpotlightGuideAnchorPathBuilder(
         direction: resolved.direction,
         startSide: startSide,
         endSide: endSide,
@@ -343,7 +343,7 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
           connection.center - visualHalfExtent * side,
         ),
       ),
-      SpotlightGuideIndicatorDirection.right => SpotlightGuideAnchorPathBuilder(
+      SpotlightGuideDirection.right => SpotlightGuideAnchorPathBuilder(
         direction: resolved.direction,
         startSide: startSide,
         endSide: endSide,
@@ -407,10 +407,10 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     }
     final double inset = safeSize.height;
     return switch (resolved.direction) {
-      SpotlightGuideIndicatorDirection.up => EdgeInsets.only(top: inset),
-      SpotlightGuideIndicatorDirection.down => EdgeInsets.only(bottom: inset),
-      SpotlightGuideIndicatorDirection.left => EdgeInsets.only(left: inset),
-      SpotlightGuideIndicatorDirection.right => EdgeInsets.only(right: inset),
+      SpotlightGuideDirection.up => EdgeInsets.only(top: inset),
+      SpotlightGuideDirection.down => EdgeInsets.only(bottom: inset),
+      SpotlightGuideDirection.left => EdgeInsets.only(left: inset),
+      SpotlightGuideDirection.right => EdgeInsets.only(right: inset),
     };
   }
 
@@ -439,28 +439,28 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     }
     final double halfWidth = safeSize.width / 2;
     switch (resolved.direction) {
-      case SpotlightGuideIndicatorDirection.up:
+      case SpotlightGuideDirection.up:
         final double center = body.left + resolved.offset;
         return SpotlightGuideAnchorConnection.horizontal(
           direction: resolved.direction,
           center: center,
           halfWidth: halfWidth,
         );
-      case SpotlightGuideIndicatorDirection.down:
+      case SpotlightGuideDirection.down:
         final double center = body.left + resolved.offset;
         return SpotlightGuideAnchorConnection.horizontal(
           direction: resolved.direction,
           center: center,
           halfWidth: halfWidth,
         );
-      case SpotlightGuideIndicatorDirection.left:
+      case SpotlightGuideDirection.left:
         final double center = body.top + resolved.offset;
         return SpotlightGuideAnchorConnection.vertical(
           direction: resolved.direction,
           center: center,
           halfWidth: halfWidth,
         );
-      case SpotlightGuideIndicatorDirection.right:
+      case SpotlightGuideDirection.right:
         final double center = body.top + resolved.offset;
         return SpotlightGuideAnchorConnection.vertical(
           direction: resolved.direction,
@@ -490,7 +490,7 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     }
     final _SpotlightGuideAnchorTip tip;
     switch (resolved.direction) {
-      case SpotlightGuideIndicatorDirection.up:
+      case SpotlightGuideDirection.up:
         tip = _upDownTip(gap.center, paintOffset.dy, body.top);
         path
           ..lineTo(tip.left.dx, tip.left.dy)
@@ -502,7 +502,7 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
             tip.weight,
           )
           ..lineTo(gap.end, body.top);
-      case SpotlightGuideIndicatorDirection.down:
+      case SpotlightGuideDirection.down:
         tip = _upDownTip(
           gap.center,
           paintOffset.dy + paintSize.height,
@@ -518,7 +518,7 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
             tip.weight,
           )
           ..lineTo(gap.start, body.bottom);
-      case SpotlightGuideIndicatorDirection.left:
+      case SpotlightGuideDirection.left:
         tip = _leftRightTip(paintOffset.dx, gap.center, body.left);
         path
           ..lineTo(tip.right.dx, tip.right.dy)
@@ -530,7 +530,7 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
             tip.weight,
           )
           ..lineTo(body.left, gap.start);
-      case SpotlightGuideIndicatorDirection.right:
+      case SpotlightGuideDirection.right:
         tip = _leftRightTip(
           paintOffset.dx + paintSize.width,
           gap.center,
@@ -882,7 +882,7 @@ class SpotlightGuideAnchorConnection {
   });
 
   factory SpotlightGuideAnchorConnection.horizontal({
-    required SpotlightGuideIndicatorDirection direction,
+    required SpotlightGuideDirection direction,
     required double center,
     required double halfWidth,
   }) {
@@ -895,7 +895,7 @@ class SpotlightGuideAnchorConnection {
   }
 
   factory SpotlightGuideAnchorConnection.vertical({
-    required SpotlightGuideIndicatorDirection direction,
+    required SpotlightGuideDirection direction,
     required double center,
     required double halfWidth,
   }) {
@@ -907,7 +907,7 @@ class SpotlightGuideAnchorConnection {
     );
   }
 
-  final SpotlightGuideIndicatorDirection direction;
+  final SpotlightGuideDirection direction;
   final double center;
   final double start;
   final double end;

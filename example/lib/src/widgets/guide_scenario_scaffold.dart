@@ -11,7 +11,7 @@ class GuideScenarioScaffold extends StatelessWidget {
     this.onReplay,
     this.onStateChanged,
     this.onBarrierTap,
-    this.barrierDismissBehavior = SpotlightGuideBarrierDismissBehavior.disabled,
+    this.barrierDismissBehavior = SpotlightGuideDismissBehavior.disabled,
     this.missingTargetBehavior = SpotlightGuideMissingTargetBehavior.skip,
     this.autoStart = true,
   });
@@ -23,7 +23,7 @@ class GuideScenarioScaffold extends StatelessWidget {
   final VoidCallback? onReplay;
   final SpotlightGuideStateCallback? onStateChanged;
   final SpotlightGuideBarrierTapCallback? onBarrierTap;
-  final SpotlightGuideBarrierDismissBehavior barrierDismissBehavior;
+  final SpotlightGuideDismissBehavior barrierDismissBehavior;
   final SpotlightGuideMissingTargetBehavior missingTargetBehavior;
   final bool autoStart;
 

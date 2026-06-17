@@ -209,7 +209,7 @@ class _SpotlightGuideOverlayReadiness extends ChangeNotifier {
   }
 }
 
-abstract interface class _SpotlightGuideHintLayoutParticipant {
+abstract interface class _HintLayoutParticipant {
   bool get isPaintReady;
 
   double? get targetLayoutGap;
@@ -291,15 +291,15 @@ class _SpotlightGuideHintLayoutInputs {
       hintConstraints: layout.hintConstraints,
       margin: layout.margin,
       placement: layout.placement,
-      indicatorDirection: layout.indicatorDirection,
-      indicatorOffset: layout.indicatorOffset,
-      indicatorSafeInset: layout.indicatorSafeInset,
-      bubbleIndicatorSideExtent: layout.bubbleIndicatorSideExtent,
+      anchorDirection: layout.anchorDirection,
+      anchorOffset: layout.anchorOffset,
+      anchorSafeInset: layout.anchorSafeInset,
+      bubbleAnchorSideExtent: layout.bubbleAnchorSideExtent,
       contentSize: contentSize,
       gap: overlayItem.item.gap,
       decoration: decoration,
       pointer: overlayItem.item.pointer,
-      indicatorSize: decoration.anchorSize,
+      anchorSize: decoration.anchorSize,
       anchorConnectionHalfExtent: decoration.anchorConnectionHalfExtent,
       controller: controller,
     );
@@ -539,7 +539,7 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
   }
 
   bool _isSubtreePaintReady(RenderObject renderObject) {
-    final _SpotlightGuideHintLayoutParticipant? participant =
+    final _HintLayoutParticipant? participant =
         _hintLayoutParticipantOf(renderObject);
     if (participant != null && !participant.isPaintReady) {
       return false;
@@ -564,9 +564,9 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
 
   bool _layoutsNearlyEqual(_HintLayout a, _HintLayout b) {
     return _rectsNearlyEqual(a.rect, b.rect) &&
-        (a.indicatorOffset - b.indicatorOffset).abs() <= _layoutTolerance &&
+        (a.anchorOffset - b.anchorOffset).abs() <= _layoutTolerance &&
         a.placement == b.placement &&
-        a.indicatorDirection == b.indicatorDirection &&
+        a.anchorDirection == b.anchorDirection &&
         a.hintConstraints == b.hintConstraints &&
         a.measureConstraints == b.measureConstraints;
   }
@@ -595,7 +595,7 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
   }
 
   Offset _layoutOffsetCorrection(RenderObject renderObject) {
-    final _SpotlightGuideHintLayoutParticipant? participant =
+    final _HintLayoutParticipant? participant =
         _hintLayoutParticipantOf(renderObject);
     if (participant != null) {
       final Offset correction = participant.layoutOffsetCorrection;
@@ -613,7 +613,7 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
   }
 
   double? _internalTargetGap(RenderObject renderObject) {
-    final _SpotlightGuideHintLayoutParticipant? participant =
+    final _HintLayoutParticipant? participant =
         _hintLayoutParticipantOf(renderObject);
     if (participant != null) {
       final double? targetGap = participant.targetLayoutGap;
@@ -628,11 +628,11 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
     return targetGap;
   }
 
-  _SpotlightGuideHintLayoutParticipant? _hintLayoutParticipantOf(
+  _HintLayoutParticipant? _hintLayoutParticipantOf(
     RenderObject renderObject,
   ) {
-    if (renderObject is _SpotlightGuideHintLayoutParticipant) {
-      return renderObject as _SpotlightGuideHintLayoutParticipant;
+    if (renderObject is _HintLayoutParticipant) {
+      return renderObject as _HintLayoutParticipant;
     }
     return null;
   }
@@ -645,10 +645,10 @@ class _HintLayout {
     required this.targetAnchorPoint,
     required this.margin,
     required this.placement,
-    required this.indicatorOffset,
-    required this.indicatorSafeInset,
-    required this.bubbleIndicatorSideExtent,
-    required this.indicatorDirection,
+    required this.anchorOffset,
+    required this.anchorSafeInset,
+    required this.bubbleAnchorSideExtent,
+    required this.anchorDirection,
     required this.hintConstraints,
     required this.measureConstraints,
     required this.expandWidth,
@@ -659,10 +659,10 @@ class _HintLayout {
   final Offset targetAnchorPoint;
   final EdgeInsets margin;
   final SpotlightGuidePlacement placement;
-  final double indicatorOffset;
-  final double indicatorSafeInset;
-  final double bubbleIndicatorSideExtent;
-  final SpotlightGuideIndicatorDirection indicatorDirection;
+  final double anchorOffset;
+  final double anchorSafeInset;
+  final double bubbleAnchorSideExtent;
+  final SpotlightGuideDirection anchorDirection;
   final BoxConstraints hintConstraints;
   final BoxConstraints measureConstraints;
   final bool expandWidth;
@@ -696,7 +696,7 @@ class _HintLayout {
         step: step,
         margin: margin,
         placement: placement,
-        indicatorDirection: SpotlightGuideIndicatorDirection.down,
+        anchorDirection: SpotlightGuideDirection.down,
         textDirection: textDirection,
         hintSize: hintSize,
         layoutGap: layoutGap,
@@ -708,7 +708,7 @@ class _HintLayout {
         step: step,
         margin: margin,
         placement: SpotlightGuidePlacement.bottom,
-        indicatorDirection: SpotlightGuideIndicatorDirection.up,
+        anchorDirection: SpotlightGuideDirection.up,
         textDirection: textDirection,
         hintSize: hintSize,
         layoutGap: layoutGap,
@@ -725,7 +725,7 @@ class _HintLayout {
         step: step,
         margin: margin,
         placement: placement,
-        indicatorDirection: SpotlightGuideIndicatorDirection.right,
+        anchorDirection: SpotlightGuideDirection.right,
         textDirection: textDirection,
         hintSize: hintSize,
         layoutGap: layoutGap,
@@ -736,7 +736,7 @@ class _HintLayout {
         step: step,
         margin: margin,
         placement: placement,
-        indicatorDirection: SpotlightGuideIndicatorDirection.left,
+        anchorDirection: SpotlightGuideDirection.left,
         textDirection: textDirection,
         hintSize: hintSize,
         layoutGap: layoutGap,
@@ -906,7 +906,7 @@ class _HintLayout {
     required SpotlightGuideStepItem step,
     required EdgeInsets margin,
     required SpotlightGuidePlacement placement,
-    required SpotlightGuideIndicatorDirection indicatorDirection,
+    required SpotlightGuideDirection anchorDirection,
     required TextDirection textDirection,
     required Size? hintSize,
     required double? layoutGap,
@@ -987,13 +987,13 @@ class _HintLayout {
       targetAnchorPoint: targetAnchorPoint,
       margin: margin,
       placement: placement,
-      indicatorOffset: arrowSideLayout.indicatorOffset,
-      indicatorSafeInset: arrowSideLayout.safeInset,
-      bubbleIndicatorSideExtent: _expandedArrowSideExtent(
+      anchorOffset: arrowSideLayout.anchorOffset,
+      anchorSafeInset: arrowSideLayout.safeInset,
+      bubbleAnchorSideExtent: _expandedArrowSideExtent(
         arrowSideLayout,
         expandSideAxis: expandWidth,
       ),
-      indicatorDirection: indicatorDirection,
+      anchorDirection: anchorDirection,
       hintConstraints: BoxConstraints(
         minWidth: bodyMinWidth,
         maxWidth: maxWidth,
@@ -1017,7 +1017,7 @@ class _HintLayout {
     required SpotlightGuideStepItem step,
     required EdgeInsets margin,
     required SpotlightGuidePlacement placement,
-    required SpotlightGuideIndicatorDirection indicatorDirection,
+    required SpotlightGuideDirection anchorDirection,
     required TextDirection textDirection,
     required Size? hintSize,
     required double? layoutGap,
@@ -1101,13 +1101,13 @@ class _HintLayout {
       targetAnchorPoint: targetAnchorPoint,
       margin: margin,
       placement: placement,
-      indicatorOffset: arrowSideLayout.indicatorOffset,
-      indicatorSafeInset: arrowSideLayout.safeInset,
-      bubbleIndicatorSideExtent: _expandedArrowSideExtent(
+      anchorOffset: arrowSideLayout.anchorOffset,
+      anchorSafeInset: arrowSideLayout.safeInset,
+      bubbleAnchorSideExtent: _expandedArrowSideExtent(
         arrowSideLayout,
         expandSideAxis: expandHeight,
       ),
-      indicatorDirection: indicatorDirection,
+      anchorDirection: anchorDirection,
       hintConstraints: BoxConstraints(
         minWidth: bodyMinWidth,
         maxWidth: maxWidth,
@@ -1152,7 +1152,7 @@ class _HintLayout {
     final _AxisLayout base = _AxisLayout(
       origin: origin,
       extent: resolvedExtent,
-      indicatorOffset: anchor - origin,
+      anchorOffset: anchor - origin,
       safeInset: safeInset,
     );
     return _resolveSafeAxisLayout(
@@ -1265,7 +1265,7 @@ class _HintLayout {
     final _AxisLayout shifted = _AxisLayout(
       origin: origin,
       extent: base.extent,
-      indicatorOffset: anchor - origin,
+      anchorOffset: anchor - origin,
       safeInset: base.safeInset,
     );
     return _isAnchorSafe(shifted, safeInset) ? shifted : null;
@@ -1301,7 +1301,7 @@ class _HintLayout {
     final _AxisLayout expanded = _AxisLayout(
       origin: origin,
       extent: extent,
-      indicatorOffset: anchor - origin,
+      anchorOffset: anchor - origin,
       safeInset: base.safeInset,
       expanded: extent > base.extent,
     );
@@ -1309,8 +1309,8 @@ class _HintLayout {
   }
 
   static bool _isAnchorSafe(_AxisLayout layout, double safeInset) {
-    return layout.indicatorOffset >= safeInset &&
-        layout.extent - layout.indicatorOffset >= safeInset;
+    return layout.anchorOffset >= safeInset &&
+        layout.extent - layout.anchorOffset >= safeInset;
   }
 
   static double _resolvePositionOffset(
@@ -1332,7 +1332,7 @@ class _HintLayout {
     return offset;
   }
 
-  static double _resolveEffectiveIndicatorOffset(
+  static double _resolveEffectiveAnchorOffset(
     double offset, {
     required double extent,
     required double connectionHalfExtent,
@@ -1438,16 +1438,16 @@ class _AxisLayout {
   const _AxisLayout({
     required this.origin,
     required this.extent,
-    required this.indicatorOffset,
+    required this.anchorOffset,
     required this.safeInset,
     this.expanded = false,
   });
 
   final double origin;
   final double extent;
-  final double indicatorOffset;
+  final double anchorOffset;
   final double safeInset;
   final bool expanded;
 
-  double get arrowGlobal => origin + indicatorOffset;
+  double get arrowGlobal => origin + anchorOffset;
 }

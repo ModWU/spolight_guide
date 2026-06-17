@@ -7,7 +7,7 @@
 | Basic flow | Pointer hint | Same-step hints |
 | --- | --- | --- |
 | ![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/basic_flow.gif) | ![Built-in tap pointer hint](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/pointer_hint.gif) | ![Several hints in one step](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/same_step_hints.gif) |
-| Same-step auto scroll | Lazy target reveal | Barrier dismiss |
+| Same-step scroll | Lazy target reveal | Barrier dismiss |
 | ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/lazy_target_reveal.gif) | ![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/barrier_dismiss.gif) |
 | Custom anchors and groups | Horizontal auto | Target decoration |
 | ![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/custom_anchors.gif) | ![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/horizontal_auto.gif) | ![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/target_decoration.gif) |
@@ -16,7 +16,7 @@
 
 - Static or runtime guide steps through `SpotlightGuidePortalController`.
 - Ready-made text hints and a built-in tap pointer for quick onboarding.
-- Multiple hints in one step, including sequential same-step auto scroll.
+- Multiple hints in one step, including sequential same-step scroll.
 - Dynamic API-driven steps with skip/wait behavior for missing targets.
 - Lazy-list targets using `onReveal` before measurement.
 - Repeated target ids highlighted as a group, with optional `anchorId`.
@@ -88,7 +88,7 @@ The example app is a scenario playground. The entry stays small in
 example/lib/src/scenarios/basic_steps_scenario.dart
 example/lib/src/scenarios/pointer_hint_scenario.dart
 example/lib/src/scenarios/same_step_hints_scenario.dart
-example/lib/src/scenarios/same_step_auto_scroll_scenario.dart
+example/lib/src/scenarios/same_step_scroll_scenario.dart
 example/lib/src/scenarios/lazy_target_reveal_scenario.dart
 example/lib/src/scenarios/dynamic_steps_scenario.dart
 example/lib/src/scenarios/side_anchor_scenario.dart
@@ -176,10 +176,7 @@ widget. The portal reads item-level pointer metadata before the hint is built,
 so automatic reveal scrolling, auto placement, and safe-area checks can reserve
 the real target-to-pointer gap and fixed pointer size.
 
-When migrating from `0.1.x`, move `pointer:` from `SpotlightGuideBubbleHint` or
-`SpotlightGuideTextHint` to the surrounding `SpotlightGuideStepItem`.
-
-Use `SpotlightGuideHintPointer.targetGap` when the pointer itself should sit
+Use `SpotlightGuidePointer.targetGap` when the pointer itself should sit
 away from the target. Positive values move it away from the target in the
 resolved placement direction, negative values pull it back toward the target,
 and zero keeps the pointer touching the target. Custom pointer widgets can omit
@@ -189,7 +186,7 @@ estimation.
 
 For image pointers, prefer a stable layout slot. This follows Flutter's image
 layout guidance: an image with only one dimension may change size after decode.
-Set `SpotlightGuideHintPointer.size` and make the image fill that slot, or give
+Set `SpotlightGuidePointer.size` and make the image fill that slot, or give
 the child its own tight width and height. The guide also hides transient
 zero-size natural pointer frames internally, keeping the target hole and hint
 hidden until they can appear together from the same stable layout.
@@ -202,7 +199,7 @@ on `Image` so Flutter decodes closer to the displayed size instead of keeping a
 much larger bitmap in memory.
 
 ```dart
-pointer: SpotlightGuideHintPointer(
+pointer: SpotlightGuidePointer(
   size: const Size(68, 103),
   child: Image.asset(
     'assets/guide_pointer.png',
@@ -256,7 +253,7 @@ SpotlightGuideStepItem(
   targetId: 'more-button',
   placement: SpotlightGuidePlacement.bottom,
   gap: 10,
-  pointer: SpotlightGuideHintPointer.tap(
+  pointer: SpotlightGuidePointer.tap(
     anchorMode: SpotlightGuidePointerAnchorMode.pointer,
     visualOffset: SpotlightGuidePointerOffset.directional(end: 2),
     builder: (
@@ -352,7 +349,7 @@ or modify the real target widget.
 
 Use translucent `SpotlightGuideTargetRingLayer`s for a crisp border-style halo,
 `SpotlightGuideTargetGlowLayer` for a blurred soft halo, or
-`SpotlightGuideTargetDashedOutlineLayer` for temporary selection and review
+`SpotlightGuideTargetOutlineLayer` for temporary selection and review
 states. Layers paint in list order and follow the resolved target shape.
 
 ```dart
@@ -361,7 +358,7 @@ SpotlightGuideStep.item(
     targetId: 'price-card',
     targetDecoration: const SpotlightGuideTargetDecoration(
       padding: EdgeInsets.all(8),
-      shape: SpotlightGuideRoundedRectTargetShape(
+      shape: SpotlightGuideRoundedRectShape(
         borderRadius: BorderRadius.all(Radius.circular(18)),
       ),
       layers: <SpotlightGuideTargetLayer>[
@@ -381,7 +378,7 @@ Built-in shapes include rounded rectangles and ovals. Implement
 ```dart
 targetDecoration: const SpotlightGuideTargetDecoration(
   layers: <SpotlightGuideTargetLayer>[
-    SpotlightGuideTargetDashedOutlineLayer(
+    SpotlightGuideTargetOutlineLayer(
       color: Colors.white,
       width: 3,
       dashLength: 10,
@@ -455,7 +452,7 @@ SpotlightGuidePortal(
 
 ## Scroll And Lazy Targets
 
-| Same-step auto scroll | Lazy target reveal |
+| Same-step scroll | Lazy target reveal |
 | --- | --- |
 | ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.0/doc/images/readme/lazy_target_reveal.gif) |
 
@@ -467,18 +464,18 @@ always realign the target, or `visibilityPadding` when sticky headers or bottom
 bars should count as unsafe space. During reveal scrolling, the default
 presentation keeps the barrier visible and waits until scrolling/layout settles
 before showing hints and spotlight holes. Use
-`SpotlightGuideLiveRevealPresentationStrategy` when an app intentionally wants
+`SpotlightGuideLiveReveal` when an app intentionally wants
 resolved hints and holes to track animated scrolling.
 
 When one hint highlights a large `targetIds` group, set `anchorTargetId` to the
 main target. If the full group is too large to fit, default reveal prioritizes
 the anchor, so an already visible anchor will not scroll the page just because
 the larger highlighted area extends outside the viewport. Override
-`scrollTargetPolicy` when a page needs different behavior.
+`targetPolicy` when a page needs different behavior.
 
 ```dart
 SpotlightGuideRevealOptions(
-  scrollTargetPolicy: SpotlightGuideRevealScrollTargetPolicy.anchorTarget,
+  targetPolicy: SpotlightGuideRevealTargetPolicy.anchorTarget,
 )
 ```
 
@@ -503,7 +500,7 @@ SpotlightGuideStepItem(
 )
 ```
 
-For multiple items in the same step, `SpotlightGuideStepAutoScrollOptions` can briefly scroll to hidden later targets so users understand the whole introduced area. It is enabled by default and starts when a later target is not fully visible, or when a not-yet-built later target provides an `onReveal` hook. During the default auto-scroll transition, the outgoing hint is hidden before scrolling starts and the next hint appears after the target settles, so hints do not detach from moving or offscreen targets. Use `autoScrollOptions.onAutoScrollItemChanged` to react when that focused item changes. The callback receives [SpotlightGuideAutoScrollItemContext] with `itemIndex`, `itemTotal`, `highlightTargetIds`, and optional [SpotlightGuideStepItem.key]. Use one item with `targetIds` when a single hint should light several registered targets at once.
+For multiple items in the same step, `SpotlightGuideAutoScrollOptions` can briefly scroll to hidden later targets so users understand the whole introduced area. It is enabled by default and starts when a later target is not fully visible, or when a not-yet-built later target provides an `onReveal` hook. During the default auto-scroll transition, the outgoing hint is hidden before scrolling starts and the next hint appears after the target settles, so hints do not detach from moving or offscreen targets. Use `autoScrollOptions.onItemChanged` to react when that focused item changes. The callback receives [SpotlightGuideAutoScrollContext] with `itemIndex`, `itemTotal`, `highlightTargetIds`, and optional [SpotlightGuideStepItem.key]. Use one item with `targetIds` when a single hint should light several registered targets at once.
 
 ## Barrier Style
 
@@ -542,7 +539,7 @@ Use `barrierDismissBehavior` for common close behavior:
 
 ```dart
 SpotlightGuidePortal(
-  barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.onComplete,
+  barrierDismissBehavior: SpotlightGuideDismissBehavior.onComplete,
   steps: steps,
   child: page,
 )
@@ -633,9 +630,9 @@ Use `SpotlightGuideAnchorPosition.start`, `center`, or `end` for semantic alignm
 - Any custom widget, image composition, or app-specific guide UI.
 
 The layout data is available through `SpotlightGuideStepContext`.
-Use `guide.indicatorDirection` when a custom hint needs to know which physical
+Use `guide.anchorDirection` when a custom hint needs to know which physical
 side the anchor is on. For example, a hint placed below a target has an
-`up` indicator because the anchor sits on the bubble's top edge and points
+`up` direction because the anchor sits on the bubble's top edge and points
 toward the target. Path-based custom anchors can read the same resolved side
 from `SpotlightGuideAnchorPathBuilder.direction` inside `addToPath`.
 Use `guide.targetAnchorPosition` when custom pointer or bubble layouts need to

@@ -98,7 +98,7 @@ void main() {
     final SpotlightGuideTargetDecoration decoration =
         step.items.single.targetDecoration;
 
-    expect(decoration.shape, isA<SpotlightGuideRoundedRectTargetShape>());
+    expect(decoration.shape, isA<SpotlightGuideRoundedRectShape>());
     expect(decoration.layers, hasLength(2));
     expect(decoration.layers.first, isA<SpotlightGuideTargetRingLayer>());
     expect(decoration.layers.last, isA<SpotlightGuideTargetRingLayer>());
@@ -110,7 +110,7 @@ void main() {
         step.items.single.targetDecoration;
 
     expect(step.items.single.targetId, targetDecorationSoftGlowId);
-    expect(decoration.shape, isA<SpotlightGuideRoundedRectTargetShape>());
+    expect(decoration.shape, isA<SpotlightGuideRoundedRectShape>());
     expect(decoration.layers, hasLength(1));
     final SpotlightGuideTargetGlowLayer layer =
         decoration.layers.single as SpotlightGuideTargetGlowLayer;
@@ -124,7 +124,7 @@ void main() {
         step.items.single.targetDecoration;
 
     expect(step.items.single.targetId, targetDecorationGlowId);
-    expect(decoration.shape, isA<SpotlightGuideOvalTargetShape>());
+    expect(decoration.shape, isA<SpotlightGuideOvalShape>());
     expect(decoration.layers, hasLength(2));
     expect(decoration.layers.first, isA<SpotlightGuideTargetGlowLayer>());
     expect(decoration.layers.last, isA<SpotlightGuideTargetRingLayer>());
@@ -136,11 +136,11 @@ void main() {
         step.items.single.targetDecoration;
 
     expect(step.items.single.targetId, targetDecorationDashedId);
-    expect(decoration.shape, isA<SpotlightGuideRoundedRectTargetShape>());
+    expect(decoration.shape, isA<SpotlightGuideRoundedRectShape>());
     expect(decoration.layers, hasLength(1));
     expect(
       decoration.layers.single,
-      isA<SpotlightGuideTargetDashedOutlineLayer>(),
+      isA<SpotlightGuideTargetOutlineLayer>(),
     );
   });
 
@@ -283,7 +283,7 @@ void main() {
     );
     expect(bubbleRect.top, greaterThanOrEqualTo(pointerRect.bottom - 0.5));
     expect(bubbleRect.top, greaterThanOrEqualTo(targetRect.bottom - 0.5));
-    expect(anchorGeometry.direction, SpotlightGuideIndicatorDirection.up);
+    expect(anchorGeometry.direction, SpotlightGuideDirection.up);
     expect(anchorGeometry.offset, greaterThanOrEqualTo(safeInset));
     expect(
       anchorGeometry.offset,
@@ -454,7 +454,7 @@ void main() {
       bubbleRect.top + anchorGeometry.offset,
       moreOrLessEquals(pointerRect.top + 12, epsilon: 1),
     );
-    expect(anchorGeometry.direction, SpotlightGuideIndicatorDirection.left);
+    expect(anchorGeometry.direction, SpotlightGuideDirection.left);
   });
 
   testWidgets('side anchor page target cards do not overflow on tall phones', (

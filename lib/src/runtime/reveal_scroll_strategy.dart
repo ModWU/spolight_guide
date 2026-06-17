@@ -1,8 +1,8 @@
 part of '../../spotlight_guide.dart';
 
 /// Decides whether reveal scrolling is needed and which target should drive it.
-class _SpotlightGuideRevealScrollStrategy {
-  const _SpotlightGuideRevealScrollStrategy({
+class _RevealScrollStrategy {
+  const _RevealScrollStrategy({
     required this.targetResolver,
     required this.viewportRect,
   });
@@ -55,14 +55,14 @@ class _SpotlightGuideRevealScrollStrategy {
       viewport,
       revealOptions.visibilityPadding,
     );
-    final bool targetIsVisible = switch (revealOptions.scrollTargetPolicy) {
-      SpotlightGuideRevealScrollTargetPolicy.highlightedArea =>
+    final bool targetIsVisible = switch (revealOptions.targetPolicy) {
+      SpotlightGuideRevealTargetPolicy.highlightedArea =>
         _isHighlightedAreaRevealSatisfied(visibleViewport, geometry),
-      SpotlightGuideRevealScrollTargetPolicy.anchorTarget =>
+      SpotlightGuideRevealTargetPolicy.anchorTarget =>
         _isAnchorRevealSatisfied(visibleViewport, geometry, item) ??
             _isHighlightedAreaRevealSatisfied(visibleViewport, geometry),
-      SpotlightGuideRevealScrollTargetPolicy
-          .anchorTargetWhenHighlightedAreaCannotFit =>
+      SpotlightGuideRevealTargetPolicy
+          .highlightedAreaIfFits =>
         _highlightedAreaCanFit(visibleViewport, geometry)
             ? _isHighlightedAreaRevealSatisfied(visibleViewport, geometry)
             : _isAnchorRevealSatisfied(visibleViewport, geometry, item) ??
@@ -279,7 +279,7 @@ class _SpotlightGuideRevealScrollStrategy {
     required TextDirection textDirection,
     required bool vertical,
   }) {
-    final SpotlightGuideHintPointer? pointer = item.pointer;
+    final SpotlightGuidePointer? pointer = item.pointer;
     if (pointer == null ||
         pointer.anchorMode != SpotlightGuidePointerAnchorMode.pointer ||
         pointer.size == null) {
@@ -294,12 +294,12 @@ class _SpotlightGuideRevealScrollStrategy {
       return bubbleReserve;
     }
 
-    final SpotlightGuideIndicatorDirection
+    final SpotlightGuideDirection
     targetDirection = switch (placement) {
-      SpotlightGuidePlacement.bottom => SpotlightGuideIndicatorDirection.up,
-      SpotlightGuidePlacement.top => SpotlightGuideIndicatorDirection.down,
-      SpotlightGuidePlacement.left => SpotlightGuideIndicatorDirection.right,
-      SpotlightGuidePlacement.right => SpotlightGuideIndicatorDirection.left,
+      SpotlightGuidePlacement.bottom => SpotlightGuideDirection.up,
+      SpotlightGuidePlacement.top => SpotlightGuideDirection.down,
+      SpotlightGuidePlacement.left => SpotlightGuideDirection.right,
+      SpotlightGuidePlacement.right => SpotlightGuideDirection.left,
       SpotlightGuidePlacement.auto ||
       SpotlightGuidePlacement.verticalAuto ||
       SpotlightGuidePlacement.horizontalAuto ||
@@ -308,14 +308,14 @@ class _SpotlightGuideRevealScrollStrategy {
         'placements must be resolved before pointer reserve checks',
       ),
     };
-    final SpotlightGuidePointerBubblePlacement bubblePlacement =
-        _resolvePointerLayoutBubblePlacement(
+    final SpotlightGuideBubbleSide bubbleSide =
+        _resolvePointerLayoutBubbleSide(
           pointer: pointer,
           textDirection: textDirection,
           targetDirection: targetDirection,
         );
-    if (bubblePlacement ==
-        SpotlightGuidePointerBubblePlacement.alongPlacement) {
+    if (bubbleSide ==
+        SpotlightGuideBubbleSide.along) {
       final double pointerToBubbleGap = _finiteOrZero(item.gap);
       return math.max(
         bubbleReserve,
@@ -333,13 +333,13 @@ class _SpotlightGuideRevealScrollStrategy {
     SpotlightGuideStepItem item,
     SpotlightGuideRevealOptions revealOptions,
   ) {
-    switch (revealOptions.scrollTargetPolicy) {
-      case SpotlightGuideRevealScrollTargetPolicy.highlightedArea:
+    switch (revealOptions.targetPolicy) {
+      case SpotlightGuideRevealTargetPolicy.highlightedArea:
         return false;
-      case SpotlightGuideRevealScrollTargetPolicy.anchorTarget:
+      case SpotlightGuideRevealTargetPolicy.anchorTarget:
         return true;
-      case SpotlightGuideRevealScrollTargetPolicy
-          .anchorTargetWhenHighlightedAreaCannotFit:
+      case SpotlightGuideRevealTargetPolicy
+          .highlightedAreaIfFits:
         final Rect? viewport = viewportRect();
         if (viewport == null) {
           return false;

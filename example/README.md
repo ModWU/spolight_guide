@@ -11,7 +11,7 @@ Scenarios live in `lib/src/scenarios/`:
 - `barrier_dismiss_scenario.dart`: disabled, final-only, and anytime
   empty-space dismiss behavior.
 - `same_step_hints_scenario.dart`: several hints in the same step.
-- `same_step_auto_scroll_scenario.dart`: same-step targets that require scroll,
+- `same_step_scroll_scenario.dart`: same-step targets that require scroll,
   using an offscreen target in a horizontal scroll view.
 - `lazy_target_reveal_scenario.dart`: a lazy list target that is not built at
   first and is revealed through `onReveal`.

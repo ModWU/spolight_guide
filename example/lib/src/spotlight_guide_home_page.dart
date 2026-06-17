@@ -178,7 +178,7 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
         controller: _introController,
         autoStart: true,
         steps: _buildIntroSteps(),
-        barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.anytime,
+        barrierDismissBehavior: SpotlightGuideDismissBehavior.anytime,
         barrier: const SpotlightGuideBarrierStyle(
           color: Color(0xA6000000),
           blurSigma: 1.5,
@@ -215,7 +215,7 @@ class _SpotlightGuideHomePageState extends State<SpotlightGuideHomePage> {
               margin: kExampleGuideMargin,
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.all(4),
-                shape: SpotlightGuideRoundedRectTargetShape(
+                shape: SpotlightGuideRoundedRectShape(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                 ),
               ),

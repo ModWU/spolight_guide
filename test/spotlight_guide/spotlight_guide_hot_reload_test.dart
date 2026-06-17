@@ -551,7 +551,7 @@ void main() {
             placement: SpotlightGuidePlacement.right,
             targetDecoration: const SpotlightGuideTargetDecoration(
               padding: EdgeInsets.fromLTRB(12, 8, 4, 6),
-              shape: SpotlightGuideRoundedRectTargetShape(
+              shape: SpotlightGuideRoundedRectShape(
                 borderRadius: BorderRadius.all(Radius.circular(18)),
               ),
             ),
@@ -571,7 +571,7 @@ void main() {
     expect(find.byKey(const ValueKey<String>('layout-new')), findsOneWidget);
     final SpotlightGuideStepContext newGuide = contexts['layout-new']!;
     expect(newGuide.placement, SpotlightGuidePlacement.right);
-    expect(newGuide.indicatorDirection, SpotlightGuideIndicatorDirection.left);
+    expect(newGuide.anchorDirection, SpotlightGuideDirection.left);
     expect(newGuide.targetRect.left, moreOrLessEquals(268, epsilon: 0.5));
     expect(newGuide.targetRect.top, moreOrLessEquals(242, epsilon: 0.5));
     expect(newGuide.targetRect.right, moreOrLessEquals(364, epsilon: 0.5));
@@ -603,7 +603,7 @@ void main() {
               label: 'pointer-old',
               contexts: contexts,
               placement: SpotlightGuidePlacement.bottom,
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(24, 24),
                 child: SizedBox(
                   key: ValueKey<String>('pointer-old-child'),
@@ -639,7 +639,7 @@ void main() {
               targetAnchorPosition: const SpotlightGuideAnchorPosition.center(
                 6,
               ),
-              pointer: const SpotlightGuideHintPointer(
+              pointer: const SpotlightGuidePointer(
                 size: Size(40, 32),
                 targetGap: 5,
                 pointerAnchorPosition: SpotlightGuideAnchorPosition.center(),
@@ -703,7 +703,7 @@ void main() {
               label: 'stable-pointer',
               contexts: contexts,
               placement: SpotlightGuidePlacement.verticalAuto,
-              pointer: SpotlightGuideHintPointer(
+              pointer: SpotlightGuidePointer(
                 size: const Size(88, 42),
                 targetGap: 4,
                 visualOffset: withVisualOffset
@@ -713,7 +713,7 @@ void main() {
                       )
                     : SpotlightGuidePointerOffset.zero,
                 layer: SpotlightGuidePointerLayer.aboveBubble,
-                bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                bubbleSide: SpotlightGuideBubbleSide.bottom,
                 child: const SizedBox(
                   key: pointerKey,
                   width: 88,
@@ -779,7 +779,7 @@ void main() {
             label: 'stable-total-3',
             contexts: contexts,
             placement: SpotlightGuidePlacement.verticalAuto,
-            pointer: const SpotlightGuideHintPointer(
+            pointer: const SpotlightGuidePointer(
               size: Size(88, 42),
               targetGap: 4,
               visualOffset: SpotlightGuidePointerOffset.directional(
@@ -787,7 +787,7 @@ void main() {
                 up: 2,
               ),
               layer: SpotlightGuidePointerLayer.aboveBubble,
-              bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+              bubbleSide: SpotlightGuideBubbleSide.bottom,
               child: SizedBox(
                 key: ValueKey<String>('stable-total-pointer'),
                 width: 88,
@@ -1114,7 +1114,7 @@ void main() {
         controller: controller,
         autoStart: false,
         barrier: const SpotlightGuideBarrierStyle(blurSigma: 0),
-        barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.disabled,
+        barrierDismissBehavior: SpotlightGuideDismissBehavior.disabled,
         steps: <SpotlightGuideStep>[_step('barrier-hot-reload')],
       ),
     );
@@ -1130,7 +1130,7 @@ void main() {
         controller: controller,
         autoStart: false,
         barrier: const SpotlightGuideBarrierStyle(blurSigma: 4),
-        barrierDismissBehavior: SpotlightGuideBarrierDismissBehavior.anytime,
+        barrierDismissBehavior: SpotlightGuideDismissBehavior.anytime,
         steps: <SpotlightGuideStep>[_step('barrier-hot-reload')],
       ),
     );
@@ -1171,7 +1171,7 @@ void main() {
     await _pumpHotReloadGuide(tester);
     final SpotlightGuideStepContext ltr = contexts['rtl-old']!;
     expect(ltr.placement, SpotlightGuidePlacement.left);
-    expect(ltr.indicatorDirection, SpotlightGuideIndicatorDirection.right);
+    expect(ltr.anchorDirection, SpotlightGuideDirection.right);
     expect(ltr.targetAnchorPoint.dy, moreOrLessEquals(ltr.targetRect.top + 10));
     await tester.pumpWidget(
       guideApp(
@@ -1199,7 +1199,7 @@ void main() {
     expect(find.byKey(const ValueKey<String>('rtl-new')), findsOneWidget);
     final SpotlightGuideStepContext rtl = contexts['rtl-new']!;
     expect(rtl.placement, SpotlightGuidePlacement.right);
-    expect(rtl.indicatorDirection, SpotlightGuideIndicatorDirection.left);
+    expect(rtl.anchorDirection, SpotlightGuideDirection.left);
     expect(rtl.targetAnchorPoint.dy, moreOrLessEquals(rtl.targetRect.top + 10));
   });
 
@@ -1302,7 +1302,7 @@ SpotlightGuideStep _step(
 
 SpotlightGuideStep _pointerStep({
   required String label,
-  required SpotlightGuideHintPointer pointer,
+  required SpotlightGuidePointer pointer,
   required Map<String, SpotlightGuideStepContext> contexts,
   SpotlightGuidePlacement placement = SpotlightGuidePlacement.bottom,
   SpotlightGuideAnchorPosition targetAnchorPosition =

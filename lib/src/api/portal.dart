@@ -78,11 +78,11 @@ class SpotlightGuidePortal extends StatefulWidget {
     this.onStateChanged,
     this.onFinish,
     this.onBarrierTap,
-    this.barrierDismissBehavior = SpotlightGuideBarrierDismissBehavior.disabled,
+    this.barrierDismissBehavior = SpotlightGuideDismissBehavior.disabled,
     this.barrier = const SpotlightGuideBarrierStyle(),
-    this.blockInteractionDuringPreparation = true,
-    this.revealPresentationStrategy =
-        const SpotlightGuideDeferredRevealPresentationStrategy(),
+    this.blockDuringPreparation = true,
+    this.revealStrategy =
+        const SpotlightGuideDeferredReveal(),
   });
 
   /// Widget subtree that contains the guide targets.
@@ -110,7 +110,7 @@ class SpotlightGuidePortal extends StatefulWidget {
   /// preparation has finished and the guide is only waiting for a missing target
   /// to mount. Set this to false to preserve pass-through behavior until the
   /// visible guide overlay is ready.
-  final bool blockInteractionDuringPreparation;
+  final bool blockDuringPreparation;
 
   /// Whether the guide starts automatically when [enabled] is true and steps
   /// are available.
@@ -163,16 +163,16 @@ class SpotlightGuidePortal extends StatefulWidget {
 
   /// Built-in behavior for taps on the dim barrier.
   ///
-  /// Defaults to [SpotlightGuideBarrierDismissBehavior.disabled] so users cannot
+  /// Defaults to [SpotlightGuideDismissBehavior.disabled] so users cannot
   /// accidentally close an in-progress guide by tapping empty space. Use
-  /// [SpotlightGuideBarrierDismissBehavior.onComplete] for flows that should be
+  /// [SpotlightGuideDismissBehavior.onComplete] for flows that should be
   /// dismissible only after the last step or same-step item has been presented,
-  /// or [SpotlightGuideBarrierDismissBehavior.anytime] when tapping outside
+  /// or [SpotlightGuideDismissBehavior.anytime] when tapping outside
   /// should finish the guide even mid-flow.
   ///
   /// When [onBarrierTap] is provided, it takes precedence over this built-in
   /// dismissal behavior.
-  final SpotlightGuideBarrierDismissBehavior barrierDismissBehavior;
+  final SpotlightGuideDismissBehavior barrierDismissBehavior;
 
   /// Default barrier style inherited by every step.
   ///
@@ -184,12 +184,12 @@ class SpotlightGuidePortal extends StatefulWidget {
   /// How hints and spotlight holes render while reveal scrolling prepares a
   /// target.
   ///
-  /// The default [SpotlightGuideDeferredRevealPresentationStrategy] keeps the
+  /// The default [SpotlightGuideDeferredReveal] keeps the
   /// dim barrier visible but hides hint content until reveal scrolling and
-  /// layout have settled. Use [SpotlightGuideLiveRevealPresentationStrategy],
-  /// or a custom [SpotlightGuideRevealPresentationStrategy], when an app wants
+  /// layout have settled. Use [SpotlightGuideLiveReveal],
+  /// or a custom [SpotlightGuideRevealStrategy], when an app wants
   /// a different transition effect.
-  final SpotlightGuideRevealPresentationStrategy revealPresentationStrategy;
+  final SpotlightGuideRevealStrategy revealStrategy;
 
   @override
   State<SpotlightGuidePortal> createState() => _SpotlightGuidePortalState();
@@ -209,7 +209,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   bool _waitingForRouteTransition = false;
   int _overlayMotionToken = 0;
   bool _autoScrollSequenceActive = false;
-  bool _autoScrollPresentationActive = false;
+  bool _autoScrollFocusActive = false;
   int? _autoScrollFocusedItemIndex;
   int? _autoScrollTransitionItemIndex;
   int? _autoScrollItemIndexNotified;
@@ -236,8 +236,8 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         targetResolver: _targetResolver,
       );
 
-  _SpotlightGuideRevealScrollStrategy get _revealScrollStrategy =>
-      _SpotlightGuideRevealScrollStrategy(
+  _RevealScrollStrategy get _revealScrollStrategy =>
+      _RevealScrollStrategy(
         targetResolver: _targetResolver,
         viewportRect: _overlayViewportRect,
       );
@@ -295,7 +295,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       if (_isGuideShowing &&
           !_preparing &&
           _canUpdateVisibleStepsInPlace(previousSourceSteps, _sourceSteps)) {
-        _refreshTargetFilteredStepsForAvailability();
+        _refreshAvailableSteps();
         _index = _effectiveIndex;
         _controller._syncFromState(this);
         return;
@@ -334,7 +334,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     if (!_preparing) {
       _clearTargetFilteredSteps();
       final _SpotlightGuideTargetFilterRefresh refresh =
-          _refreshTargetFilteredStepsForAvailability();
+          _refreshAvailableSteps();
       _index = _effectiveIndex;
       _controller._syncFromState(this);
       if (!_canShowGuide) {
@@ -478,7 +478,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   }
 
   _SpotlightGuideTargetFilterRefresh
-  _refreshTargetFilteredStepsForAvailability() {
+  _refreshAvailableSteps() {
     final List<SpotlightGuideStep> previousSteps = _steps;
     final SpotlightGuideStep? previousStep = previousSteps.isEmpty
         ? null
@@ -542,7 +542,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       _targetRefreshScheduled = false;
       if (mounted && _isGuideShowing) {
         final _SpotlightGuideTargetFilterRefresh refresh =
-            _refreshTargetFilteredStepsForAvailability();
+            _refreshAvailableSteps();
         if (refresh.changed) {
           _cancelAutoScroll();
           _controller._syncFromState(this);
@@ -557,13 +557,13 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
             _prepareAndShow(restart: true);
             return;
           }
-          if (!_preparing && _shouldSkipCurrentStepForMissingTargets()) {
+          if (!_preparing && _shouldSkipCurrentStep()) {
             _advancePastSkippedStep(_prepareToken);
             return;
           }
           return;
         }
-        if (!_preparing && _shouldSkipCurrentStepForMissingTargets()) {
+        if (!_preparing && _shouldSkipCurrentStep()) {
           _notifyStateChanged(SpotlightGuideStateChangeReason.targetsChanged);
           _advancePastSkippedStep(_prepareToken);
           return;
@@ -586,7 +586,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       _waitingForRouteTransition = false;
     }
     final _SpotlightGuideTargetFilterRefresh initialRefresh =
-        _refreshTargetFilteredStepsForAvailability();
+        _refreshAvailableSteps();
     if (initialRefresh.changed) {
       _controller._syncFromState(this);
     }
@@ -599,7 +599,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     }
     final int token = ++_prepareToken;
     _autoScrollItemIndexNotified = null;
-    _configureAutoScrollPresentationForStep(_step);
+    _configureAutoScrollFocusForStep(_step);
     _preparing = true;
     _waitingForRouteTransition = _isRouteTransitionInProgress;
     _controller._syncFromState(this);
@@ -624,7 +624,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         }
       }
       if (!_overlayController.isShowing &&
-          widget.blockInteractionDuringPreparation) {
+          widget.blockDuringPreparation) {
         setState(() {});
         _showOverlay(token: token);
       }
@@ -636,7 +636,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         return;
       }
       final _SpotlightGuideTargetFilterRefresh revealRefresh =
-          _refreshTargetFilteredStepsForAvailability();
+          _refreshAvailableSteps();
       if (revealRefresh.changed) {
         _controller._syncFromState(this);
         if (!_canShowGuide) {
@@ -648,7 +648,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
           return;
         }
       }
-      if (_shouldSkipCurrentStepForMissingTargets()) {
+      if (_shouldSkipCurrentStep()) {
         _advancePastSkippedStep(token);
         return;
       }
@@ -683,7 +683,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     _controller._syncFromState(this);
     _notifyStateChanged(SpotlightGuideStateChangeReason.shown);
     if (_isAutoScrollSequenceActive(_step)) {
-      _notifyAutoScrollItemChanged(_step, 0);
+      _notifyAutoScrollChanged(_step, 0);
     }
     _startStepItemAutoScroll(token);
   }
@@ -766,32 +766,32 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     return step.autoScrollOptions.enabled && step.items.length > 1;
   }
 
-  void _configureAutoScrollPresentationForStep(SpotlightGuideStep step) {
+  void _configureAutoScrollFocusForStep(SpotlightGuideStep step) {
     _autoScrollSequenceActive =
         _shouldAutoScrollStepItems(step) && _needsAutoScrollSequence(step);
-    _autoScrollPresentationActive =
+    _autoScrollFocusActive =
         _shouldAutoScrollStepItems(step) &&
-        _needsFocusedAutoScrollPresentation(step);
-    _autoScrollFocusedItemIndex = _autoScrollPresentationActive ? 0 : null;
+        _needsFocusedAutoScroll(step);
+    _autoScrollFocusedItemIndex = _autoScrollFocusActive ? 0 : null;
   }
 
   bool _isAutoScrollSequenceActive(SpotlightGuideStep step) {
     return _autoScrollSequenceActive && _shouldAutoScrollStepItems(step);
   }
 
-  bool _isAutoScrollPresentationActive(SpotlightGuideStep step) {
-    return _autoScrollPresentationActive && _shouldAutoScrollStepItems(step);
+  bool _isAutoScrollFocusActive(SpotlightGuideStep step) {
+    return _autoScrollFocusActive && _shouldAutoScrollStepItems(step);
   }
 
   bool _needsAutoScrollSequence(SpotlightGuideStep step) {
-    if (_hasHiddenAutoScrollItem(step)) {
+    if (_hasHiddenAutoScrollTarget(step)) {
       return true;
     }
     return _itemNeedsReveal(step, step.items.first);
   }
 
-  bool _needsFocusedAutoScrollPresentation(SpotlightGuideStep step) {
-    final SpotlightGuideStepAutoScrollOptions options = step.autoScrollOptions;
+  bool _needsFocusedAutoScroll(SpotlightGuideStep step) {
+    final SpotlightGuideAutoScrollOptions options = step.autoScrollOptions;
     if (_itemNeedsReveal(step, step.items.first)) {
       return true;
     }
@@ -826,18 +826,18 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     return !_isItemRevealSatisfied(step, item);
   }
 
-  void _notifyAutoScrollItemChanged(SpotlightGuideStep step, int itemIndex) {
+  void _notifyAutoScrollChanged(SpotlightGuideStep step, int itemIndex) {
     if (!_isAutoScrollSequenceActive(step)) {
       return;
     }
-    final SpotlightGuideAutoScrollItemCallback? callback =
-        step.autoScrollOptions.onAutoScrollItemChanged;
+    final SpotlightGuideAutoScrollCallback? callback =
+        step.autoScrollOptions.onItemChanged;
     if (callback == null || _autoScrollItemIndexNotified == itemIndex) {
       return;
     }
     _autoScrollItemIndexNotified = itemIndex;
     callback(
-      SpotlightGuideAutoScrollItemContext(
+      SpotlightGuideAutoScrollContext(
         stepIndex: _effectiveIndex,
         itemIndex: itemIndex,
         itemTotal: step.items.length,
@@ -858,7 +858,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   void _cancelAutoScroll() {
     _autoScrollToken++;
     _autoScrollSequenceActive = false;
-    _autoScrollPresentationActive = false;
+    _autoScrollFocusActive = false;
     _autoScrollFocusedItemIndex = null;
     _autoScrollTransitionItemIndex = null;
     _autoScrollDelayTimer?.cancel();
@@ -896,8 +896,8 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     return mounted && autoScrollToken == _autoScrollToken;
   }
 
-  bool _hasHiddenAutoScrollItem(SpotlightGuideStep step) {
-    final SpotlightGuideStepAutoScrollOptions options = step.autoScrollOptions;
+  bool _hasHiddenAutoScrollTarget(SpotlightGuideStep step) {
+    final SpotlightGuideAutoScrollOptions options = step.autoScrollOptions;
     for (int itemIndex = 1; itemIndex < step.items.length; itemIndex++) {
       final SpotlightGuideStepItem item = step.items[itemIndex];
       final List<BuildContext> targetContexts = _targetResolver.contextsForItem(
@@ -927,7 +927,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         !_isAutoScrollActive(autoScrollToken)) {
       return;
     }
-    final SpotlightGuideStepAutoScrollOptions options =
+    final SpotlightGuideAutoScrollOptions options =
         _steps[stepIndex].autoScrollOptions;
     for (
       int itemIndex = 1;
@@ -955,17 +955,17 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
         return;
       }
       if (options.onlyWhenNeeded && _isItemRevealSatisfied(step, item)) {
-        _focusAutoScrollItem(itemIndex);
+        _focusAutoScrollTarget(itemIndex);
         await _waitForEndOfFrame(token);
-        _notifyAutoScrollItemChanged(step, itemIndex);
+        _notifyAutoScrollChanged(step, itemIndex);
         continue;
       }
       final SpotlightGuideRevealOptions revealOptions =
           item.revealOptions ?? step.revealOptions;
       if (!revealOptions.enabled) {
-        _focusAutoScrollItem(itemIndex);
+        _focusAutoScrollTarget(itemIndex);
         await _waitForEndOfFrame(token);
-        _notifyAutoScrollItemChanged(step, itemIndex);
+        _notifyAutoScrollChanged(step, itemIndex);
         continue;
       }
       await _ensureItemVisible(item, revealOptions, token, stepIndex);
@@ -973,14 +973,14 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
           !_isAutoScrollActive(autoScrollToken)) {
         return;
       }
-      _focusAutoScrollItem(itemIndex);
+      _focusAutoScrollTarget(itemIndex);
       await _waitForEndOfFrame(token);
-      _notifyAutoScrollItemChanged(step, itemIndex);
+      _notifyAutoScrollChanged(step, itemIndex);
     }
   }
 
-  void _focusAutoScrollItem(int itemIndex) {
-    if (!_autoScrollPresentationActive) {
+  void _focusAutoScrollTarget(int itemIndex) {
+    if (!_autoScrollFocusActive) {
       if (_autoScrollTransitionItemIndex == null) {
         return;
       }
@@ -1006,7 +1006,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     int stepIndex,
   ) {
     final bool hideContent = _shouldHideRevealTransitionContent(
-      reason: SpotlightGuideRevealPresentationReason.sameStepAutoScroll,
+      reason: SpotlightGuideRevealReason.sameStepScroll,
       step: step,
       stepIndex: stepIndex,
       total: _steps.length,
@@ -1015,7 +1015,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     );
     final bool shouldClearFocus =
         hideContent &&
-        _autoScrollPresentationActive &&
+        _autoScrollFocusActive &&
         _autoScrollFocusedItemIndex != null;
     if (_autoScrollTransitionItemIndex == itemIndex && !shouldClearFocus) {
       return;
@@ -1283,7 +1283,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
 
   /// Whether [rect] overlaps the visible [viewport] by more than a hairline.
   ///
-  /// Used to decide whether a same-step auto scroll item's hint should render:
+  /// Used to decide whether a same-step scroll item's hint should render:
   /// the hint stays hidden while its target is fully off-screen and appears once
   /// any part of the target scrolls into view.
   bool _viewportOverlapsRect(Rect viewport, Rect rect) {
@@ -1338,7 +1338,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   }
 
   void _showPreparationOverlayIfNeeded(int token) {
-    if (!widget.blockInteractionDuringPreparation ||
+    if (!widget.blockDuringPreparation ||
         _overlayController.isShowing ||
         !_canShowGuide) {
       return;
@@ -1551,7 +1551,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     );
   }
 
-  bool _shouldSkipCurrentStepForMissingTargets() {
+  bool _shouldSkipCurrentStep() {
     if (!_canShowGuide) {
       return false;
     }
@@ -1636,7 +1636,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     _stopOverlayMotionRefresh();
     _autoScrollItemIndexNotified = null;
     _autoScrollSequenceActive = false;
-    _autoScrollPresentationActive = false;
+    _autoScrollFocusActive = false;
     _autoScrollFocusedItemIndex = null;
     _autoScrollTransitionItemIndex = null;
     _prepareToken++;
@@ -1727,31 +1727,31 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   }
 
   void _handleControllerCommand(
-    _SpotlightGuidePortalControllerCommand command,
+    _ControllerCommand command,
   ) {
     switch (command.type) {
-      case _SpotlightGuidePortalControllerCommandType.next:
+      case _ControllerCommandType.next:
         _controllerNext();
         break;
-      case _SpotlightGuidePortalControllerCommandType.previous:
+      case _ControllerCommandType.previous:
         _controllerPrevious();
         break;
-      case _SpotlightGuidePortalControllerCommandType.goTo:
+      case _ControllerCommandType.goTo:
         _controllerGoTo(command.index ?? 0);
         break;
-      case _SpotlightGuidePortalControllerCommandType.finish:
+      case _ControllerCommandType.finish:
         _finish();
         break;
-      case _SpotlightGuidePortalControllerCommandType.hide:
+      case _ControllerCommandType.hide:
         _hideGuide(notifyFinish: false);
         break;
-      case _SpotlightGuidePortalControllerCommandType.reset:
+      case _ControllerCommandType.reset:
         _reset();
         break;
-      case _SpotlightGuidePortalControllerCommandType.showPortal:
+      case _ControllerCommandType.showPortal:
         _showPortalSteps(command.index ?? 0);
         break;
-      case _SpotlightGuidePortalControllerCommandType.showSteps:
+      case _ControllerCommandType.showSteps:
         _showRuntimeSteps(
           command.steps ?? const <SpotlightGuideStep>[],
           command.index ?? 0,
@@ -1790,7 +1790,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
             (_waitingForRouteTransition ||
                 _shouldHideRevealTransitionContent(
                   reason:
-                      SpotlightGuideRevealPresentationReason.stepPreparation,
+                      SpotlightGuideRevealReason.stepPreparation,
                   step: step,
                   stepIndex: stepIndex,
                   total: steps.length,
@@ -1815,10 +1815,10 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
             // preserved, so the remaining items keep their original item index.
             continue;
           }
-          if (_shouldSkipHiddenAutoScrollItem(step, item, targetGeometry)) {
-            // In same-step auto scroll, an already mounted target can still be
+          if (_shouldSkipHiddenAutoScrollTarget(step, item, targetGeometry)) {
+            // In same-step scroll, an already mounted target can still be
             // outside the viewport. Do not clamp its hint back onto the screen;
-            // wait until auto scroll brings the target into view so hint, arrow
+            // wait until scroll brings the target into view so hint, arrow
             // and spotlight hole stay visually connected.
             continue;
           }
@@ -1868,7 +1868,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
               transitionItemIndex < step.items.length &&
               _shouldHideRevealTransitionContent(
                 reason:
-                    SpotlightGuideRevealPresentationReason.sameStepAutoScroll,
+                    SpotlightGuideRevealReason.sameStepScroll,
                 step: step,
                 stepIndex: stepIndex,
                 total: steps.length,
@@ -1882,7 +1882,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
               overlaySize: info.overlaySize,
             );
           }
-          if (_preparing && widget.blockInteractionDuringPreparation) {
+          if (_preparing && widget.blockDuringPreparation) {
             return _emptyOverlayLayout(
               step: step,
               stepIndex: stepIndex,
@@ -1939,11 +1939,11 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       return custom;
     }
     switch (widget.barrierDismissBehavior) {
-      case SpotlightGuideBarrierDismissBehavior.disabled:
+      case SpotlightGuideDismissBehavior.disabled:
         return null;
-      case SpotlightGuideBarrierDismissBehavior.onComplete:
+      case SpotlightGuideDismissBehavior.onComplete:
         return _canDismissBarrierOnComplete ? _finishFromBarrierTap : null;
-      case SpotlightGuideBarrierDismissBehavior.anytime:
+      case SpotlightGuideDismissBehavior.anytime:
         return _finishFromBarrierTap;
     }
   }
@@ -1969,15 +1969,15 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
   }
 
   bool _shouldHideRevealTransitionContent({
-    required SpotlightGuideRevealPresentationReason reason,
+    required SpotlightGuideRevealReason reason,
     required SpotlightGuideStep step,
     required int stepIndex,
     required int total,
     SpotlightGuideStepItem? item,
     int? itemIndex,
   }) {
-    return widget.revealPresentationStrategy.resolve(
-          SpotlightGuideRevealPresentationContext(
+    return widget.revealStrategy.resolve(
+          SpotlightGuideRevealState(
             reason: reason,
             stepIndex: stepIndex,
             total: total,
@@ -1986,10 +1986,10 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
             item: item,
           ),
         ) ==
-        SpotlightGuideRevealPresentationMode.barrierOnly;
+        SpotlightGuideRevealMode.barrierOnly;
   }
 
-  /// When same-step auto scroll still has hidden later items, only the highest
+  /// When same-step scroll still has hidden later items, only the highest
   /// [itemIndex] that is currently renderable is shown so users see one hint at
   /// a time instead of two overlapping hints during a scroll transition.
   List<_SpotlightGuideOverlayItem> _focusedAutoScrollOverlayItems(
@@ -1997,7 +1997,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     List<_SpotlightGuideOverlayItem> resolvedOverlayItems,
   ) {
     if (resolvedOverlayItems.isEmpty ||
-        !_isAutoScrollPresentationActive(step)) {
+        !_isAutoScrollFocusActive(step)) {
       return resolvedOverlayItems;
     }
     final int? focusedItemIndex = _autoScrollFocusedItemIndex;
@@ -2017,12 +2017,12 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     List<_SpotlightGuideOverlayItem> resolvedOverlayItems,
   ) {
     return resolvedOverlayItems.isNotEmpty &&
-        _isAutoScrollPresentationActive(step) &&
+        _isAutoScrollFocusActive(step) &&
         _autoScrollTransitionItemIndex != null &&
         _autoScrollFocusedItemIndex == null;
   }
 
-  bool _shouldSkipHiddenAutoScrollItem(
+  bool _shouldSkipHiddenAutoScrollTarget(
     SpotlightGuideStep step,
     SpotlightGuideStepItem item,
     _SpotlightGuideTargetGeometry targetGeometry,

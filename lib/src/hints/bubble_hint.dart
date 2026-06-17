@@ -11,10 +11,10 @@ enum SpotlightGuidePointerLayer {
 
 /// Builds a pointer child with resolved placement information.
 ///
-/// [child] is the original [SpotlightGuideHintPointer.child]. Return it
+/// [child] is the original [SpotlightGuidePointer.child]. Return it
 /// unchanged for the default appearance, or wrap it with transforms, animation,
 /// direction-specific assets, or extra connector UI.
-typedef SpotlightGuideHintPointerBuilder =
+typedef SpotlightGuidePointerBuilder =
     Widget Function(
       BuildContext context,
       SpotlightGuidePointerContext pointer,
@@ -72,23 +72,23 @@ class SpotlightGuidePointerDirection {
   /// Clockwise angle in radians, where `0` means up.
   final double radians;
 
-  static SpotlightGuidePointerDirection _fromIndicator(
-    SpotlightGuideIndicatorDirection direction,
+  static SpotlightGuidePointerDirection _fromDirection(
+    SpotlightGuideDirection direction,
   ) {
     return switch (direction) {
-      SpotlightGuideIndicatorDirection.up =>
+      SpotlightGuideDirection.up =>
         const SpotlightGuidePointerDirection.up(),
-      SpotlightGuideIndicatorDirection.right =>
+      SpotlightGuideDirection.right =>
         const SpotlightGuidePointerDirection.right(),
-      SpotlightGuideIndicatorDirection.down =>
+      SpotlightGuideDirection.down =>
         const SpotlightGuidePointerDirection.down(),
-      SpotlightGuideIndicatorDirection.left =>
+      SpotlightGuideDirection.left =>
         const SpotlightGuidePointerDirection.left(),
     };
   }
 }
 
-double? _pointerTargetLayoutGap(SpotlightGuideHintPointer? pointer) {
+double? _pointerTargetLayoutGap(SpotlightGuidePointer? pointer) {
   if (pointer == null ||
       pointer.anchorMode != SpotlightGuidePointerAnchorMode.pointer) {
     return null;
@@ -123,12 +123,12 @@ enum SpotlightGuidePointerAnchorMode {
 /// the job of [SpotlightGuideStepItem.placement]. This enum only chooses the
 /// second segment of the chain: pointer -> bubble. The distance on that segment
 /// is controlled by [SpotlightGuideStepItem.gap], not by the target size.
-enum SpotlightGuidePointerBubblePlacement {
-  /// Keep the previous target -> pointer -> bubble line.
+enum SpotlightGuideBubbleSide {
+  /// Keep the target -> pointer -> bubble line on the same axis.
   ///
   /// The bubble is placed farther away from the target in the resolved
   /// [SpotlightGuideStepItem.placement] direction.
-  alongPlacement,
+  along,
 
   /// Place the bubble above the pointer.
   top,
@@ -161,7 +161,7 @@ class SpotlightGuidePointerContext {
     required this.targetDirection,
     required this.bubbleDirection,
     required this.bubbleAnchorDirection,
-    required this.bubblePlacement,
+    required this.bubbleSide,
     required this.anchorMode,
   });
 
@@ -175,16 +175,16 @@ class SpotlightGuidePointerContext {
   ///
   /// A pointer whose natural artwork points up can use [targetRotation] to
   /// point at the highlighted target.
-  final SpotlightGuideIndicatorDirection targetDirection;
+  final SpotlightGuideDirection targetDirection;
 
   /// Direction from the pointer toward the bubble body.
-  final SpotlightGuideIndicatorDirection bubbleDirection;
+  final SpotlightGuideDirection bubbleDirection;
 
   /// Direction used by the bubble anchor that connects back to the pointer.
-  final SpotlightGuideIndicatorDirection bubbleAnchorDirection;
+  final SpotlightGuideDirection bubbleAnchorDirection;
 
   /// Resolved physical bubble side relative to the pointer.
-  final SpotlightGuidePointerBubblePlacement bubblePlacement;
+  final SpotlightGuideBubbleSide bubbleSide;
 
   /// Effective anchor mode for this pointer.
   final SpotlightGuidePointerAnchorMode anchorMode;
@@ -220,7 +220,7 @@ class SpotlightGuidePointerContext {
         const SpotlightGuidePointerDirection.up(),
   }) {
     return rotationToward(
-      SpotlightGuidePointerDirection._fromIndicator(targetDirection),
+      SpotlightGuidePointerDirection._fromDirection(targetDirection),
       from: from,
     );
   }
@@ -235,7 +235,7 @@ class SpotlightGuidePointerContext {
         const SpotlightGuidePointerDirection.up(),
   }) {
     return rotationToward(
-      SpotlightGuidePointerDirection._fromIndicator(bubbleDirection),
+      SpotlightGuidePointerDirection._fromDirection(bubbleDirection),
       from: from,
     );
   }
@@ -265,7 +265,7 @@ class SpotlightGuidePointerContext {
   }
 }
 
-/// Visual-only offset applied to [SpotlightGuideHintPointer.child].
+/// Visual-only offset applied to [SpotlightGuidePointer.child].
 ///
 /// This offset moves the pointer widget's painted content without changing the
 /// target -> pointer -> bubble layout chain. Use it as a last-mile adjustment
@@ -341,7 +341,7 @@ class SpotlightGuidePointerOffset {
 ///   default anchor chain.
 /// - [targetGap] controls the signed main-axis distance from the target edge to
 ///   the pointer.
-/// - [bubblePlacement] chooses where the bubble sits relative to the pointer.
+/// - [bubbleSide] chooses where the bubble sits relative to the pointer.
 ///
 /// When [anchorMode] is [SpotlightGuidePointerAnchorMode.pointer], the pointer
 /// touches the target side chosen by [SpotlightGuideStepItem.placement], and
@@ -360,8 +360,8 @@ class SpotlightGuidePointerOffset {
 /// [size] is omitted, [SpotlightGuideBubbleHint] uses the child's laid-out size
 /// and reports transient zero-size pointer frames as not paint-ready, so the
 /// overlay can reveal target holes and hints together from a stable layout.
-class SpotlightGuideHintPointer {
-  const SpotlightGuideHintPointer({
+class SpotlightGuidePointer {
+  const SpotlightGuidePointer({
     required this.child,
     this.builder,
     this.size,
@@ -369,20 +369,20 @@ class SpotlightGuideHintPointer {
     this.targetGap = 0,
     this.layer = SpotlightGuidePointerLayer.belowBubble,
     this.anchorMode = SpotlightGuidePointerAnchorMode.pointer,
-    this.bubblePlacement = SpotlightGuidePointerBubblePlacement.alongPlacement,
+    this.bubbleSide = SpotlightGuideBubbleSide.along,
     this.bubbleOffset,
     this.visualOffset = SpotlightGuidePointerOffset.zero,
   });
 
   /// Convenience configuration using the built-in [SpotlightGuideTapPointer].
-  const SpotlightGuideHintPointer.tap({
+  const SpotlightGuidePointer.tap({
     this.builder,
     this.size = SpotlightGuideTapPointer.defaultSize,
     this.pointerAnchorPosition = const SpotlightGuideAnchorPosition.center(),
     this.targetGap = 0,
     this.layer = SpotlightGuidePointerLayer.belowBubble,
     this.anchorMode = SpotlightGuidePointerAnchorMode.pointer,
-    this.bubblePlacement = SpotlightGuidePointerBubblePlacement.alongPlacement,
+    this.bubbleSide = SpotlightGuideBubbleSide.along,
     this.bubbleOffset,
     this.visualOffset = SpotlightGuidePointerOffset.zero,
   }) : child = const SpotlightGuideTapPointer();
@@ -396,7 +396,7 @@ class SpotlightGuideHintPointer {
   /// default pose points up can be wrapped in `Transform.rotate` with
   /// [SpotlightGuidePointerContext.targetRotation], while other source poses
   /// can call `pointer.rotationToTarget(from: ...)`.
-  final SpotlightGuideHintPointerBuilder? builder;
+  final SpotlightGuidePointerBuilder? builder;
 
   /// Optional size reserved for [child] in the guide layout.
   ///
@@ -430,15 +430,15 @@ class SpotlightGuideHintPointer {
 
   /// Side where the bubble is placed relative to [child].
   ///
-  /// Defaults to [SpotlightGuidePointerBubblePlacement.alongPlacement], which
+  /// Defaults to [SpotlightGuideBubbleSide.along], which
   /// keeps the target, pointer and bubble on the same main axis. Use
-  /// [SpotlightGuidePointerBubblePlacement.bottom] for common "pointer points
+  /// [SpotlightGuideBubbleSide.bottom] for common "pointer points
   /// sideways, explanation appears below it" compositions.
-  final SpotlightGuidePointerBubblePlacement bubblePlacement;
+  final SpotlightGuideBubbleSide bubbleSide;
 
   /// Optional distance from the hint leading edge to the whole bubble edge.
   ///
-  /// This is only used by [SpotlightGuidePointerBubblePlacement.alongPlacement].
+  /// This is only used by [SpotlightGuideBubbleSide.along].
   /// Leave null for the default pointer-between-target-and-bubble layout. Set
   /// a value only when a custom pointer asset needs manual composition.
   final double? bubbleOffset;
@@ -450,10 +450,10 @@ class SpotlightGuideHintPointer {
 /// A common hint container that combines [SpotlightGuideBubble] with an
 /// optional visual pointer.
 ///
-/// Without a pointer, the step item's target anchor resolves the indicator
+/// Without a pointer, the step item's target anchor resolves the anchor
 /// position on the target. When [SpotlightGuideStepItem.pointer] participates
 /// in the default pointer chain,
-/// [SpotlightGuideHintPointer.pointerAnchorPosition] chooses which point inside
+/// [SpotlightGuidePointer.pointerAnchorPosition] chooses which point inside
 /// the pointer aligns to the target, and
 /// [SpotlightGuideStepItem.targetAnchorPosition] chooses which point inside the
 /// pointer the bubble anchor aligns to.
@@ -484,7 +484,7 @@ class SpotlightGuideBubbleHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SpotlightGuideHintPointer? pointer = guide.pointer;
+    final SpotlightGuidePointer? pointer = guide.pointer;
     final TextDirection textDirection = Directionality.of(context);
     final Widget? pointerChild = pointer?._buildChild(
       context,
@@ -494,7 +494,7 @@ class SpotlightGuideBubbleHint extends StatelessWidget {
         textDirection: textDirection,
       ),
     );
-    return _SpotlightGuideBubbleHintLayout(
+    return _BubbleHintLayout(
       guide: guide,
       decoration: decoration ?? guide.decoration,
       pointer: pointer,
@@ -512,7 +512,7 @@ class SpotlightGuideBubbleHint extends StatelessWidget {
   }
 }
 
-extension on SpotlightGuideHintPointer {
+extension on SpotlightGuidePointer {
   Widget _buildChild(
     BuildContext context,
     SpotlightGuidePointerContext pointerContext,
@@ -523,106 +523,106 @@ extension on SpotlightGuideHintPointer {
 
 SpotlightGuidePointerContext _pointerContextFor({
   required SpotlightGuideStepContext guide,
-  required SpotlightGuideHintPointer pointer,
+  required SpotlightGuidePointer pointer,
   required TextDirection textDirection,
 }) {
-  final SpotlightGuidePointerBubblePlacement bubblePlacement =
-      _resolvePointerBubblePlacement(pointer, textDirection);
-  final SpotlightGuideIndicatorDirection bubbleAnchorDirection =
-      _pointerBubbleAnchorDirection(guide.indicatorDirection, bubblePlacement);
+  final SpotlightGuideBubbleSide bubbleSide =
+      _resolvePointerBubbleSide(pointer, textDirection);
+  final SpotlightGuideDirection bubbleAnchorDirection =
+      _pointerBubbleAnchorDirection(guide.anchorDirection, bubbleSide);
   return SpotlightGuidePointerContext(
     guide: guide,
     textDirection: textDirection,
-    targetDirection: guide.indicatorDirection,
+    targetDirection: guide.anchorDirection,
     bubbleDirection: _oppositeDirection(bubbleAnchorDirection),
     bubbleAnchorDirection: bubbleAnchorDirection,
-    bubblePlacement: bubblePlacement,
+    bubbleSide: bubbleSide,
     anchorMode: pointer.anchorMode,
   );
 }
 
-SpotlightGuidePointerBubblePlacement _resolvePointerBubblePlacement(
-  SpotlightGuideHintPointer pointer,
+SpotlightGuideBubbleSide _resolvePointerBubbleSide(
+  SpotlightGuidePointer pointer,
   TextDirection textDirection,
 ) {
   if (pointer.anchorMode != SpotlightGuidePointerAnchorMode.pointer) {
-    return SpotlightGuidePointerBubblePlacement.alongPlacement;
+    return SpotlightGuideBubbleSide.along;
   }
-  final SpotlightGuidePointerBubblePlacement placement =
-      pointer.bubblePlacement;
+  final SpotlightGuideBubbleSide placement =
+      pointer.bubbleSide;
   return switch (placement) {
-    SpotlightGuidePointerBubblePlacement.start => switch (textDirection) {
-      TextDirection.ltr => SpotlightGuidePointerBubblePlacement.left,
-      TextDirection.rtl => SpotlightGuidePointerBubblePlacement.right,
+    SpotlightGuideBubbleSide.start => switch (textDirection) {
+      TextDirection.ltr => SpotlightGuideBubbleSide.left,
+      TextDirection.rtl => SpotlightGuideBubbleSide.right,
     },
-    SpotlightGuidePointerBubblePlacement.end => switch (textDirection) {
-      TextDirection.ltr => SpotlightGuidePointerBubblePlacement.right,
-      TextDirection.rtl => SpotlightGuidePointerBubblePlacement.left,
+    SpotlightGuideBubbleSide.end => switch (textDirection) {
+      TextDirection.ltr => SpotlightGuideBubbleSide.right,
+      TextDirection.rtl => SpotlightGuideBubbleSide.left,
     },
-    SpotlightGuidePointerBubblePlacement.alongPlacement ||
-    SpotlightGuidePointerBubblePlacement.top ||
-    SpotlightGuidePointerBubblePlacement.bottom ||
-    SpotlightGuidePointerBubblePlacement.left ||
-    SpotlightGuidePointerBubblePlacement.right => placement,
+    SpotlightGuideBubbleSide.along ||
+    SpotlightGuideBubbleSide.top ||
+    SpotlightGuideBubbleSide.bottom ||
+    SpotlightGuideBubbleSide.left ||
+    SpotlightGuideBubbleSide.right => placement,
   };
 }
 
-SpotlightGuideIndicatorDirection _pointerBubbleAnchorDirection(
-  SpotlightGuideIndicatorDirection targetDirection,
-  SpotlightGuidePointerBubblePlacement bubblePlacement,
+SpotlightGuideDirection _pointerBubbleAnchorDirection(
+  SpotlightGuideDirection targetDirection,
+  SpotlightGuideBubbleSide bubbleSide,
 ) {
-  return switch (bubblePlacement) {
-    SpotlightGuidePointerBubblePlacement.alongPlacement => targetDirection,
-    SpotlightGuidePointerBubblePlacement.top =>
-      SpotlightGuideIndicatorDirection.down,
-    SpotlightGuidePointerBubblePlacement.bottom =>
-      SpotlightGuideIndicatorDirection.up,
-    SpotlightGuidePointerBubblePlacement.left =>
-      SpotlightGuideIndicatorDirection.right,
-    SpotlightGuidePointerBubblePlacement.right =>
-      SpotlightGuideIndicatorDirection.left,
-    SpotlightGuidePointerBubblePlacement.start ||
-    SpotlightGuidePointerBubblePlacement.end => throw StateError(
+  return switch (bubbleSide) {
+    SpotlightGuideBubbleSide.along => targetDirection,
+    SpotlightGuideBubbleSide.top =>
+      SpotlightGuideDirection.down,
+    SpotlightGuideBubbleSide.bottom =>
+      SpotlightGuideDirection.up,
+    SpotlightGuideBubbleSide.left =>
+      SpotlightGuideDirection.right,
+    SpotlightGuideBubbleSide.right =>
+      SpotlightGuideDirection.left,
+    SpotlightGuideBubbleSide.start ||
+    SpotlightGuideBubbleSide.end => throw StateError(
       'semantic placements must be resolved before pointer context',
     ),
   };
 }
 
-SpotlightGuidePointerBubblePlacement _resolvePointerLayoutBubblePlacement({
-  required SpotlightGuideHintPointer pointer,
+SpotlightGuideBubbleSide _resolvePointerLayoutBubbleSide({
+  required SpotlightGuidePointer pointer,
   required TextDirection textDirection,
-  required SpotlightGuideIndicatorDirection targetDirection,
+  required SpotlightGuideDirection targetDirection,
 }) {
-  final SpotlightGuidePointerBubblePlacement placement =
-      _resolvePointerBubblePlacement(pointer, textDirection);
-  if (placement == SpotlightGuidePointerBubblePlacement.alongPlacement) {
+  final SpotlightGuideBubbleSide placement =
+      _resolvePointerBubbleSide(pointer, textDirection);
+  if (placement == SpotlightGuideBubbleSide.along) {
     return placement;
   }
-  final SpotlightGuideIndicatorDirection anchorDirection =
+  final SpotlightGuideDirection anchorDirection =
       _pointerBubbleAnchorDirection(targetDirection, placement);
   if (anchorDirection == targetDirection) {
-    return SpotlightGuidePointerBubblePlacement.alongPlacement;
+    return SpotlightGuideBubbleSide.along;
   }
   return placement;
 }
 
-SpotlightGuideIndicatorDirection _oppositeDirection(
-  SpotlightGuideIndicatorDirection direction,
+SpotlightGuideDirection _oppositeDirection(
+  SpotlightGuideDirection direction,
 ) {
   return switch (direction) {
-    SpotlightGuideIndicatorDirection.up =>
-      SpotlightGuideIndicatorDirection.down,
-    SpotlightGuideIndicatorDirection.down =>
-      SpotlightGuideIndicatorDirection.up,
-    SpotlightGuideIndicatorDirection.left =>
-      SpotlightGuideIndicatorDirection.right,
-    SpotlightGuideIndicatorDirection.right =>
-      SpotlightGuideIndicatorDirection.left,
+    SpotlightGuideDirection.up =>
+      SpotlightGuideDirection.down,
+    SpotlightGuideDirection.down =>
+      SpotlightGuideDirection.up,
+    SpotlightGuideDirection.left =>
+      SpotlightGuideDirection.right,
+    SpotlightGuideDirection.right =>
+      SpotlightGuideDirection.left,
   };
 }
 
-class _SpotlightGuideBubbleHintLayout extends MultiChildRenderObjectWidget {
-  const _SpotlightGuideBubbleHintLayout({
+class _BubbleHintLayout extends MultiChildRenderObjectWidget {
+  const _BubbleHintLayout({
     required this.guide,
     required this.decoration,
     required this.pointer,
@@ -633,13 +633,13 @@ class _SpotlightGuideBubbleHintLayout extends MultiChildRenderObjectWidget {
 
   final SpotlightGuideStepContext guide;
   final SpotlightGuideAnchoredDecoration decoration;
-  final SpotlightGuideHintPointer? pointer;
+  final SpotlightGuidePointer? pointer;
   final TextDirection textDirection;
   final Clip clipBehavior;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _RenderSpotlightGuideBubbleHint(
+    return _RenderBubbleHint(
       guide: guide,
       decoration: decoration,
       pointer: pointer,
@@ -651,7 +651,7 @@ class _SpotlightGuideBubbleHintLayout extends MultiChildRenderObjectWidget {
   @override
   void updateRenderObject(
     BuildContext context,
-    covariant _RenderSpotlightGuideBubbleHint renderObject,
+    covariant _RenderBubbleHint renderObject,
   ) {
     renderObject
       ..guide = guide
@@ -662,24 +662,24 @@ class _SpotlightGuideBubbleHintLayout extends MultiChildRenderObjectWidget {
   }
 }
 
-class _SpotlightGuideBubbleHintParentData
+class _BubbleHintParentData
     extends ContainerBoxParentData<RenderBox> {}
 
-class _RenderSpotlightGuideBubbleHint extends RenderBox
+class _RenderBubbleHint extends RenderBox
     with
         ContainerRenderObjectMixin<
           RenderBox,
-          _SpotlightGuideBubbleHintParentData
+          _BubbleHintParentData
         >,
         RenderBoxContainerDefaultsMixin<
           RenderBox,
-          _SpotlightGuideBubbleHintParentData
+          _BubbleHintParentData
         >
-    implements _SpotlightGuideHintLayoutParticipant {
-  _RenderSpotlightGuideBubbleHint({
+    implements _HintLayoutParticipant {
+  _RenderBubbleHint({
     required SpotlightGuideStepContext guide,
     required SpotlightGuideAnchoredDecoration decoration,
-    required SpotlightGuideHintPointer? pointer,
+    required SpotlightGuidePointer? pointer,
     required TextDirection textDirection,
     required Clip clipBehavior,
   }) : _guide = guide,
@@ -718,9 +718,9 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     markNeedsLayout();
   }
 
-  SpotlightGuideHintPointer? _pointer;
+  SpotlightGuidePointer? _pointer;
 
-  set pointer(SpotlightGuideHintPointer? value) {
+  set pointer(SpotlightGuidePointer? value) {
     if (_pointer == value) {
       return;
     }
@@ -766,8 +766,8 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
 
   @override
   void setupParentData(RenderBox child) {
-    if (child.parentData is! _SpotlightGuideBubbleHintParentData) {
-      child.parentData = _SpotlightGuideBubbleHintParentData();
+    if (child.parentData is! _BubbleHintParentData) {
+      child.parentData = _BubbleHintParentData();
     }
   }
 
@@ -782,31 +782,31 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     final Size? pointerSize = _layoutPointer();
     _paintReady = _resolvePaintReadiness(pointerSize);
     _BubbleHintBubbleLayout bubbleLayout = _layoutBubble(
-      _guide.indicatorOffset,
+      _guide.anchorOffset,
       pointerSize: pointerSize,
     );
-    double indicatorOffset = _effectiveIndicatorOffset(
-      pointerSize: pointerSize,
-      bubbleSize: bubbleLayout.size,
-    );
-    bubbleLayout = _layoutBubble(indicatorOffset, pointerSize: pointerSize);
-    final double resolvedIndicatorOffset = _effectiveIndicatorOffset(
+    double anchorOffset = _effectiveAnchorOffset(
       pointerSize: pointerSize,
       bubbleSize: bubbleLayout.size,
     );
-    if ((resolvedIndicatorOffset - indicatorOffset).abs() > 0.01) {
-      indicatorOffset = resolvedIndicatorOffset;
-      bubbleLayout = _layoutBubble(indicatorOffset, pointerSize: pointerSize);
+    bubbleLayout = _layoutBubble(anchorOffset, pointerSize: pointerSize);
+    final double resolvedAnchorOffset = _effectiveAnchorOffset(
+      pointerSize: pointerSize,
+      bubbleSize: bubbleLayout.size,
+    );
+    if ((resolvedAnchorOffset - anchorOffset).abs() > 0.01) {
+      anchorOffset = resolvedAnchorOffset;
+      bubbleLayout = _layoutBubble(anchorOffset, pointerSize: pointerSize);
     }
 
     final Offset bubbleOffset = _bubbleOffset(
       pointerSize: pointerSize,
-      indicatorOffset: indicatorOffset,
+      anchorOffset: anchorOffset,
       bubbleSize: bubbleLayout.size,
     );
     final Offset translation = _translationOffset(
       pointerSize: pointerSize,
-      indicatorOffset: indicatorOffset,
+      anchorOffset: anchorOffset,
       bubbleOffset: bubbleOffset,
       bubbleSize: bubbleLayout.size,
     );
@@ -822,13 +822,13 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
           Offset(
             _pointerLeft(
               pointerSize,
-              indicatorOffset,
+              anchorOffset,
               bubbleOffset,
               bubbleLayout.size,
             ),
             _pointerTop(
               pointerSize,
-              indicatorOffset,
+              anchorOffset,
               bubbleOffset,
               bubbleLayout.size,
             ),
@@ -857,14 +857,14 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     paintBounds = paintBounds.shift(contentShift);
 
     _bubblePaintOffset = bubblePaintOffset;
-    final _SpotlightGuideBubbleHintParentData bubbleParentData =
-        bubble.parentData! as _SpotlightGuideBubbleHintParentData;
+    final _BubbleHintParentData bubbleParentData =
+        bubble.parentData! as _BubbleHintParentData;
     bubbleParentData.offset = _bubblePaintOffset;
 
     _pointerPaintOffset = pointerPaintOffset;
     if (pointer != null && pointerSize != null) {
-      final _SpotlightGuideBubbleHintParentData pointerParentData =
-          pointer.parentData! as _SpotlightGuideBubbleHintParentData;
+      final _BubbleHintParentData pointerParentData =
+          pointer.parentData! as _BubbleHintParentData;
       pointerParentData.offset = _pointerPaintOffset;
     }
 
@@ -883,30 +883,30 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
 
   Offset _bubbleOffset({
     required Size? pointerSize,
-    required double indicatorOffset,
+    required double anchorOffset,
     required Size bubbleSize,
   }) {
     if (!_pointerAffectsBubble || pointerSize == null) {
       return Offset.zero;
     }
-    final SpotlightGuideHintPointer pointer = _pointer!;
-    final SpotlightGuidePointerBubblePlacement placement =
-        _layoutBubblePlacement;
-    if (placement != SpotlightGuidePointerBubblePlacement.alongPlacement) {
+    final SpotlightGuidePointer pointer = _pointer!;
+    final SpotlightGuideBubbleSide placement =
+        _layoutBubbleSide;
+    if (placement != SpotlightGuideBubbleSide.along) {
       return switch (placement) {
-        SpotlightGuidePointerBubblePlacement.bottom => Offset(
+        SpotlightGuideBubbleSide.bottom => Offset(
           0,
           pointerSize.height + _pointerAnchorGap,
         ),
-        SpotlightGuidePointerBubblePlacement.right => Offset(
+        SpotlightGuideBubbleSide.right => Offset(
           pointerSize.width + _pointerAnchorGap,
           0,
         ),
-        SpotlightGuidePointerBubblePlacement.top ||
-        SpotlightGuidePointerBubblePlacement.left => Offset.zero,
-        SpotlightGuidePointerBubblePlacement.start ||
-        SpotlightGuidePointerBubblePlacement.end ||
-        SpotlightGuidePointerBubblePlacement.alongPlacement => throw StateError(
+        SpotlightGuideBubbleSide.top ||
+        SpotlightGuideBubbleSide.left => Offset.zero,
+        SpotlightGuideBubbleSide.start ||
+        SpotlightGuideBubbleSide.end ||
+        SpotlightGuideBubbleSide.along => throw StateError(
           'semantic and along placements are resolved before bubble offset',
         ),
       };
@@ -914,20 +914,20 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     final double leading = math.max(
       0,
       pointer.bubbleOffset ??
-          switch (_guide.indicatorDirection) {
-            SpotlightGuideIndicatorDirection.up =>
+          switch (_guide.anchorDirection) {
+            SpotlightGuideDirection.up =>
               pointerSize.height + _pointerAnchorGap,
-            SpotlightGuideIndicatorDirection.left =>
+            SpotlightGuideDirection.left =>
               pointerSize.width + _pointerAnchorGap,
-            SpotlightGuideIndicatorDirection.down ||
-            SpotlightGuideIndicatorDirection.right => 0,
+            SpotlightGuideDirection.down ||
+            SpotlightGuideDirection.right => 0,
           },
     );
-    return switch (_guide.indicatorDirection) {
-      SpotlightGuideIndicatorDirection.up => Offset(0, leading),
-      SpotlightGuideIndicatorDirection.left => Offset(leading, 0),
-      SpotlightGuideIndicatorDirection.down ||
-      SpotlightGuideIndicatorDirection.right => Offset.zero,
+    return switch (_guide.anchorDirection) {
+      SpotlightGuideDirection.up => Offset(0, leading),
+      SpotlightGuideDirection.left => Offset(leading, 0),
+      SpotlightGuideDirection.down ||
+      SpotlightGuideDirection.right => Offset.zero,
     };
   }
 
@@ -953,17 +953,17 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
       minHeight = math.min(minHeight, maxHeight);
     }
 
-    final double extent = _minimumBubbleIndicatorSideExtent();
+    final double extent = _minimumBubbleAnchorSideExtent();
     if (extent.isFinite && extent > 0) {
       switch (_anchorDirection) {
-        case SpotlightGuideIndicatorDirection.up ||
-            SpotlightGuideIndicatorDirection.down:
+        case SpotlightGuideDirection.up ||
+            SpotlightGuideDirection.down:
           minWidth = math.max(minWidth, extent);
           if (maxWidth.isFinite) {
             minWidth = math.min(minWidth, maxWidth);
           }
-        case SpotlightGuideIndicatorDirection.left ||
-            SpotlightGuideIndicatorDirection.right:
+        case SpotlightGuideDirection.left ||
+            SpotlightGuideDirection.right:
           minHeight = math.max(minHeight, extent);
           if (maxHeight.isFinite) {
             minHeight = math.min(minHeight, maxHeight);
@@ -991,64 +991,64 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
       0,
       pointerSize.height + _pointerAnchorGap,
     );
-    return switch (_layoutBubblePlacement) {
-      SpotlightGuidePointerBubblePlacement.alongPlacement =>
-        switch (_guide.indicatorDirection) {
-          SpotlightGuideIndicatorDirection.up ||
-          SpotlightGuideIndicatorDirection.down => Size(0, verticalAlongExtent),
-          SpotlightGuideIndicatorDirection.left ||
-          SpotlightGuideIndicatorDirection.right => Size(
+    return switch (_layoutBubbleSide) {
+      SpotlightGuideBubbleSide.along =>
+        switch (_guide.anchorDirection) {
+          SpotlightGuideDirection.up ||
+          SpotlightGuideDirection.down => Size(0, verticalAlongExtent),
+          SpotlightGuideDirection.left ||
+          SpotlightGuideDirection.right => Size(
             horizontalAlongExtent,
             0,
           ),
         },
-      SpotlightGuidePointerBubblePlacement.top ||
-      SpotlightGuidePointerBubblePlacement.bottom => Size(
+      SpotlightGuideBubbleSide.top ||
+      SpotlightGuideBubbleSide.bottom => Size(
         0,
         math.max(0, pointerSize.height + _pointerAnchorGap),
       ),
-      SpotlightGuidePointerBubblePlacement.left ||
-      SpotlightGuidePointerBubblePlacement.right => Size(
+      SpotlightGuideBubbleSide.left ||
+      SpotlightGuideBubbleSide.right => Size(
         math.max(0, pointerSize.width + _pointerAnchorGap),
         0,
       ),
-      SpotlightGuidePointerBubblePlacement.start ||
-      SpotlightGuidePointerBubblePlacement.end => throw StateError(
+      SpotlightGuideBubbleSide.start ||
+      SpotlightGuideBubbleSide.end => throw StateError(
         'semantic placements are resolved before bubble constraints',
       ),
     };
   }
 
-  double _effectiveIndicatorOffset({
+  double _effectiveAnchorOffset({
     required Size? pointerSize,
     required Size bubbleSize,
   }) {
-    final SpotlightGuideIndicatorDirection anchorDirection = _anchorDirection;
+    final SpotlightGuideDirection anchorDirection = _anchorDirection;
     final bool isHorizontalSide =
-        anchorDirection == SpotlightGuideIndicatorDirection.up ||
-        anchorDirection == SpotlightGuideIndicatorDirection.down;
+        anchorDirection == SpotlightGuideDirection.up ||
+        anchorDirection == SpotlightGuideDirection.down;
     final double measuredExtent = isHorizontalSide
         ? bubbleSize.width
         : bubbleSize.height;
     final double extent = math.max(
       measuredExtent,
-      _minimumBubbleIndicatorSideExtent(),
+      _minimumBubbleAnchorSideExtent(),
     );
     if (!extent.isFinite || extent <= 0) {
-      return _guide.indicatorOffset;
+      return _guide.anchorOffset;
     }
     final double preferredOffset =
-        _layoutBubblePlacement ==
-            SpotlightGuidePointerBubblePlacement.alongPlacement
-        ? _guide.indicatorOffset
+        _layoutBubbleSide ==
+            SpotlightGuideBubbleSide.along
+        ? _guide.anchorOffset
         : extent / 2;
-    final double safeOffset = _HintLayout._resolveEffectiveIndicatorOffset(
+    final double safeOffset = _HintLayout._resolveEffectiveAnchorOffset(
       preferredOffset,
       extent: extent,
       connectionHalfExtent: _guide.anchorConnectionHalfExtent,
-      safeInset: _guide.indicatorSafeInset,
+      safeInset: _guide.anchorSafeInset,
     );
-    return _resolveMarginSafeIndicatorOffset(
+    return _resolveMarginSafeAnchorOffset(
       safeOffset,
       pointerSize: pointerSize,
       isHorizontalSide: isHorizontalSide,
@@ -1058,18 +1058,18 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
 
   Offset _translationOffset({
     required Size? pointerSize,
-    required double indicatorOffset,
+    required double anchorOffset,
     required Offset bubbleOffset,
     required Size bubbleSize,
   }) {
-    final Offset preferred = switch (guide.indicatorDirection) {
-      SpotlightGuideIndicatorDirection.up ||
-      SpotlightGuideIndicatorDirection.down => Offset(
+    final Offset preferred = switch (guide.anchorDirection) {
+      SpotlightGuideDirection.up ||
+      SpotlightGuideDirection.down => Offset(
         _targetContactAxis(isHorizontalAxis: true) -
             guide.hintRect.left -
             _pointerAnchorX(
               pointerSize,
-              indicatorOffset,
+              anchorOffset,
               bubbleOffset,
               bubbleSize,
             ),
@@ -1080,14 +1080,14 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
                   guide.hintRect.top -
                   _pointerTop(
                     pointerSize,
-                    indicatorOffset,
+                    anchorOffset,
                     bubbleOffset,
                     bubbleSize,
                   )
             : 0,
       ),
-      SpotlightGuideIndicatorDirection.left ||
-      SpotlightGuideIndicatorDirection.right => Offset(
+      SpotlightGuideDirection.left ||
+      SpotlightGuideDirection.right => Offset(
         _pointer == null || pointerSize == null
             ? 0
             : _pointerAffectsBubble
@@ -1095,7 +1095,7 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
                   guide.hintRect.left -
                   _pointerLeft(
                     pointerSize,
-                    indicatorOffset,
+                    anchorOffset,
                     bubbleOffset,
                     bubbleSize,
                   )
@@ -1104,7 +1104,7 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
             guide.hintRect.top -
             _pointerAnchorY(
               pointerSize,
-              indicatorOffset,
+              anchorOffset,
               bubbleOffset,
               bubbleSize,
             ),
@@ -1112,13 +1112,13 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     };
     return _clampTranslationToHintRect(
       preferred,
-      _contentBounds(pointerSize, indicatorOffset, bubbleOffset, bubbleSize),
+      _contentBounds(pointerSize, anchorOffset, bubbleOffset, bubbleSize),
     );
   }
 
   Rect _contentBounds(
     Size? pointerSize,
-    double indicatorOffset,
+    double anchorOffset,
     Offset bubbleOffset,
     Size bubbleSize,
   ) {
@@ -1132,8 +1132,8 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
       return bounds;
     }
     final Rect pointerBounds = Rect.fromLTWH(
-      _pointerLeft(pointerSize, indicatorOffset, bubbleOffset, bubbleSize),
-      _pointerTop(pointerSize, indicatorOffset, bubbleOffset, bubbleSize),
+      _pointerLeft(pointerSize, anchorOffset, bubbleOffset, bubbleSize),
+      _pointerTop(pointerSize, anchorOffset, bubbleOffset, bubbleSize),
       pointerSize.width,
       pointerSize.height,
     );
@@ -1159,75 +1159,75 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
 
   double _pointerLeft(
     Size size,
-    double indicatorOffset,
+    double anchorOffset,
     Offset bubbleOffset,
     Size bubbleSize,
   ) {
-    final SpotlightGuidePointerBubblePlacement placement =
-        _layoutBubblePlacement;
-    if (placement != SpotlightGuidePointerBubblePlacement.alongPlacement) {
+    final SpotlightGuideBubbleSide placement =
+        _layoutBubbleSide;
+    if (placement != SpotlightGuideBubbleSide.along) {
       return switch (placement) {
-        SpotlightGuidePointerBubblePlacement.top ||
-        SpotlightGuidePointerBubblePlacement.bottom =>
+        SpotlightGuideBubbleSide.top ||
+        SpotlightGuideBubbleSide.bottom =>
           bubbleOffset.dx +
-              indicatorOffset -
+              anchorOffset -
               _pointerBubbleOffset(isHorizontalAxis: true, extent: size.width),
-        SpotlightGuidePointerBubblePlacement.left =>
+        SpotlightGuideBubbleSide.left =>
           bubbleOffset.dx + bubbleSize.width + _pointerAnchorGap,
-        SpotlightGuidePointerBubblePlacement.right => 0,
-        SpotlightGuidePointerBubblePlacement.start ||
-        SpotlightGuidePointerBubblePlacement.end ||
-        SpotlightGuidePointerBubblePlacement.alongPlacement => throw StateError(
+        SpotlightGuideBubbleSide.right => 0,
+        SpotlightGuideBubbleSide.start ||
+        SpotlightGuideBubbleSide.end ||
+        SpotlightGuideBubbleSide.along => throw StateError(
           'semantic and along placements are resolved before pointer left',
         ),
       };
     }
-    return switch (_guide.indicatorDirection) {
-      SpotlightGuideIndicatorDirection.up ||
-      SpotlightGuideIndicatorDirection.down =>
-        indicatorOffset -
+    return switch (_guide.anchorDirection) {
+      SpotlightGuideDirection.up ||
+      SpotlightGuideDirection.down =>
+        anchorOffset -
             _pointerBubbleOffset(isHorizontalAxis: true, extent: size.width),
-      SpotlightGuideIndicatorDirection.left => 0,
-      SpotlightGuideIndicatorDirection.right =>
+      SpotlightGuideDirection.left => 0,
+      SpotlightGuideDirection.right =>
         bubbleOffset.dx + bubbleSize.width + _pointerAnchorGap,
     };
   }
 
   double _pointerTop(
     Size size,
-    double indicatorOffset,
+    double anchorOffset,
     Offset bubbleOffset,
     Size bubbleSize,
   ) {
-    final SpotlightGuidePointerBubblePlacement placement =
-        _layoutBubblePlacement;
-    if (placement != SpotlightGuidePointerBubblePlacement.alongPlacement) {
+    final SpotlightGuideBubbleSide placement =
+        _layoutBubbleSide;
+    if (placement != SpotlightGuideBubbleSide.along) {
       return switch (placement) {
-        SpotlightGuidePointerBubblePlacement.top =>
+        SpotlightGuideBubbleSide.top =>
           bubbleOffset.dy + bubbleSize.height + _pointerAnchorGap,
-        SpotlightGuidePointerBubblePlacement.bottom => 0,
-        SpotlightGuidePointerBubblePlacement.left ||
-        SpotlightGuidePointerBubblePlacement.right =>
+        SpotlightGuideBubbleSide.bottom => 0,
+        SpotlightGuideBubbleSide.left ||
+        SpotlightGuideBubbleSide.right =>
           bubbleOffset.dy +
-              indicatorOffset -
+              anchorOffset -
               _pointerBubbleOffset(
                 isHorizontalAxis: false,
                 extent: size.height,
               ),
-        SpotlightGuidePointerBubblePlacement.start ||
-        SpotlightGuidePointerBubblePlacement.end ||
-        SpotlightGuidePointerBubblePlacement.alongPlacement => throw StateError(
+        SpotlightGuideBubbleSide.start ||
+        SpotlightGuideBubbleSide.end ||
+        SpotlightGuideBubbleSide.along => throw StateError(
           'semantic and along placements are resolved before pointer top',
         ),
       };
     }
-    return switch (_guide.indicatorDirection) {
-      SpotlightGuideIndicatorDirection.up => 0,
-      SpotlightGuideIndicatorDirection.down =>
+    return switch (_guide.anchorDirection) {
+      SpotlightGuideDirection.up => 0,
+      SpotlightGuideDirection.down =>
         bubbleOffset.dy + bubbleSize.height + _pointerAnchorGap,
-      SpotlightGuideIndicatorDirection.left ||
-      SpotlightGuideIndicatorDirection.right =>
-        indicatorOffset -
+      SpotlightGuideDirection.left ||
+      SpotlightGuideDirection.right =>
+        anchorOffset -
             _pointerBubbleOffset(isHorizontalAxis: false, extent: size.height),
     };
   }
@@ -1255,25 +1255,25 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
 
   double _pointerTargetLeft(Size size) {
     final double targetGap = _pointerTargetGap;
-    return switch (_guide.indicatorDirection) {
-      SpotlightGuideIndicatorDirection.left =>
+    return switch (_guide.anchorDirection) {
+      SpotlightGuideDirection.left =>
         guide.targetRect.right + targetGap,
-      SpotlightGuideIndicatorDirection.right =>
+      SpotlightGuideDirection.right =>
         guide.targetRect.left - size.width - targetGap,
-      SpotlightGuideIndicatorDirection.up ||
-      SpotlightGuideIndicatorDirection.down => guide.targetRect.left,
+      SpotlightGuideDirection.up ||
+      SpotlightGuideDirection.down => guide.targetRect.left,
     };
   }
 
   double _pointerTargetTop(Size size) {
     final double targetGap = _pointerTargetGap;
-    return switch (_guide.indicatorDirection) {
-      SpotlightGuideIndicatorDirection.up =>
+    return switch (_guide.anchorDirection) {
+      SpotlightGuideDirection.up =>
         guide.targetRect.bottom + targetGap,
-      SpotlightGuideIndicatorDirection.down =>
+      SpotlightGuideDirection.down =>
         guide.targetRect.top - size.height - targetGap,
-      SpotlightGuideIndicatorDirection.left ||
-      SpotlightGuideIndicatorDirection.right => guide.targetRect.top,
+      SpotlightGuideDirection.left ||
+      SpotlightGuideDirection.right => guide.targetRect.top,
     };
   }
 
@@ -1292,7 +1292,7 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
         : guide.targetRect.center.dy;
   }
 
-  double _resolveMarginSafeIndicatorOffset(
+  double _resolveMarginSafeAnchorOffset(
     double offset, {
     required Size? pointerSize,
     required bool isHorizontalSide,
@@ -1318,7 +1318,7 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     }
 
     final double safeInset = math.min(
-      math.max(guide.anchorConnectionHalfExtent, guide.indicatorSafeInset),
+      math.max(guide.anchorConnectionHalfExtent, guide.anchorSafeInset),
       extent / 2,
     );
     final double safeMin = safeInset;
@@ -1362,53 +1362,53 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
     );
     final double targetGap = _pointerTargetGap;
     return Offset(
-      switch (guide.indicatorDirection) {
-        SpotlightGuideIndicatorDirection.up ||
-        SpotlightGuideIndicatorDirection.down =>
+      switch (guide.anchorDirection) {
+        SpotlightGuideDirection.up ||
+        SpotlightGuideDirection.down =>
           guide.targetRect.center.dx - pointerTargetX + pointerBubbleX,
-        SpotlightGuideIndicatorDirection.left =>
+        SpotlightGuideDirection.left =>
           guide.targetRect.right + targetGap + pointerBubbleX,
-        SpotlightGuideIndicatorDirection.right =>
+        SpotlightGuideDirection.right =>
           guide.targetRect.left - targetGap - size.width + pointerBubbleX,
       },
-      switch (guide.indicatorDirection) {
-        SpotlightGuideIndicatorDirection.up =>
+      switch (guide.anchorDirection) {
+        SpotlightGuideDirection.up =>
           guide.targetRect.bottom + targetGap + pointerBubbleY,
-        SpotlightGuideIndicatorDirection.down =>
+        SpotlightGuideDirection.down =>
           guide.targetRect.top - targetGap - size.height + pointerBubbleY,
-        SpotlightGuideIndicatorDirection.left ||
-        SpotlightGuideIndicatorDirection.right =>
+        SpotlightGuideDirection.left ||
+        SpotlightGuideDirection.right =>
           guide.targetRect.center.dy - pointerTargetY + pointerBubbleY,
       },
     );
   }
 
-  SpotlightGuidePointerBubblePlacement get _layoutBubblePlacement {
-    final SpotlightGuideHintPointer? pointer = _pointer;
+  SpotlightGuideBubbleSide get _layoutBubbleSide {
+    final SpotlightGuidePointer? pointer = _pointer;
     if (pointer == null) {
-      return SpotlightGuidePointerBubblePlacement.alongPlacement;
+      return SpotlightGuideBubbleSide.along;
     }
-    return _resolvePointerLayoutBubblePlacement(
+    return _resolvePointerLayoutBubbleSide(
       pointer: pointer,
       textDirection: _textDirection,
-      targetDirection: _guide.indicatorDirection,
+      targetDirection: _guide.anchorDirection,
     );
   }
 
-  SpotlightGuideIndicatorDirection get _anchorDirection {
-    return switch (_layoutBubblePlacement) {
-      SpotlightGuidePointerBubblePlacement.alongPlacement =>
-        _guide.indicatorDirection,
-      SpotlightGuidePointerBubblePlacement.top =>
-        SpotlightGuideIndicatorDirection.down,
-      SpotlightGuidePointerBubblePlacement.bottom =>
-        SpotlightGuideIndicatorDirection.up,
-      SpotlightGuidePointerBubblePlacement.left =>
-        SpotlightGuideIndicatorDirection.right,
-      SpotlightGuidePointerBubblePlacement.right =>
-        SpotlightGuideIndicatorDirection.left,
-      SpotlightGuidePointerBubblePlacement.start ||
-      SpotlightGuidePointerBubblePlacement.end => throw StateError(
+  SpotlightGuideDirection get _anchorDirection {
+    return switch (_layoutBubbleSide) {
+      SpotlightGuideBubbleSide.along =>
+        _guide.anchorDirection,
+      SpotlightGuideBubbleSide.top =>
+        SpotlightGuideDirection.down,
+      SpotlightGuideBubbleSide.bottom =>
+        SpotlightGuideDirection.up,
+      SpotlightGuideBubbleSide.left =>
+        SpotlightGuideDirection.right,
+      SpotlightGuideBubbleSide.right =>
+        SpotlightGuideDirection.left,
+      SpotlightGuideBubbleSide.start ||
+      SpotlightGuideBubbleSide.end => throw StateError(
         'semantic placements are resolved before anchor direction',
       ),
     };
@@ -1416,35 +1416,35 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
 
   double _pointerAnchorX(
     Size? size,
-    double indicatorOffset,
+    double anchorOffset,
     Offset bubbleOffset,
     Size bubbleSize,
   ) {
     if (_pointer == null || size == null) {
-      return indicatorOffset;
+      return anchorOffset;
     }
-    return _pointerLeft(size, indicatorOffset, bubbleOffset, bubbleSize) +
+    return _pointerLeft(size, anchorOffset, bubbleOffset, bubbleSize) +
         _pointerTargetOffset(isHorizontalAxis: true, extent: size.width);
   }
 
   double _pointerAnchorY(
     Size? size,
-    double indicatorOffset,
+    double anchorOffset,
     Offset bubbleOffset,
     Size bubbleSize,
   ) {
     if (_pointer == null || size == null) {
-      return indicatorOffset;
+      return anchorOffset;
     }
-    return _pointerTop(size, indicatorOffset, bubbleOffset, bubbleSize) +
+    return _pointerTop(size, anchorOffset, bubbleOffset, bubbleSize) +
         _pointerTargetOffset(isHorizontalAxis: false, extent: size.height);
   }
 
-  double _minimumBubbleIndicatorSideExtent() {
-    final bool sameAxis = _anchorDirection == _guide.indicatorDirection;
-    final double layoutExtent = sameAxis ? _guide.bubbleIndicatorSideExtent : 0;
+  double _minimumBubbleAnchorSideExtent() {
+    final bool sameAxis = _anchorDirection == _guide.anchorDirection;
+    final double layoutExtent = sameAxis ? _guide.bubbleAnchorSideExtent : 0;
     final double safeExtent =
-        math.max(_guide.anchorConnectionHalfExtent, _guide.indicatorSafeInset) *
+        math.max(_guide.anchorConnectionHalfExtent, _guide.anchorSafeInset) *
         2;
     return math.max(layoutExtent, safeExtent);
   }
@@ -1501,7 +1501,7 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
   }
 
   _BubbleHintBubbleLayout _layoutBubble(
-    double indicatorOffset, {
+    double anchorOffset, {
     required Size? pointerSize,
   }) {
     final RenderBox bubble = _bubbleChild!;
@@ -1509,7 +1509,7 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
         .resolveAnchor(
           SpotlightGuideAnchorGeometry(
             direction: _anchorDirection,
-            offset: indicatorOffset,
+            offset: anchorOffset,
           ),
         );
     if (bubble is _RenderSpotlightGuideBubble) {
@@ -1607,8 +1607,8 @@ class _RenderSpotlightGuideBubbleHint extends RenderBox
 
   @override
   void applyPaintTransform(RenderBox child, Matrix4 transform) {
-    final _SpotlightGuideBubbleHintParentData childParentData =
-        child.parentData! as _SpotlightGuideBubbleHintParentData;
+    final _BubbleHintParentData childParentData =
+        child.parentData! as _BubbleHintParentData;
     transform.translateByDouble(
       childParentData.offset.dx,
       childParentData.offset.dy,
