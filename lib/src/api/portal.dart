@@ -72,7 +72,7 @@ class SpotlightGuidePortal extends StatefulWidget {
     this.steps = const <SpotlightGuideStep>[],
     this.enabled = true,
     this.autoStart,
-    this.missingTargetBehavior = SpotlightGuideMissingTargetBehavior.wait,
+    this.missingTargetBehavior = SpotlightGuideMissingTargetBehavior.skip,
     this.controller,
     this.onStepWillShow,
     this.onStateChanged,
@@ -124,11 +124,12 @@ class SpotlightGuidePortal extends StatefulWidget {
 
   /// Default behavior for targeted items whose targets cannot be resolved.
   ///
-  /// The default [SpotlightGuideMissingTargetBehavior.wait] keeps late-target
-  /// behavior: the guide stays active and the hint appears when the target
-  /// later mounts. Use [SpotlightGuideMissingTargetBehavior.skip] for
-  /// API-driven guides where missing target ids should not leave a blank guide
-  /// on screen. Individual items can override this through
+  /// The default [SpotlightGuideMissingTargetBehavior.skip] removes steps whose
+  /// targets are not mounted and have no reveal callback, so guides stay in
+  /// sync with the current UI. Use [SpotlightGuideMissingTargetBehavior.wait]
+  /// when a target is expected to appear later without an immediate
+  /// [SpotlightGuideStep.onReveal] or [SpotlightGuideStepItem.onReveal]
+  /// callback. Individual items can override this through
   /// [SpotlightGuideStepItem.missingTargetBehavior].
   final SpotlightGuideMissingTargetBehavior missingTargetBehavior;
 
@@ -293,7 +294,7 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       _clearTargetFilteredSteps();
       if (_isGuideShowing &&
           !_preparing &&
-          _sameStepAvailabilitySignatures(previousSourceSteps, _sourceSteps)) {
+          _canUpdateVisibleStepsInPlace(previousSourceSteps, _sourceSteps)) {
         _refreshTargetFilteredStepsForAvailability();
         _index = _effectiveIndex;
         _controller._syncFromState(this);
@@ -328,6 +329,23 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
     }
     if (_preparing && _stepChangePrepareToken == _prepareToken) {
       _clearTargetFilteredSteps();
+      return;
+    }
+    if (!_preparing) {
+      _clearTargetFilteredSteps();
+      final _SpotlightGuideTargetFilterRefresh refresh =
+          _refreshTargetFilteredStepsForAvailability();
+      _index = _effectiveIndex;
+      _controller._syncFromState(this);
+      if (!_canShowGuide) {
+        _hideGuide(notifyFinish: false);
+        return;
+      }
+      if (refresh.currentStepChanged) {
+        _prepareAndShow(restart: true);
+        return;
+      }
+      setState(() {});
       return;
     }
 
@@ -396,6 +414,24 @@ class _SpotlightGuidePortalState extends State<SpotlightGuidePortal> {
       }
     }
     return true;
+  }
+
+  bool _canUpdateVisibleStepsInPlace(
+    List<SpotlightGuideStep> previous,
+    List<SpotlightGuideStep> current,
+  ) {
+    if (_sameStepAvailabilitySignatures(previous, current)) {
+      return true;
+    }
+    if (previous.isEmpty || current.isEmpty) {
+      return false;
+    }
+    final int previousIndex = _index.clamp(0, previous.length - 1).toInt();
+    final int currentIndex = _index.clamp(0, current.length - 1).toInt();
+    return _sameStepAvailabilitySignature(
+      previous[previousIndex],
+      current[currentIndex],
+    );
   }
 
   bool _sameStepAvailabilitySignature(

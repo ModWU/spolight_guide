@@ -258,6 +258,57 @@ void main() {
       );
     }
   });
+
+  test('target decoration layers sanitize unstable numeric values', () {
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+    const Size size = Size(120, 120);
+    const SpotlightGuideTargetPaintContext context =
+        SpotlightGuideTargetPaintContext(
+          rect: Rect.fromLTWH(36, 36, 48, 40),
+          overlaySize: size,
+          textDirection: TextDirection.ltr,
+          shape: SpotlightGuideRoundedRectTargetShape(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        );
+
+    expect(() {
+      const SpotlightGuideTargetDashedOutlineLayer(
+        color: Colors.white,
+        width: 1,
+        dashLength: double.minPositive,
+        gapLength: double.minPositive,
+        phase: double.nan,
+      ).paint(canvas, context);
+      const SpotlightGuideTargetDashedOutlineLayer(
+        color: Colors.white,
+        width: double.infinity,
+        dashLength: double.infinity,
+        gapLength: double.infinity,
+        outset: double.infinity,
+        phase: double.nan,
+      ).paint(canvas, context);
+      const SpotlightGuideTargetRingLayer(
+        color: Colors.white,
+        width: double.infinity,
+        outset: double.infinity,
+      ).paint(canvas, context);
+      const SpotlightGuideTargetGlowLayer(
+        color: Colors.white,
+        blurRadius: double.infinity,
+        spreadRadius: double.infinity,
+      ).paint(canvas, context);
+      const SpotlightGuideTargetShadowLayer(
+        color: Colors.white,
+        blurRadius: double.infinity,
+        spreadRadius: double.infinity,
+        offset: Offset(double.nan, double.infinity),
+      ).paint(canvas, context);
+    }, returnsNormally);
+
+    recorder.endRecording().dispose();
+  });
 }
 
 class _RecordingTargetLayer extends SpotlightGuideTargetLayer {

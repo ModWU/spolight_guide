@@ -12,22 +12,6 @@ bool _sameRects(List<Rect> previous, List<Rect> current) {
   return true;
 }
 
-bool _sameOverlayItemMeasurementInputs(
-  List<_SpotlightGuideOverlayItem> previous,
-  List<_SpotlightGuideOverlayItem> current,
-) {
-  if (previous.length != current.length) {
-    return false;
-  }
-  for (int i = 0; i < previous.length; i++) {
-    if (!identical(previous[i].item, current[i].item) ||
-        previous[i].itemIndex != current[i].itemIndex) {
-      return false;
-    }
-  }
-  return true;
-}
-
 bool _sameTargetHoles(
   List<_SpotlightGuideTargetHole> previous,
   List<_SpotlightGuideTargetHole> current,

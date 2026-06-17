@@ -23,7 +23,6 @@ part 'src/hints/bubble_decoration.dart';
 part 'src/hints/pointer_indicator.dart';
 part 'src/hints/text_hint.dart';
 part 'src/layout/overlay_layout.dart';
-part 'src/layout/measured_size.dart';
 part 'src/painting/barrier_painter.dart';
 part 'src/painting/bubble_painter.dart';
 part 'src/utils/collections.dart';

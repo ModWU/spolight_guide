@@ -189,6 +189,7 @@ class _SpotlightGuideRevealScrollStrategy {
       margin: margin,
       hintSize: null,
       textDirection: textDirection,
+      layoutGap: null,
     );
     final double reserve = _estimatedHintMainAxisExtent(
       viewport: viewport,
@@ -214,13 +215,13 @@ class _SpotlightGuideRevealScrollStrategy {
     );
     return switch (placement) {
       SpotlightGuidePlacement.top =>
-        targetRect.top - item.gap - reserve >= start,
+        targetRect.top - _finiteOrZero(item.gap) - reserve >= start,
       SpotlightGuidePlacement.bottom =>
-        targetRect.bottom + item.gap + reserve <= end,
+        targetRect.bottom + _finiteOrZero(item.gap) + reserve <= end,
       SpotlightGuidePlacement.left =>
-        targetRect.left - item.gap - reserve >= left,
+        targetRect.left - _finiteOrZero(item.gap) - reserve >= left,
       SpotlightGuidePlacement.right =>
-        targetRect.right + item.gap + reserve <= right,
+        targetRect.right + _finiteOrZero(item.gap) + reserve <= right,
       SpotlightGuidePlacement.auto ||
       SpotlightGuidePlacement.verticalAuto ||
       SpotlightGuidePlacement.horizontalAuto ||

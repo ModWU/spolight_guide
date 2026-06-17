@@ -203,7 +203,9 @@ class SpotlightGuideBarrierStyle {
   Color get effectiveColor => color ?? fallback.color!;
 
   /// Resolved blur sigma after applying the built-in fallback.
-  double get effectiveBlurSigma => blurSigma ?? fallback.blurSigma!;
+  double get effectiveBlurSigma {
+    return _nonNegativeFiniteOrZero(blurSigma ?? fallback.blurSigma!);
+  }
 
   bool get hasBlur => effectiveBlurSigma > 0;
 
@@ -536,10 +538,9 @@ typedef SpotlightGuideAutoScrollItemCallback =
 
 /// What to do when a targeted guide item cannot resolve its target.
 ///
-/// Use [wait] when the target may appear later without an immediate reveal hook,
-/// such as content inserted after another state update. Use [skip] for
-/// API-driven or configuration-driven guides where the response can mention
-/// targets that are not present in the current page state.
+/// The portal defaults to [skip], which keeps guide progress aligned with the
+/// current widget tree. Use [wait] when the target may appear later without an
+/// immediate reveal hook, such as content inserted after another state update.
 enum SpotlightGuideMissingTargetBehavior {
   /// Keep the guide active and show the item once its target appears.
   wait,
@@ -664,11 +665,12 @@ class SpotlightGuideRevealContext {
       return;
     }
     final ScrollPosition position = controller.position;
-    final double targetOffset = clamp
-        ? offset
+    double safeOffset = _finiteOrZero(offset);
+    double targetOffset = clamp
+        ? safeOffset
               .clamp(position.minScrollExtent, position.maxScrollExtent)
               .toDouble()
-        : offset;
+        : safeOffset;
     if (duration <= Duration.zero) {
       controller.jumpTo(targetOffset);
     } else {
@@ -702,12 +704,16 @@ class SpotlightGuideRevealContext {
       'alignment must be between 0 and 1.',
     );
     await waitForLayout(frames: 1);
-    final double viewportExtent = controller.hasClients
+    if (index < 0 || itemExtent <= 0 || !itemExtent.isFinite) {
+      return;
+    }
+    double viewportExtent = controller.hasClients
         ? controller.position.viewportDimension
         : 0;
-    final double targetOffset =
+    double safeAlignment = _finiteOrZero(alignment).clamp(0, 1).toDouble();
+    double targetOffset =
         index * itemExtent -
-        math.max(0, viewportExtent - itemExtent) * alignment;
+        math.max(0, viewportExtent - itemExtent) * safeAlignment;
     await scrollToOffset(
       controller: controller,
       offset: targetOffset,
@@ -720,7 +726,8 @@ class SpotlightGuideRevealContext {
   /// Waits for one or more layout frames.
   Future<void> waitForLayout({int frames = 1}) async {
     assert(frames >= 0, 'frames must not be negative.');
-    for (int i = 0; i < frames; i++) {
+    int safeFrames = math.max(0, frames);
+    for (int i = 0; i < safeFrames; i++) {
       await WidgetsBinding.instance.endOfFrame;
     }
   }
@@ -1284,7 +1291,7 @@ class SpotlightGuideStep {
 /// )
 /// ```
 class SpotlightGuideStepContext {
-  const SpotlightGuideStepContext({
+  SpotlightGuideStepContext({
     required this.index,
     required this.total,
     required this.itemIndex,
@@ -1296,6 +1303,7 @@ class SpotlightGuideStepContext {
     this.targetAnchorPosition = const SpotlightGuideAnchorPosition.center(),
     required this.overlaySize,
     required this.hintRect,
+    required this.hintConstraints,
     required this.margin,
     required this.placement,
     required this.indicatorDirection,
@@ -1311,16 +1319,16 @@ class SpotlightGuideStepContext {
   });
 
   /// Zero-based step index in the active guide sequence.
-  final int index;
+  int index;
 
   /// Total number of steps in the active guide sequence.
-  final int total;
+  int total;
 
   /// Zero-based item index inside the current [SpotlightGuideStep.items].
-  final int itemIndex;
+  int itemIndex;
 
   /// Total number of items in the current step.
-  final int itemTotal;
+  int itemTotal;
 
   /// Rect used for hint placement.
   ///
@@ -1328,16 +1336,16 @@ class SpotlightGuideStepContext {
   /// [SpotlightGuideStepItem.targetIds] it is either
   /// [SpotlightGuideStepItem.anchorTargetId]'s rect, a highlighted
   /// [SpotlightGuideTarget.anchorId] rect, or the union of all target rects.
-  final Rect targetRect;
+  Rect targetRect;
 
   /// All spotlight target rects kept visible by the overlay.
-  final List<Rect> targetRects;
+  List<Rect> targetRects;
 
   /// All target rects kept visible in the current step.
-  final List<Rect> stepTargetRects;
+  List<Rect> stepTargetRects;
 
   /// Global overlay point where the pointer or visual anchor should aim.
-  final Offset targetAnchorPoint;
+  Offset targetAnchorPoint;
 
   /// Anchor position requested by the current step item.
   ///
@@ -1345,65 +1353,99 @@ class SpotlightGuideStepContext {
   /// pointer when a pointer participates in the default anchor chain. Without a
   /// pointer, [targetAnchorPoint] already contains this position resolved
   /// against the target.
-  final SpotlightGuideAnchorPosition targetAnchorPosition;
+  SpotlightGuideAnchorPosition targetAnchorPosition;
 
   /// Size of the overlay used by the guide.
-  final Size overlaySize;
+  Size overlaySize;
 
   /// Resolved hint rect in overlay coordinates.
-  final Rect hintRect;
+  Rect hintRect;
+
+  /// Resolved constraints intended for the hint body.
+  ///
+  /// Built-in bubble hints apply these constraints to the bubble body while
+  /// still allowing visual pointer widgets to expand the overall interactive
+  /// layout bounds.
+  BoxConstraints hintConstraints;
 
   /// Resolved screen edge margin used by hint placement and safety checks.
-  final EdgeInsets margin;
+  EdgeInsets margin;
 
   /// Final physical placement after resolving auto placement and semantic
   /// [SpotlightGuidePlacement.start]/[SpotlightGuidePlacement.end] options.
-  final SpotlightGuidePlacement placement;
+  SpotlightGuidePlacement placement;
 
   /// Physical direction used by the bubble anchor.
-  final SpotlightGuideIndicatorDirection indicatorDirection;
+  SpotlightGuideIndicatorDirection indicatorDirection;
 
   /// Offset from the physical leading edge of the hint bubble's anchor side to
   /// the anchor tip.
-  final double indicatorOffset;
+  double indicatorOffset;
 
   /// Minimum distance from the anchor tip center to either edge of the bubble
   /// side that owns the anchor.
-  final double indicatorSafeInset;
+  double indicatorSafeInset;
 
   /// The resolved size of the hint bubble edge that owns the anchor.
   ///
   /// For up/down anchors this is the bubble width. For left/right anchors this
   /// is the bubble height. Safe-area expansion is included in this value.
-  final double bubbleIndicatorSideExtent;
+  double bubbleIndicatorSideExtent;
 
   /// The measured natural size of the hint content. When no measurement is
   /// available yet, this equals the current hint rect size.
-  final Size contentSize;
+  Size contentSize;
 
   /// Main-axis distance configured by [SpotlightGuideStepItem.gap].
   ///
   /// Built-in hint widgets treat this as the active anchor-chain distance:
   /// pointer to bubble anchor when a pointer participates in the chain, or
   /// target to hint when no such pointer exists.
-  final double gap;
+  double gap;
 
   /// Decoration configured on the current [SpotlightGuideStepItem].
-  final SpotlightGuideAnchoredDecoration decoration;
+  SpotlightGuideAnchoredDecoration decoration;
 
   /// Preferred visual anchor size used by layout on the axis perpendicular to
   /// the bubble edge.
-  final Size indicatorSize;
+  Size indicatorSize;
 
   /// Half of the range where the current visual anchor connects to the bubble.
   ///
   /// This can differ from [indicatorSize]. A custom anchor may be visually wide
   /// while touching the bubble with a narrow connection range.
-  final double anchorConnectionHalfExtent;
+  double anchorConnectionHalfExtent;
 
   /// The active controller used by this guide. It is either user-provided or
   /// internally created by [SpotlightGuidePortal].
-  final SpotlightGuidePortalController controller;
+  SpotlightGuidePortalController controller;
+
+  void _absorbLayout(SpotlightGuideStepContext other) {
+    index = other.index;
+    total = other.total;
+    itemIndex = other.itemIndex;
+    itemTotal = other.itemTotal;
+    targetRect = other.targetRect;
+    targetRects = other.targetRects;
+    stepTargetRects = other.stepTargetRects;
+    targetAnchorPoint = other.targetAnchorPoint;
+    targetAnchorPosition = other.targetAnchorPosition;
+    overlaySize = other.overlaySize;
+    hintRect = other.hintRect;
+    hintConstraints = other.hintConstraints;
+    margin = other.margin;
+    placement = other.placement;
+    indicatorDirection = other.indicatorDirection;
+    indicatorOffset = other.indicatorOffset;
+    indicatorSafeInset = other.indicatorSafeInset;
+    bubbleIndicatorSideExtent = other.bubbleIndicatorSideExtent;
+    contentSize = other.contentSize;
+    gap = other.gap;
+    decoration = other.decoration;
+    indicatorSize = other.indicatorSize;
+    anchorConnectionHalfExtent = other.anchorConnectionHalfExtent;
+    controller = other.controller;
+  }
 
   bool get isFirst => index == 0;
 

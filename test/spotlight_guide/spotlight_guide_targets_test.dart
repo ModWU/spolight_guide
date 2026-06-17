@@ -430,6 +430,7 @@ void main() {
     Widget buildApp() {
       return guideApp(
         controller: controller,
+        missingTargetBehavior: SpotlightGuideMissingTargetBehavior.wait,
         child: optionalTargetStack(
           showTarget: showTarget,
           id: 'late',
@@ -485,6 +486,7 @@ void main() {
       await tester.pumpWidget(
         guideApp(
           controller: controller,
+          missingTargetBehavior: SpotlightGuideMissingTargetBehavior.wait,
           child: GestureDetector(
             key: const ValueKey<String>('missing-wait-child'),
             behavior: HitTestBehavior.opaque,
@@ -729,6 +731,7 @@ void main() {
   ) async {
     Widget buildApp({required bool targetEnabled}) {
       return guideApp(
+        missingTargetBehavior: SpotlightGuideMissingTargetBehavior.wait,
         child: Stack(
           children: <Widget>[
             Positioned(
@@ -801,7 +804,7 @@ void main() {
     );
   });
 
-  testWidgets('missing target skip removes it from the active sequence', (
+  testWidgets('missing target default removes it from the active sequence', (
     tester,
   ) async {
     final SpotlightGuidePortalController controller =
@@ -810,7 +813,6 @@ void main() {
     await tester.pumpWidget(
       guideApp(
         controller: controller,
-        missingTargetBehavior: SpotlightGuideMissingTargetBehavior.skip,
         steps: <SpotlightGuideStep>[
           SpotlightGuideStep.item(
             SpotlightGuideStepItem(

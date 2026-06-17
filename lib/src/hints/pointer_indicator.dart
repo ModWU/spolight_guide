@@ -103,8 +103,17 @@ class _SpotlightGuideTapPointerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 ||
+        size.height <= 0 ||
+        !size.width.isFinite ||
+        !size.height.isFinite) {
+      return;
+    }
     final Offset center = Offset(size.width / 2, size.height / 2);
     final double radius = math.min(size.width, size.height) / 2 - 3;
+    if (radius <= 0 || !radius.isFinite) {
+      return;
+    }
     final Paint outerFill = Paint()
       ..style = PaintingStyle.fill
       ..color = ringColor.withValues(alpha: ringColor.a * 0.28);

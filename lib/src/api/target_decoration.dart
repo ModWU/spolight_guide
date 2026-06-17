@@ -67,18 +67,20 @@ abstract class SpotlightGuideTargetShape {
     double outset = 0,
     required double width,
   }) {
-    if (width <= 0) {
+    final double safeWidth = _nonNegativeFiniteOrZero(width);
+    if (safeWidth <= 0) {
       return;
     }
+    final double safeOutset = _nonNegativeFiniteOrZero(outset);
     final Path outerPath = createPath(
       rect: rect,
       textDirection: textDirection,
-      outset: outset + width,
+      outset: safeOutset + safeWidth,
     );
     final Path innerPath = createPath(
       rect: rect,
       textDirection: textDirection,
-      outset: outset,
+      outset: safeOutset,
     );
     canvas.drawPath(
       Path.combine(PathOperation.difference, outerPath, innerPath),
@@ -103,8 +105,9 @@ class SpotlightGuideRoundedRectTargetShape extends SpotlightGuideTargetShape {
     double outset = 0,
   }) {
     final BorderRadius radius = borderRadius.resolve(textDirection);
-    return Path()
-      ..addRRect(_inflateRRect(radius.toRRect(rect), math.max(0, outset)));
+    return Path()..addRRect(
+      _inflateRRect(radius.toRRect(rect), _nonNegativeFiniteOrZero(outset)),
+    );
   }
 
   @override
@@ -116,14 +119,16 @@ class SpotlightGuideRoundedRectTargetShape extends SpotlightGuideTargetShape {
     double outset = 0,
     required double width,
   }) {
-    if (width <= 0) {
+    final double safeWidth = _nonNegativeFiniteOrZero(width);
+    if (safeWidth <= 0) {
       return;
     }
+    final double safeOutset = _nonNegativeFiniteOrZero(outset);
     final BorderRadius radius = borderRadius.resolve(textDirection);
     final RRect base = radius.toRRect(rect);
     canvas.drawDRRect(
-      _inflateRRect(base, math.max(0, outset + width)),
-      _inflateRRect(base, math.max(0, outset)),
+      _inflateRRect(base, safeOutset + safeWidth),
+      _inflateRRect(base, safeOutset),
       paint,
     );
   }
@@ -148,7 +153,7 @@ class SpotlightGuideOvalTargetShape extends SpotlightGuideTargetShape {
     required TextDirection textDirection,
     double outset = 0,
   }) {
-    return Path()..addOval(rect.inflate(math.max(0, outset)));
+    return Path()..addOval(rect.inflate(_nonNegativeFiniteOrZero(outset)));
   }
 
   @override
@@ -160,11 +165,12 @@ class SpotlightGuideOvalTargetShape extends SpotlightGuideTargetShape {
     double outset = 0,
     required double width,
   }) {
-    if (width <= 0) {
+    final double safeWidth = _nonNegativeFiniteOrZero(width);
+    if (safeWidth <= 0) {
       return;
     }
     RRect oval(double delta) {
-      final Rect ovalRect = rect.inflate(math.max(0, delta));
+      final Rect ovalRect = rect.inflate(_nonNegativeFiniteOrZero(delta));
       return RRect.fromRectXY(
         ovalRect,
         ovalRect.width / 2,
@@ -172,7 +178,8 @@ class SpotlightGuideOvalTargetShape extends SpotlightGuideTargetShape {
       );
     }
 
-    canvas.drawDRRect(oval(outset + width), oval(outset), paint);
+    final double safeOutset = _nonNegativeFiniteOrZero(outset);
+    canvas.drawDRRect(oval(safeOutset + safeWidth), oval(safeOutset), paint);
   }
 
   @override
@@ -212,7 +219,7 @@ class SpotlightGuideTargetPaintContext {
     return shape.createPath(
       rect: _snapRectToPhysicalPixels(rect, devicePixelRatio),
       textDirection: textDirection,
-      outset: outset,
+      outset: _nonNegativeFiniteOrZero(outset),
     );
   }
 
@@ -228,8 +235,8 @@ class SpotlightGuideTargetPaintContext {
       rect: _snapRectToPhysicalPixels(rect, devicePixelRatio),
       textDirection: textDirection,
       paint: paint,
-      outset: outset,
-      width: width,
+      outset: _nonNegativeFiniteOrZero(outset),
+      width: _nonNegativeFiniteOrZero(width),
     );
   }
 }
@@ -271,13 +278,19 @@ class SpotlightGuideTargetRingLayer extends SpotlightGuideTargetLayer {
     SpotlightGuideTargetPaintContext context, {
     required bool antiAlias,
   }) {
-    if (width <= 0) {
+    final double safeWidth = _nonNegativeFiniteOrZero(width);
+    if (safeWidth <= 0) {
       return;
     }
     final Paint paint = Paint()
       ..color = color
       ..isAntiAlias = antiAlias;
-    context.paintRing(canvas, paint, outset: outset, width: width);
+    context.paintRing(
+      canvas,
+      paint,
+      outset: _nonNegativeFiniteOrZero(outset),
+      width: safeWidth,
+    );
   }
 
   @override
@@ -322,23 +335,24 @@ class SpotlightGuideTargetDashedOutlineLayer extends SpotlightGuideTargetLayer {
 
   @override
   void paint(Canvas canvas, SpotlightGuideTargetPaintContext context) {
-    if (width <= 0) {
+    final double safeWidth = _nonNegativeFiniteOrZero(width);
+    if (safeWidth <= 0) {
       return;
     }
     final Paint paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = width
+      ..strokeWidth = safeWidth
       ..strokeCap = strokeCap
       ..strokeJoin = StrokeJoin.round
       ..isAntiAlias = true;
     _drawDashedPath(
       canvas,
-      context.path(outset: outset),
+      context.path(outset: _nonNegativeFiniteOrZero(outset)),
       paint,
-      dashLength: dashLength,
-      gapLength: gapLength,
-      phase: phase,
+      dashLength: _nonNegativeFiniteOrZero(dashLength),
+      gapLength: _nonNegativeFiniteOrZero(gapLength),
+      phase: _finiteOrZero(phase),
     );
   }
 
@@ -394,10 +408,12 @@ class SpotlightGuideTargetGlowLayer extends SpotlightGuideTargetLayer {
 
   @override
   void paint(Canvas canvas, SpotlightGuideTargetPaintContext context) {
-    final Path path = context.path(outset: spreadRadius);
+    final Path path = context.path(
+      outset: _nonNegativeFiniteOrZero(spreadRadius),
+    );
     final Paint paint = BoxShadow(
       color: color,
-      blurRadius: blurRadius,
+      blurRadius: _nonNegativeFiniteOrZero(blurRadius),
       blurStyle: blurStyle,
     ).toPaint();
     canvas.drawPath(path, paint);
@@ -435,10 +451,12 @@ class SpotlightGuideTargetShadowLayer extends SpotlightGuideTargetLayer {
 
   @override
   void paint(Canvas canvas, SpotlightGuideTargetPaintContext context) {
-    final Path path = context.path(outset: spreadRadius).shift(offset);
+    final Path path = context
+        .path(outset: _nonNegativeFiniteOrZero(spreadRadius))
+        .shift(_finiteOffsetOrZero(offset));
     final Paint paint = BoxShadow(
       color: color,
-      blurRadius: blurRadius,
+      blurRadius: _nonNegativeFiniteOrZero(blurRadius),
       blurStyle: blurStyle,
     ).toPaint();
     canvas.drawPath(path, paint);
@@ -467,12 +485,28 @@ void _drawDashedPath(
   required double gapLength,
   required double phase,
 }) {
+  if (dashLength <= 0) {
+    canvas.drawPath(path, paint);
+    return;
+  }
   final double interval = dashLength + gapLength;
-  if (interval <= 0) {
+  if (!interval.isFinite || interval <= precisionErrorTolerance) {
+    canvas.drawPath(path, paint);
+    return;
+  }
+  if (gapLength <= precisionErrorTolerance) {
+    canvas.drawPath(path, paint);
     return;
   }
 
   for (final ui.PathMetric metric in path.computeMetrics()) {
+    if (!metric.length.isFinite || metric.length <= 0) {
+      continue;
+    }
+    if (metric.length / interval > 10000) {
+      canvas.drawPath(metric.extractPath(0, metric.length), paint);
+      continue;
+    }
     double distance = -_positiveModulo(phase, interval);
     while (distance < metric.length) {
       final double start = math.max(0, distance);
@@ -486,6 +520,9 @@ void _drawDashedPath(
 }
 
 double _positiveModulo(double value, double modulus) {
+  if (!value.isFinite || !modulus.isFinite || modulus <= 0) {
+    return 0;
+  }
   return ((value % modulus) + modulus) % modulus;
 }
 
@@ -520,4 +557,23 @@ RRect _inflateRRect(RRect rrect, double delta) {
 
 Radius _inflateRadius(Radius radius, double delta) {
   return Radius.elliptical(radius.x + delta, radius.y + delta);
+}
+
+double _finiteOrZero(double value) {
+  return value.isFinite ? value : 0;
+}
+
+double _nonNegativeFiniteOrZero(double value) {
+  return value.isFinite && value > 0 ? value : 0;
+}
+
+Offset _finiteOffsetOrZero(Offset value) {
+  return Offset(_finiteOrZero(value.dx), _finiteOrZero(value.dy));
+}
+
+Size _finiteSizeOrZero(Size value) {
+  return Size(
+    _nonNegativeFiniteOrZero(value.width),
+    _nonNegativeFiniteOrZero(value.height),
+  );
 }

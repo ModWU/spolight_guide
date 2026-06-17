@@ -29,32 +29,9 @@ class _SpotlightGuideOverlayLayout extends StatefulWidget {
       _SpotlightGuideOverlayLayoutState();
 }
 
-/// Keeps measured hint sizes and rebuilds when step geometry changes.
+/// Lays out active hints over the dim barrier.
 class _SpotlightGuideOverlayLayoutState
     extends State<_SpotlightGuideOverlayLayout> {
-  static const int _minHiddenMeasurePassesBeforeVisible = 3;
-  static const int _maxHiddenMeasurePasses = 24;
-  static const double _measureTolerance = 0.5;
-
-  final Map<int, Size> _hintSizes = <int, Size>{};
-  final Set<int> _visibleHintItems = <int>{};
-  final Map<int, int> _hiddenMeasurePasses = <int, int>{};
-
-  @override
-  void didUpdateWidget(covariant _SpotlightGuideOverlayLayout oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.index != widget.index) {
-      _hintSizes.clear();
-      _visibleHintItems.clear();
-      _hiddenMeasurePasses.clear();
-    } else if (!_sameOverlayItemMeasurementInputs(
-      oldWidget.items,
-      widget.items,
-    )) {
-      _retainHintSizesForCurrentItems();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final TextDirection textDirection = Directionality.of(context);
@@ -74,47 +51,32 @@ class _SpotlightGuideOverlayLayoutState
     final List<_SpotlightGuideRenderedItem> renderedItems =
         <_SpotlightGuideRenderedItem>[];
     for (final _SpotlightGuideOverlayItem overlayItem in widget.items) {
-      final Size? hintSize = _hintSizes[overlayItem.itemIndex];
-      final SpotlightGuideAnchoredDecoration decoration =
-          overlayItem.item.decoration;
       final _HintLayout layout = _HintLayout.compute(
         screenSize: widget.overlaySize,
         targetRect: overlayItem.targetRect,
         step: overlayItem.item,
         textDirection: textDirection,
-        hintSize: hintSize,
+        hintSize: null,
       );
-      final SpotlightGuideStepContext contextInfo = SpotlightGuideStepContext(
-        index: widget.index,
-        total: widget.total,
-        itemIndex: overlayItem.itemIndex,
-        // The true number of items in the step, which may exceed the rendered
-        // subset while a lazy item's target has not resolved yet.
-        itemTotal: widget.step.items.length,
-        targetRect: overlayItem.targetRect,
-        targetRects: overlayItem.targetRects,
-        stepTargetRects: stepTargetRects,
-        targetAnchorPoint: layout.targetAnchorPoint,
-        targetAnchorPosition: overlayItem.item.targetAnchorPosition,
-        overlaySize: widget.overlaySize,
-        hintRect: layout.rect,
-        margin: layout.margin,
-        placement: layout.placement,
-        indicatorDirection: layout.indicatorDirection,
-        indicatorOffset: layout.indicatorOffset,
-        indicatorSafeInset: layout.indicatorSafeInset,
-        bubbleIndicatorSideExtent: layout.bubbleIndicatorSideExtent,
-        contentSize: hintSize ?? layout.rect.size,
-        gap: overlayItem.item.gap,
-        decoration: decoration,
-        indicatorSize: decoration.anchorSize,
-        anchorConnectionHalfExtent: decoration.anchorConnectionHalfExtent,
-        controller: widget.controller,
+      final _SpotlightGuideHintLayoutInputs inputs =
+          _SpotlightGuideHintLayoutInputs(
+            controller: widget.controller,
+            index: widget.index,
+            total: widget.total,
+            itemTotal: widget.step.items.length,
+            overlaySize: widget.overlaySize,
+            overlayItem: overlayItem,
+            stepTargetRects: stepTargetRects,
+          );
+      final SpotlightGuideStepContext contextInfo = inputs.contextFor(
+        layout: layout,
+        contentSize: layout.rect.size,
       );
       renderedItems.add(
         _SpotlightGuideRenderedItem(
           overlayItem: overlayItem,
           layout: layout,
+          inputs: inputs,
           contextInfo: contextInfo,
         ),
       );
@@ -136,48 +98,23 @@ class _SpotlightGuideOverlayLayoutState
             ),
           ),
           for (final _SpotlightGuideRenderedItem renderedItem in renderedItems)
-            Positioned(
-              left: renderedItem.layout.rect.left,
-              top: renderedItem.layout.rect.top,
-              child: _buildMeasuredHint(context, renderedItem),
-            ),
+            Positioned.fill(child: _buildPositionedHint(context, renderedItem)),
         ],
       ),
     );
   }
 
-  Widget _buildMeasuredHint(
+  Widget _buildPositionedHint(
     BuildContext context,
     _SpotlightGuideRenderedItem renderedItem,
   ) {
-    final int itemIndex = renderedItem.overlayItem.itemIndex;
-    final bool visible = _visibleHintItems.contains(itemIndex);
-    return IgnorePointer(
-      ignoring: !visible,
-      child: ExcludeSemantics(
-        excluding: !visible,
-        child: Opacity(
-          opacity: visible ? 1 : 0,
-          alwaysIncludeSemantics: visible,
-          child: ConstrainedBox(
-            constraints: renderedItem.layout.measureConstraints,
-            child: _MeasuredSize(
-              key: _hintMeasureKey(renderedItem.overlayItem),
-              notifyAlways: !visible,
-              onChanged: (Size size) {
-                _handleHintSizeChanged(itemIndex, _hintSizes[itemIndex], size);
-              },
-              // Keep one user-built hint tree alive: it is transparent while
-              // measuring and becomes visible only after the overlay has stable
-              // geometry. This avoids remounting stateful hints on the first
-              // painted frame.
-              child: renderedItem.overlayItem.item.hintBuilder(
-                context,
-                renderedItem.contextInfo,
-              ),
-            ),
-          ),
-        ),
+    return _SpotlightGuideHintSlot(
+      inputs: renderedItem.inputs,
+      guide: renderedItem.contextInfo,
+      textDirection: Directionality.of(context),
+      child: renderedItem.overlayItem.item.hintBuilder(
+        context,
+        renderedItem.contextInfo,
       ),
     );
   }
@@ -225,92 +162,6 @@ class _SpotlightGuideOverlayLayoutState
       ),
     );
   }
-
-  void _handleHintSizeChanged(
-    int itemIndex,
-    Size? measuredWithSize,
-    Size size,
-  ) {
-    if (!mounted) {
-      return;
-    }
-    final Size? currentSize = _hintSizes[itemIndex];
-    final bool alreadyVisible = _visibleHintItems.contains(itemIndex);
-    final bool measuredCurrentLayout = _sizesNearlyEqual(
-      currentSize,
-      measuredWithSize,
-    );
-    final bool stableForCurrentLayout =
-        _sizesNearlyEqual(currentSize, size) && measuredCurrentLayout;
-    if (alreadyVisible && !measuredCurrentLayout) {
-      return;
-    }
-    if (stableForCurrentLayout) {
-      if (alreadyVisible) {
-        return;
-      }
-      final int hiddenPasses = (_hiddenMeasurePasses[itemIndex] ?? 0) + 1;
-      if (hiddenPasses < _minHiddenMeasurePassesBeforeVisible) {
-        setState(() {
-          _hiddenMeasurePasses[itemIndex] = hiddenPasses;
-        });
-        return;
-      }
-      setState(() {
-        _visibleHintItems.add(itemIndex);
-        _hiddenMeasurePasses.remove(itemIndex);
-      });
-      return;
-    }
-
-    if (_sizesNearlyEqual(currentSize, size)) {
-      return;
-    }
-
-    final int hiddenPasses = alreadyVisible
-        ? 0
-        : (_hiddenMeasurePasses[itemIndex] ?? 0) + 1;
-    setState(() {
-      _hintSizes[itemIndex] = size;
-      if (!alreadyVisible) {
-        _hiddenMeasurePasses[itemIndex] = hiddenPasses;
-        if (hiddenPasses >= _maxHiddenMeasurePasses) {
-          _visibleHintItems.add(itemIndex);
-          _hiddenMeasurePasses.remove(itemIndex);
-        }
-      }
-    });
-  }
-
-  bool _sizesNearlyEqual(Size? a, Size? b) {
-    if (a == null || b == null) {
-      return a == b;
-    }
-    return (a.width - b.width).abs() <= _measureTolerance &&
-        (a.height - b.height).abs() <= _measureTolerance;
-  }
-
-  void _retainHintSizesForCurrentItems() {
-    final Set<int> currentItemIndices = widget.items
-        .map((_SpotlightGuideOverlayItem item) => item.itemIndex)
-        .toSet();
-    _hintSizes.removeWhere(
-      (int itemIndex, Size size) => !currentItemIndices.contains(itemIndex),
-    );
-    _visibleHintItems.removeWhere(
-      (int itemIndex) => !currentItemIndices.contains(itemIndex),
-    );
-    _hiddenMeasurePasses.removeWhere(
-      (int itemIndex, int count) => !currentItemIndices.contains(itemIndex),
-    );
-  }
-
-  Key _hintMeasureKey(_SpotlightGuideOverlayItem overlayItem) {
-    return ValueKey<String>(
-      '${widget.index}:${overlayItem.itemIndex}:'
-      '${identityHashCode(overlayItem.item)}',
-    );
-  }
 }
 
 /// Combines one overlay item with its computed layout and public context.
@@ -318,12 +169,323 @@ class _SpotlightGuideRenderedItem {
   const _SpotlightGuideRenderedItem({
     required this.overlayItem,
     required this.layout,
+    required this.inputs,
     required this.contextInfo,
   });
 
   final _SpotlightGuideOverlayItem overlayItem;
   final _HintLayout layout;
+  final _SpotlightGuideHintLayoutInputs inputs;
   final SpotlightGuideStepContext contextInfo;
+}
+
+class _SpotlightGuideHintLayoutInputs {
+  const _SpotlightGuideHintLayoutInputs({
+    required this.controller,
+    required this.index,
+    required this.total,
+    required this.itemTotal,
+    required this.overlaySize,
+    required this.overlayItem,
+    required this.stepTargetRects,
+  });
+
+  final SpotlightGuidePortalController controller;
+  final int index;
+  final int total;
+  final int itemTotal;
+  final Size overlaySize;
+  final _SpotlightGuideOverlayItem overlayItem;
+  final List<Rect> stepTargetRects;
+
+  _HintLayout layoutFor({
+    required TextDirection textDirection,
+    required Size? hintSize,
+    double? layoutGap,
+  }) {
+    return _HintLayout.compute(
+      screenSize: overlaySize,
+      targetRect: overlayItem.targetRect,
+      step: overlayItem.item,
+      textDirection: textDirection,
+      hintSize: hintSize,
+      layoutGap: layoutGap,
+    );
+  }
+
+  SpotlightGuideStepContext contextFor({
+    required _HintLayout layout,
+    required Size contentSize,
+  }) {
+    final SpotlightGuideAnchoredDecoration decoration =
+        overlayItem.item.decoration;
+    return SpotlightGuideStepContext(
+      index: index,
+      total: total,
+      itemIndex: overlayItem.itemIndex,
+      // The true number of items in the step, which may exceed the rendered
+      // subset while a lazy item's target has not resolved yet.
+      itemTotal: itemTotal,
+      targetRect: overlayItem.targetRect,
+      targetRects: overlayItem.targetRects,
+      stepTargetRects: stepTargetRects,
+      targetAnchorPoint: layout.targetAnchorPoint,
+      targetAnchorPosition: overlayItem.item.targetAnchorPosition,
+      overlaySize: overlaySize,
+      hintRect: layout.rect,
+      hintConstraints: layout.hintConstraints,
+      margin: layout.margin,
+      placement: layout.placement,
+      indicatorDirection: layout.indicatorDirection,
+      indicatorOffset: layout.indicatorOffset,
+      indicatorSafeInset: layout.indicatorSafeInset,
+      bubbleIndicatorSideExtent: layout.bubbleIndicatorSideExtent,
+      contentSize: contentSize,
+      gap: overlayItem.item.gap,
+      decoration: decoration,
+      indicatorSize: decoration.anchorSize,
+      anchorConnectionHalfExtent: decoration.anchorConnectionHalfExtent,
+      controller: controller,
+    );
+  }
+}
+
+class _SpotlightGuideHintSlot extends SingleChildRenderObjectWidget {
+  const _SpotlightGuideHintSlot({
+    required this.inputs,
+    required this.guide,
+    required this.textDirection,
+    required super.child,
+  });
+
+  final _SpotlightGuideHintLayoutInputs inputs;
+  final SpotlightGuideStepContext guide;
+  final TextDirection textDirection;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderSpotlightGuideHintSlot(
+      inputs: inputs,
+      guide: guide,
+      textDirection: textDirection,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderSpotlightGuideHintSlot renderObject,
+  ) {
+    renderObject
+      ..inputs = inputs
+      ..guide = guide
+      ..textDirection = textDirection;
+  }
+}
+
+class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
+  _RenderSpotlightGuideHintSlot({
+    required _SpotlightGuideHintLayoutInputs inputs,
+    required SpotlightGuideStepContext guide,
+    required TextDirection textDirection,
+  }) : _inputs = inputs,
+       _guide = guide,
+       _textDirection = textDirection;
+
+  static const int _maxLayoutPasses = 24;
+  static const double _layoutTolerance = 0.01;
+
+  _SpotlightGuideHintLayoutInputs _inputs;
+
+  set inputs(_SpotlightGuideHintLayoutInputs value) {
+    if (_inputs == value) {
+      return;
+    }
+    _inputs = value;
+    markNeedsLayout();
+  }
+
+  SpotlightGuideStepContext _guide;
+
+  set guide(SpotlightGuideStepContext value) {
+    if (_guide == value) {
+      return;
+    }
+    _guide = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _textDirection;
+
+  set textDirection(TextDirection value) {
+    if (_textDirection == value) {
+      return;
+    }
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderObject child) {
+    if (child.parentData is! BoxParentData) {
+      child.parentData = BoxParentData();
+    }
+  }
+
+  @override
+  void performLayout() {
+    size = constraints.constrain(
+      Size(_inputs.overlaySize.width, _inputs.overlaySize.height),
+    );
+    final RenderBox? child = this.child;
+    if (child == null) {
+      return;
+    }
+
+    Size? measuredSize;
+    final double? layoutGap = _internalTargetGap(child);
+    _HintLayout layout = _inputs.layoutFor(
+      textDirection: _textDirection,
+      hintSize: measuredSize,
+      layoutGap: layoutGap,
+    );
+
+    for (int pass = 0; pass < _maxLayoutPasses; pass += 1) {
+      final SpotlightGuideStepContext guide = _inputs.contextFor(
+        layout: layout,
+        contentSize: measuredSize ?? layout.rect.size,
+      );
+      _guide._absorbLayout(guide);
+      _updateChildGuide(child, guide);
+      child.layout(layout.measureConstraints, parentUsesSize: true);
+      final Size nextSize = child.size;
+      final _HintLayout nextLayout = _inputs.layoutFor(
+        textDirection: _textDirection,
+        hintSize: nextSize,
+        layoutGap: layoutGap,
+      );
+      final bool stableSize = _sizesNearlyEqual(measuredSize, nextSize);
+      final bool stableLayout = _layoutsNearlyEqual(layout, nextLayout);
+      measuredSize = nextSize;
+      layout = nextLayout;
+      if (stableSize && stableLayout) {
+        break;
+      }
+    }
+
+    final SpotlightGuideStepContext finalGuide = _inputs.contextFor(
+      layout: layout,
+      contentSize: measuredSize ?? layout.rect.size,
+    );
+    _guide._absorbLayout(finalGuide);
+
+    final BoxParentData childParentData = child.parentData! as BoxParentData;
+    childParentData.offset =
+        layout.rect.topLeft + _layoutOffsetCorrection(child);
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final RenderBox? child = this.child;
+    if (child == null) {
+      return;
+    }
+    final BoxParentData childParentData = child.parentData! as BoxParentData;
+    context.paintChild(child, offset + childParentData.offset);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    final RenderBox? child = this.child;
+    if (child == null) {
+      return false;
+    }
+    final BoxParentData childParentData = child.parentData! as BoxParentData;
+    return result.addWithPaintOffset(
+      offset: childParentData.offset,
+      position: position,
+      hitTest: (BoxHitTestResult result, Offset transformed) {
+        return child.hitTest(result, position: transformed);
+      },
+    );
+  }
+
+  @override
+  void applyPaintTransform(RenderBox child, Matrix4 transform) {
+    final BoxParentData childParentData = child.parentData! as BoxParentData;
+    transform.translateByDouble(
+      childParentData.offset.dx,
+      childParentData.offset.dy,
+      0,
+      1,
+    );
+  }
+
+  bool _sizesNearlyEqual(Size? a, Size b) {
+    if (a == null) {
+      return false;
+    }
+    return (a.width - b.width).abs() <= _layoutTolerance &&
+        (a.height - b.height).abs() <= _layoutTolerance;
+  }
+
+  bool _layoutsNearlyEqual(_HintLayout a, _HintLayout b) {
+    return _rectsNearlyEqual(a.rect, b.rect) &&
+        (a.indicatorOffset - b.indicatorOffset).abs() <= _layoutTolerance &&
+        a.placement == b.placement &&
+        a.indicatorDirection == b.indicatorDirection &&
+        a.hintConstraints == b.hintConstraints &&
+        a.measureConstraints == b.measureConstraints;
+  }
+
+  bool _rectsNearlyEqual(Rect a, Rect b) {
+    return (a.left - b.left).abs() <= _layoutTolerance &&
+        (a.top - b.top).abs() <= _layoutTolerance &&
+        (a.width - b.width).abs() <= _layoutTolerance &&
+        (a.height - b.height).abs() <= _layoutTolerance;
+  }
+
+  void _updateChildGuide(RenderBox child, SpotlightGuideStepContext guide) {
+    invokeLayoutCallback<BoxConstraints>((BoxConstraints constraints) {
+      _applyLayoutGuide(child, guide);
+    });
+  }
+
+  void _applyLayoutGuide(
+    RenderObject renderObject,
+    SpotlightGuideStepContext guide,
+  ) {
+    if (renderObject is _RenderSpotlightGuideBubbleHint) {
+      renderObject.useLayoutGuide(guide);
+    }
+    renderObject.visitChildren((RenderObject child) {
+      _applyLayoutGuide(child, guide);
+    });
+  }
+
+  Offset _layoutOffsetCorrection(RenderObject renderObject) {
+    if (renderObject is _RenderSpotlightGuideBubbleHint) {
+      return renderObject.layoutOffsetCorrection;
+    }
+    Offset correction = Offset.zero;
+    renderObject.visitChildren((RenderObject child) {
+      if (correction == Offset.zero) {
+        correction = _layoutOffsetCorrection(child);
+      }
+    });
+    return correction;
+  }
+
+  double? _internalTargetGap(RenderObject renderObject) {
+    if (renderObject is _RenderSpotlightGuideBubbleHint) {
+      return renderObject.targetLayoutGap;
+    }
+    double? targetGap;
+    renderObject.visitChildren((RenderObject child) {
+      targetGap ??= _internalTargetGap(child);
+    });
+    return targetGap;
+  }
 }
 
 /// Pure layout result for one hint.
@@ -337,6 +499,7 @@ class _HintLayout {
     required this.indicatorSafeInset,
     required this.bubbleIndicatorSideExtent,
     required this.indicatorDirection,
+    required this.hintConstraints,
     required this.measureConstraints,
     required this.expandWidth,
     required this.expandHeight,
@@ -350,6 +513,7 @@ class _HintLayout {
   final double indicatorSafeInset;
   final double bubbleIndicatorSideExtent;
   final SpotlightGuideIndicatorDirection indicatorDirection;
+  final BoxConstraints hintConstraints;
   final BoxConstraints measureConstraints;
   final bool expandWidth;
   final bool expandHeight;
@@ -360,6 +524,7 @@ class _HintLayout {
     required SpotlightGuideStepItem step,
     required TextDirection textDirection,
     Size? hintSize,
+    double? layoutGap,
   }) {
     final EdgeInsets margin = (step.margin ?? const EdgeInsets.all(16)).resolve(
       textDirection,
@@ -371,6 +536,7 @@ class _HintLayout {
       margin: margin,
       hintSize: hintSize,
       textDirection: textDirection,
+      layoutGap: layoutGap,
     );
 
     return switch (placement) {
@@ -383,6 +549,7 @@ class _HintLayout {
         indicatorDirection: SpotlightGuideIndicatorDirection.down,
         textDirection: textDirection,
         hintSize: hintSize,
+        layoutGap: layoutGap,
       ),
       SpotlightGuidePlacement.bottom ||
       SpotlightGuidePlacement.auto => _vertical(
@@ -394,6 +561,7 @@ class _HintLayout {
         indicatorDirection: SpotlightGuideIndicatorDirection.up,
         textDirection: textDirection,
         hintSize: hintSize,
+        layoutGap: layoutGap,
       ),
       SpotlightGuidePlacement.verticalAuto ||
       SpotlightGuidePlacement.horizontalAuto ||
@@ -410,6 +578,7 @@ class _HintLayout {
         indicatorDirection: SpotlightGuideIndicatorDirection.right,
         textDirection: textDirection,
         hintSize: hintSize,
+        layoutGap: layoutGap,
       ),
       SpotlightGuidePlacement.right => _horizontal(
         screenSize: screenSize,
@@ -420,6 +589,7 @@ class _HintLayout {
         indicatorDirection: SpotlightGuideIndicatorDirection.left,
         textDirection: textDirection,
         hintSize: hintSize,
+        layoutGap: layoutGap,
       ),
     };
   }
@@ -431,6 +601,7 @@ class _HintLayout {
     required EdgeInsets margin,
     required Size? hintSize,
     required TextDirection textDirection,
+    required double? layoutGap,
   }) {
     final SpotlightGuidePlacement placement = _resolveDirectionalPlacement(
       step.placement,
@@ -450,23 +621,32 @@ class _HintLayout {
         placement: SpotlightGuidePlacement.bottom,
         width: screenSize.width - margin.horizontal,
         height:
-            screenSize.height - margin.bottom - targetRect.bottom - step.gap,
+            screenSize.height -
+            margin.bottom -
+            targetRect.bottom -
+            _resolvedLayoutGap(step, layoutGap),
       ),
       _PlacementSpace(
         placement: SpotlightGuidePlacement.top,
         width: screenSize.width - margin.horizontal,
-        height: targetRect.top - step.gap - margin.top,
+        height:
+            targetRect.top - _resolvedLayoutGap(step, layoutGap) - margin.top,
       ),
     ];
     final List<_PlacementSpace> horizontalSpaces = [
       _PlacementSpace(
         placement: SpotlightGuidePlacement.right,
-        width: screenSize.width - margin.right - targetRect.right - step.gap,
+        width:
+            screenSize.width -
+            margin.right -
+            targetRect.right -
+            _resolvedLayoutGap(step, layoutGap),
         height: screenSize.height - margin.vertical,
       ),
       _PlacementSpace(
         placement: SpotlightGuidePlacement.left,
-        width: targetRect.left - step.gap - margin.left,
+        width:
+            targetRect.left - _resolvedLayoutGap(step, layoutGap) - margin.left,
         height: screenSize.height - margin.vertical,
       ),
     ];
@@ -561,6 +741,15 @@ class _HintLayout {
     };
   }
 
+  static double _resolvedLayoutGap(
+    SpotlightGuideStepItem step,
+    double? layoutGap,
+  ) {
+    return layoutGap == null
+        ? _finiteOrZero(step.gap)
+        : _finiteOrZero(layoutGap);
+  }
+
   static _HintLayout _vertical({
     required Size screenSize,
     required Rect targetRect,
@@ -570,18 +759,25 @@ class _HintLayout {
     required SpotlightGuideIndicatorDirection indicatorDirection,
     required TextDirection textDirection,
     required Size? hintSize,
+    required double? layoutGap,
   }) {
+    final double gap = _resolvedLayoutGap(step, layoutGap);
     final double maxWidth = _resolveMaxExtent(
       step.maxWidth,
       screenSize.width - margin.horizontal,
     );
-    final double availableHeight = math.max(
-      0,
-      placement == SpotlightGuidePlacement.bottom
-          ? screenSize.height - margin.bottom - targetRect.bottom
-          : targetRect.top - margin.top,
+    final double maxHeight = _resolveMaxExtent(
+      step.maxHeight,
+      screenSize.height - margin.vertical,
     );
-    final double maxHeight = _resolveMaxExtent(step.maxHeight, availableHeight);
+    final double safeMaxWidth = math.max(
+      0,
+      screenSize.width - margin.horizontal,
+    );
+    final double safeMaxHeight = math.max(
+      0,
+      screenSize.height - margin.vertical,
+    );
     final double minWidth = _resolveMinExtent(step.minWidth, maxWidth);
     final double minHeight = _resolveMinExtent(step.minHeight, maxHeight);
     final bool expandWidth = step.maxWidth?.isInfinite == true;
@@ -598,7 +794,7 @@ class _HintLayout {
         : _resolveExtent(hintSize?.width ?? maxWidth, minWidth, maxWidth);
     final double height = expandHeight
         ? maxHeight
-        : _resolveExtent(hintSize?.height ?? maxHeight, minHeight, maxHeight);
+        : _resolveExtent(hintSize?.height ?? minHeight, minHeight, maxHeight);
     final _AxisLayout arrowSideLayout = _resolveAxisLayout(
       anchor: targetAnchorPoint.dx,
       extent: width,
@@ -611,8 +807,8 @@ class _HintLayout {
     // The gap is signed in the resolved placement direction. For a top hint,
     // subtracting it moves positive values upward, away from the target.
     final double preferredTop = placement == SpotlightGuidePlacement.bottom
-        ? targetRect.bottom + step.gap
-        : targetRect.top - step.gap - height;
+        ? targetRect.bottom + gap
+        : targetRect.top - gap - height;
     final double top = _clampDouble(
       preferredTop,
       margin.top,
@@ -624,6 +820,17 @@ class _HintLayout {
       arrowSideLayout.extent,
       height,
     );
+    final double bodyMinWidth = math.max(
+      minWidth,
+      _expandedArrowSideMeasureExtent(
+        arrowSideLayout,
+        expandSideAxis: expandWidth,
+        hasMeasuredHint: hasMeasuredHint,
+        safeInset: step.decoration.anchorSafeInset,
+        maxExtent: maxWidth,
+      ),
+    );
+    final double bodyMinHeight = expandHeight ? maxHeight : minHeight;
 
     return _HintLayout(
       rect: rect,
@@ -637,20 +844,17 @@ class _HintLayout {
         expandSideAxis: expandWidth,
       ),
       indicatorDirection: indicatorDirection,
-      measureConstraints: BoxConstraints(
-        minWidth: math.max(
-          minWidth,
-          _expandedArrowSideMeasureExtent(
-            arrowSideLayout,
-            expandSideAxis: expandWidth,
-            hasMeasuredHint: hasMeasuredHint,
-            safeInset: step.decoration.anchorSafeInset,
-            maxExtent: maxWidth,
-          ),
-        ),
+      hintConstraints: BoxConstraints(
+        minWidth: bodyMinWidth,
         maxWidth: maxWidth,
-        minHeight: expandHeight ? maxHeight : minHeight,
+        minHeight: bodyMinHeight,
         maxHeight: maxHeight,
+      ),
+      measureConstraints: BoxConstraints(
+        minWidth: bodyMinWidth,
+        maxWidth: safeMaxWidth,
+        minHeight: bodyMinHeight,
+        maxHeight: safeMaxHeight,
       ),
       expandWidth: expandWidth,
       expandHeight: expandHeight,
@@ -666,16 +870,26 @@ class _HintLayout {
     required SpotlightGuideIndicatorDirection indicatorDirection,
     required TextDirection textDirection,
     required Size? hintSize,
+    required double? layoutGap,
   }) {
-    final double availableWidth = math.max(
-      0,
-      placement == SpotlightGuidePlacement.right
-          ? screenSize.width - margin.right - targetRect.right
-          : targetRect.left - margin.left,
+    final double gap = _resolvedLayoutGap(step, layoutGap);
+    final double sideMaxWidth = placement == SpotlightGuidePlacement.right
+        ? screenSize.width - margin.right - targetRect.right - gap
+        : targetRect.left - gap - margin.left;
+    final double maxWidth = _resolveMaxExtent(
+      step.maxWidth,
+      math.min(screenSize.width - margin.horizontal, sideMaxWidth),
     );
-    final double maxWidth = _resolveMaxExtent(step.maxWidth, availableWidth);
     final double maxHeight = _resolveMaxExtent(
       step.maxHeight,
+      screenSize.height - margin.vertical,
+    );
+    final double safeMaxWidth = math.max(
+      0,
+      screenSize.width - margin.horizontal,
+    );
+    final double safeMaxHeight = math.max(
+      0,
       screenSize.height - margin.vertical,
     );
     final double minWidth = _resolveMinExtent(step.minWidth, maxWidth);
@@ -691,15 +905,15 @@ class _HintLayout {
     );
     final double width = expandWidth
         ? maxWidth
-        : _resolveExtent(hintSize?.width ?? maxWidth, minWidth, maxWidth);
+        : _resolveExtent(hintSize?.width ?? minWidth, minWidth, maxWidth);
     final double height = expandHeight
         ? maxHeight
         : _resolveExtent(hintSize?.height ?? maxHeight, minHeight, maxHeight);
     // The gap is signed in the resolved placement direction. For a left hint,
     // subtracting it moves positive values leftward, away from the target.
     final double left = placement == SpotlightGuidePlacement.right
-        ? targetRect.right + step.gap
-        : targetRect.left - step.gap - width;
+        ? targetRect.right + gap
+        : targetRect.left - gap - width;
     final _AxisLayout arrowSideLayout = _resolveAxisLayout(
       anchor: targetAnchorPoint.dy,
       extent: height,
@@ -720,6 +934,17 @@ class _HintLayout {
       width,
       arrowSideLayout.extent,
     );
+    final double bodyMinWidth = expandWidth ? maxWidth : minWidth;
+    final double bodyMinHeight = math.max(
+      minHeight,
+      _expandedArrowSideMeasureExtent(
+        arrowSideLayout,
+        expandSideAxis: expandHeight,
+        hasMeasuredHint: hasMeasuredHint,
+        safeInset: step.decoration.anchorSafeInset,
+        maxExtent: maxHeight,
+      ),
+    );
 
     return _HintLayout(
       rect: rect,
@@ -733,20 +958,17 @@ class _HintLayout {
         expandSideAxis: expandHeight,
       ),
       indicatorDirection: indicatorDirection,
-      measureConstraints: BoxConstraints(
-        minWidth: expandWidth ? maxWidth : minWidth,
+      hintConstraints: BoxConstraints(
+        minWidth: bodyMinWidth,
         maxWidth: maxWidth,
-        minHeight: math.max(
-          minHeight,
-          _expandedArrowSideMeasureExtent(
-            arrowSideLayout,
-            expandSideAxis: expandHeight,
-            hasMeasuredHint: hasMeasuredHint,
-            safeInset: step.decoration.anchorSafeInset,
-            maxExtent: maxHeight,
-          ),
-        ),
+        minHeight: bodyMinHeight,
         maxHeight: maxHeight,
+      ),
+      measureConstraints: BoxConstraints(
+        minWidth: bodyMinWidth,
+        maxWidth: safeMaxWidth,
+        minHeight: bodyMinHeight,
+        maxHeight: safeMaxHeight,
       ),
       expandWidth: expandWidth,
       expandHeight: expandHeight,
@@ -948,13 +1170,14 @@ class _HintLayout {
     required double extent,
   }) {
     final bool reverse = isHorizontalAxis && textDirection == TextDirection.rtl;
+    final double positionOffset = _finiteOrZero(position.offset);
     final double offset = switch (position.anchor) {
       SpotlightGuideAnchor.center =>
-        extent / 2 + (reverse ? -position.offset : position.offset),
+        extent / 2 + (reverse ? -positionOffset : positionOffset),
       SpotlightGuideAnchor.start =>
-        reverse ? extent - position.offset : position.offset,
+        reverse ? extent - positionOffset : positionOffset,
       SpotlightGuideAnchor.end =>
-        reverse ? position.offset : extent - position.offset,
+        reverse ? positionOffset : extent - positionOffset,
     };
     return offset;
   }
@@ -1018,7 +1241,10 @@ class _HintLayout {
     if (configured == null || configured.isInfinite) {
       return safeAvailable;
     }
-    return math.min(configured, safeAvailable);
+    if (!configured.isFinite) {
+      return safeAvailable;
+    }
+    return math.min(math.max(0, configured), safeAvailable);
   }
 
   static double _resolveMinExtent(double? configured, double maxExtent) {

@@ -17,7 +17,14 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
 
     for (final BoxShadow shadow
         in decoration.boxShadow ?? const <BoxShadow>[]) {
-      canvas.drawPath(path.shift(shadow.offset), shadow.toPaint());
+      final BoxShadow safeShadow = BoxShadow(
+        color: shadow.color,
+        offset: _finiteOffsetOrZero(shadow.offset),
+        blurRadius: _nonNegativeFiniteOrZero(shadow.blurRadius),
+        spreadRadius: _nonNegativeFiniteOrZero(shadow.spreadRadius),
+        blurStyle: shadow.blurStyle,
+      );
+      canvas.drawPath(path.shift(safeShadow.offset), safeShadow.toPaint());
     }
 
     canvas.drawPath(path, Paint()..color = decoration.color);
@@ -25,13 +32,15 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
   }
 
   void _paintBorder(Canvas canvas, Path path) {
-    if (decoration.border.style == BorderStyle.none ||
-        decoration.border.width <= 0) {
+    final double borderWidth = _nonNegativeFiniteOrZero(
+      decoration.border.width,
+    );
+    if (decoration.border.style == BorderStyle.none || borderWidth <= 0) {
       return;
     }
     final Paint borderPaint = decoration.border.toPaint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = decoration.border.width * 2
+      ..strokeWidth = borderWidth * 2
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round;
     canvas.save();
@@ -45,7 +54,7 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
         decoration.effectiveAnchorGeometry;
     final Rect body = _bodyRect(offset, size, geometry);
     final double radius = math.min(
-      decoration.borderRadius,
+      _nonNegativeFiniteOrZero(decoration.borderRadius),
       math.min(body.width, body.height) / 2,
     );
     final SpotlightGuideAnchorConnection? connection = _resolveConnection(
@@ -101,9 +110,7 @@ class _SpotlightGuideBubblePainter extends BoxPainter {
   ) {
     final double depth = geometry == null
         ? 0
-        : decoration.anchor.preferredSize.height
-              .clamp(0, double.infinity)
-              .toDouble();
+        : _nonNegativeFiniteOrZero(decoration.anchor.preferredSize.height);
     final double bodyWidth = math.max(0, size.width - depth);
     final double bodyHeight = math.max(0, size.height - depth);
     return switch (geometry?.direction) {

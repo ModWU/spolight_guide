@@ -71,7 +71,7 @@ void main() {
     expect(
       steps.map((SpotlightGuideStep step) => step.items.single.placement),
       containsAll(<SpotlightGuidePlacement>[
-        SpotlightGuidePlacement.left,
+        SpotlightGuidePlacement.start,
         SpotlightGuidePlacement.top,
         SpotlightGuidePlacement.verticalAuto,
         SpotlightGuidePlacement.right,
@@ -329,7 +329,6 @@ void main() {
       'Custom pointer widget',
       'Edge anchored pointer',
       'Auto side pointer',
-      'Direct target anchor',
     ];
 
     for (int index = 0; index < titles.length; index += 1) {
@@ -346,6 +345,30 @@ void main() {
     }
   });
 
+  testWidgets(
+    'custom pointer bottom bubble keeps action buttons hit-testable',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(const SpotlightGuideExampleApp());
+      await tester.pumpAndSettle();
+
+      await _finishCurrentGuide(tester);
+      await _openScenario(tester, 'Pointer hint');
+
+      await tester.tap(find.text('Next').hitTestable());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Next').hitTestable());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Custom pointer widget'), findsOneWidget);
+      expect(find.text('Next').hitTestable(), findsOneWidget);
+
+      await tester.tap(find.text('Next').hitTestable());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edge anchored pointer'), findsOneWidget);
+    },
+  );
+
   testWidgets('pointer hint tap pointers rotate from the built-in hand pose', (
     WidgetTester tester,
   ) async {
@@ -360,10 +383,9 @@ void main() {
       'Top pointer': math.pi,
       'Edge anchored pointer': -math.pi / 2,
       'Auto side pointer': -math.pi / 2,
-      'Direct target anchor': math.pi,
     };
 
-    for (int index = 0; index < 6; index += 1) {
+    for (int index = 0; index < 5; index += 1) {
       final SpotlightGuideTextHint hint = tester.widget(
         find.byType(SpotlightGuideTextHint),
       );
@@ -376,7 +398,7 @@ void main() {
         );
       }
 
-      if (index < 5) {
+      if (index < 4) {
         await tester.tap(find.text('Next').hitTestable());
         await tester.pumpAndSettle();
       }

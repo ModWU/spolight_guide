@@ -2,11 +2,25 @@
 
 This file records the current component contract for maintainers.
 
-## Unreleased
+## 0.1.6
 
 - Stabilized visible guides across Flutter hot reload/reassemble and parent
   rebuilds, including in-flight step preparation, so stale async preparation can
   no longer hide or corrupt the newer visible step.
+- Reworked built-in bubble and pointer layout to resolve in the render layout
+  pass, removing delayed measurement frames that could make hints flicker or
+  jump after hot reload, pointer changes, or reveal scrolling.
+- Changed the default missing-target behavior to `skip`, so steps whose targets
+  are not mounted and have no reveal callback are removed from the active
+  sequence automatically. Use `wait` when a target is intentionally expected to
+  appear later.
+- Clarified pointer semantics for `gap`, `targetGap`, `visualOffset`,
+  `bubblePlacement`, and `anchorMode`, and expanded pointer examples around
+  target, pointer, and bubble anchor relationships.
+- Hardened target decoration, reveal scrolling helpers, and bubble decoration
+  inputs against invalid numeric values.
+- Expanded focused tests for hot reload, pointer layout, missing target
+  filtering, direction semantics, and target decoration edge cases.
 
 ## 0.1.5
 
@@ -91,8 +105,8 @@ Initial standalone Flutter package release.
   changes.
 - `SpotlightGuidePortal.onStateChanged` reports visibility, progress, active
   step count, and target availability changes.
-- `SpotlightGuideMissingTargetBehavior.wait` keeps late targets alive;
-  `skip` removes unavailable API-driven targets from the active sequence.
+- `SpotlightGuideMissingTargetBehavior.skip` is the portal default and removes
+  unavailable targets from the active sequence. `wait` keeps late targets alive.
   Item-level values override the portal default.
 - `SpotlightGuideTarget` only registers target geometry. Step selection,
   server response interpretation, and business decisions stay outside targets.

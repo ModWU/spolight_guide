@@ -64,7 +64,7 @@ Widget guideApp({
   bool enabled = true,
   bool? autoStart,
   SpotlightGuideMissingTargetBehavior missingTargetBehavior =
-      SpotlightGuideMissingTargetBehavior.wait,
+      SpotlightGuideMissingTargetBehavior.skip,
   Widget? child,
 }) {
   return MaterialApp(

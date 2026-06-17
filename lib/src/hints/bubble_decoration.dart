@@ -42,7 +42,11 @@ abstract class SpotlightGuideBubbleAnchor {
   /// Minimum side-axis inset needed before the body can safely contain this
   /// anchor near rounded corners.
   double safeInset({required double borderRadius}) {
-    return math.max(0, borderRadius + connectionHalfExtent);
+    return math.max(
+      0,
+      _nonNegativeFiniteOrZero(borderRadius) +
+          _nonNegativeFiniteOrZero(connectionHalfExtent),
+    );
   }
 
   /// Half of the connection range touching the bubble side.
@@ -50,7 +54,7 @@ abstract class SpotlightGuideBubbleAnchor {
   /// This is deliberately separate from [preferredSize]. Irregular anchors can
   /// be visually wide while touching the bubble with a narrow base, or visually
   /// narrow while connecting with a broad curve.
-  double get connectionHalfExtent => preferredSize.width / 2;
+  double get connectionHalfExtent => _finiteSizeOrZero(preferredSize).width / 2;
 
   /// Returns the side gap this anchor occupies on the bubble body.
   ///
@@ -225,14 +229,18 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
   SpotlightGuideAnchorGeometry? get geometry => _geometry;
 
   @override
-  Size get preferredSize => shape.preferredSize;
+  Size get preferredSize => _finiteSizeOrZero(shape.preferredSize);
 
   @override
-  double get connectionHalfExtent => shape.connectionHalfExtent;
+  double get connectionHalfExtent {
+    return _nonNegativeFiniteOrZero(shape.connectionHalfExtent);
+  }
 
   @override
   double safeInset({required double borderRadius}) {
-    return shape.safeInset(borderRadius: borderRadius);
+    return _nonNegativeFiniteOrZero(
+      shape.safeInset(borderRadius: _nonNegativeFiniteOrZero(borderRadius)),
+    );
   }
 
   @override
@@ -299,7 +307,7 @@ class SpotlightGuidePathAnchor extends SpotlightGuideBubbleAnchor {
     }
 
     final double visualHalfExtent = math.max(
-      shape.visualHalfExtent,
+      _nonNegativeFiniteOrZero(shape.visualHalfExtent),
       connectionHalfExtent,
     );
     final double startSide = -connectionHalfExtent / visualHalfExtent;
@@ -388,15 +396,16 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
   SpotlightGuideAnchorGeometry? get geometry => _geometry;
 
   @override
-  Size get preferredSize => size;
+  Size get preferredSize => _finiteSizeOrZero(size);
 
   @override
   EdgeInsetsGeometry padding(SpotlightGuideAnchorGeometry? geometry) {
     final SpotlightGuideAnchorGeometry? resolved = geometry ?? _geometry;
-    if (resolved == null || size.isEmpty) {
+    final Size safeSize = preferredSize;
+    if (resolved == null || safeSize.isEmpty) {
       return EdgeInsets.zero;
     }
-    final double inset = math.max(0, size.height);
+    final double inset = safeSize.height;
     return switch (resolved.direction) {
       SpotlightGuideIndicatorDirection.up => EdgeInsets.only(top: inset),
       SpotlightGuideIndicatorDirection.down => EdgeInsets.only(bottom: inset),
@@ -407,11 +416,14 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
 
   @override
   double safeInset({required double borderRadius}) {
-    return math.max(0, borderRadius + connectionHalfExtent);
+    return math.max(
+      0,
+      _nonNegativeFiniteOrZero(borderRadius) + connectionHalfExtent,
+    );
   }
 
   @override
-  double get connectionHalfExtent => size.width / 2;
+  double get connectionHalfExtent => preferredSize.width / 2;
 
   @override
   SpotlightGuideAnchorConnection? resolveConnection({
@@ -421,10 +433,11 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     required SpotlightGuideAnchorGeometry? geometry,
   }) {
     final SpotlightGuideAnchorGeometry? resolved = geometry ?? _geometry;
-    if (resolved == null || size.isEmpty) {
+    final Size safeSize = preferredSize;
+    if (resolved == null || safeSize.isEmpty) {
       return null;
     }
-    final double halfWidth = size.width / 2;
+    final double halfWidth = safeSize.width / 2;
     switch (resolved.direction) {
       case SpotlightGuideIndicatorDirection.up:
         final double center = body.left + resolved.offset;
@@ -553,8 +566,9 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     final double sign = tipY < baseY ? 1 : -1;
     final _SpotlightGuideRoundedTriangleTip roundedTip = _roundedTip;
     final double sideFraction = roundedTip.sideFraction;
-    final double halfArc = (size.width / 2) * sideFraction;
-    final double inset = size.height * sideFraction;
+    final Size safeSize = preferredSize;
+    final double halfArc = (safeSize.width / 2) * sideFraction;
+    final double inset = safeSize.height * sideFraction;
     return _SpotlightGuideAnchorTip(
       left: Offset(centerX - halfArc, tipY + inset * sign),
       control: Offset(centerX, tipY),
@@ -571,8 +585,9 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
     final double sign = tipX < baseX ? 1 : -1;
     final _SpotlightGuideRoundedTriangleTip roundedTip = _roundedTip;
     final double sideFraction = roundedTip.sideFraction;
-    final double halfArc = (size.width / 2) * sideFraction;
-    final double inset = size.height * sideFraction;
+    final Size safeSize = preferredSize;
+    final double halfArc = (safeSize.width / 2) * sideFraction;
+    final double inset = safeSize.height * sideFraction;
     return _SpotlightGuideAnchorTip(
       left: Offset(tipX + inset * sign, centerY - halfArc),
       control: Offset(tipX, centerY),
@@ -588,8 +603,9 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
         conicWeight: 1,
       );
     }
-    final double halfWidth = math.max(0, size.width / 2);
-    final double height = math.max(0, size.height);
+    final Size safeSize = preferredSize;
+    final double halfWidth = safeSize.width / 2;
+    final double height = safeSize.height;
     if (halfWidth <= 0 || height <= 0) {
       return const _SpotlightGuideRoundedTriangleTip(
         sideFraction: 0,
@@ -600,7 +616,9 @@ class SpotlightGuideTriangleAnchor extends SpotlightGuideBubbleAnchor {
       halfWidth * halfWidth + height * height,
     );
     final double maxCut = sideLength * 0.45;
-    final double angle = tipArcAngle.clamp(0, math.pi / 2).toDouble();
+    final double angle = _nonNegativeFiniteOrZero(
+      tipArcAngle,
+    ).clamp(0, math.pi / 2).toDouble();
     final double cut = math.min(maxCut, height * math.tan(angle / 2));
     final double apexAngle = 2 * math.atan2(halfWidth, height);
     final double conicWeight = math
@@ -703,15 +721,18 @@ class SpotlightGuideBubbleDecoration extends SpotlightGuideAnchoredDecoration {
   final List<BoxShadow>? boxShadow;
 
   double get _borderInset {
-    if (border.style == BorderStyle.none || border.width <= 0) {
+    final double borderWidth = _nonNegativeFiniteOrZero(border.width);
+    if (border.style == BorderStyle.none || borderWidth <= 0) {
       return 0;
     }
-    return border.width;
+    return borderWidth;
   }
 
   @override
   double get anchorSafeInset {
-    return anchor.safeInset(borderRadius: math.max(0, borderRadius));
+    return anchor.safeInset(
+      borderRadius: _nonNegativeFiniteOrZero(borderRadius),
+    );
   }
 
   @override
@@ -726,7 +747,9 @@ class SpotlightGuideBubbleDecoration extends SpotlightGuideAnchoredDecoration {
 
   @override
   BorderRadiusGeometry get contentClipBorderRadius {
-    return BorderRadius.circular(math.max(0, borderRadius - _borderInset));
+    return BorderRadius.circular(
+      math.max(0, _nonNegativeFiniteOrZero(borderRadius) - _borderInset),
+    );
   }
 
   @override

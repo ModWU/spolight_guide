@@ -680,6 +680,280 @@ void main() {
     },
   );
 
+  testWidgets(
+    'visible reassemble keeps pointer hint visible while visualOffset changes',
+    (tester) async {
+      final Map<String, SpotlightGuideStepContext> contexts =
+          <String, SpotlightGuideStepContext>{};
+      const ValueKey<String> pointerKey = ValueKey<String>(
+        'stable-pointer-child',
+      );
+
+      Widget buildApp({required bool withVisualOffset}) {
+        return guideApp(
+          child: singleTargetStack(
+            id: 'a',
+            left: 260,
+            top: 190,
+            width: 80,
+            height: 48,
+          ),
+          steps: <SpotlightGuideStep>[
+            _pointerStep(
+              label: 'stable-pointer',
+              contexts: contexts,
+              placement: SpotlightGuidePlacement.verticalAuto,
+              pointer: SpotlightGuideHintPointer(
+                size: const Size(88, 42),
+                targetGap: 4,
+                visualOffset: withVisualOffset
+                    ? const SpotlightGuidePointerOffset.directional(
+                        end: 3,
+                        up: 2,
+                      )
+                    : SpotlightGuidePointerOffset.zero,
+                layer: SpotlightGuidePointerLayer.aboveBubble,
+                bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+                child: const SizedBox(
+                  key: pointerKey,
+                  width: 88,
+                  height: 42,
+                  child: ColoredBox(color: Colors.orange),
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+
+      await tester.pumpWidget(buildApp(withVisualOffset: true));
+      await _pumpHotReloadGuide(tester);
+      expect(find.byKey(pointerKey), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('stable-pointer')).hitTestable(),
+        findsOneWidget,
+      );
+
+      final dynamic portalState = tester.state(
+        find.byType(SpotlightGuidePortal),
+      );
+      portalState.reassemble();
+      await tester.pump();
+      expect(find.byKey(pointerKey), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('stable-pointer')).hitTestable(),
+        findsOneWidget,
+      );
+
+      await tester.pumpWidget(buildApp(withVisualOffset: false));
+      await tester.pump();
+      expect(find.byKey(pointerKey), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('stable-pointer')).hitTestable(),
+        findsOneWidget,
+      );
+
+      await _pumpHotReloadGuide(tester);
+      final SpotlightGuideStepContext guide = contexts['stable-pointer']!;
+      final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
+      expect(
+        pointerRect.top,
+        moreOrLessEquals(guide.targetRect.bottom + 4, epsilon: 0.5),
+      );
+    },
+  );
+
+  testWidgets(
+    'visible reassemble keeps current step visible when later steps are removed',
+    (tester) async {
+      final SpotlightGuidePortalController controller =
+          SpotlightGuidePortalController();
+      final Map<String, SpotlightGuideStepContext> contexts =
+          <String, SpotlightGuideStepContext>{};
+
+      List<SpotlightGuideStep> buildSteps({required int total}) {
+        return <SpotlightGuideStep>[
+          _step('stable-total-1', contexts: contexts),
+          _step('stable-total-2', contexts: contexts),
+          _pointerStep(
+            label: 'stable-total-3',
+            contexts: contexts,
+            placement: SpotlightGuidePlacement.verticalAuto,
+            pointer: const SpotlightGuideHintPointer(
+              size: Size(88, 42),
+              targetGap: 4,
+              visualOffset: SpotlightGuidePointerOffset.directional(
+                end: 3,
+                up: 2,
+              ),
+              layer: SpotlightGuidePointerLayer.aboveBubble,
+              bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+              child: SizedBox(
+                key: ValueKey<String>('stable-total-pointer'),
+                width: 88,
+                height: 42,
+                child: ColoredBox(color: Colors.orange),
+              ),
+            ),
+          ),
+          _step('stable-total-4', contexts: contexts),
+          _step('stable-total-5', contexts: contexts),
+          if (total == 6) _step('stable-total-6', contexts: contexts),
+        ];
+      }
+
+      await tester.pumpWidget(
+        guideApp(
+          controller: controller,
+          autoStart: false,
+          steps: buildSteps(total: 6),
+        ),
+      );
+      controller.showPortal(index: 2);
+      await _pumpHotReloadGuide(tester);
+      expect(
+        find.byKey(const ValueKey<String>('stable-total-3')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(controller.index, 2);
+      expect(controller.total, 6);
+      expect(contexts['stable-total-3']?.total, 6);
+
+      final dynamic portalState = tester.state(
+        find.byType(SpotlightGuidePortal),
+      );
+      portalState.reassemble();
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey<String>('stable-total-3')).hitTestable(),
+        findsOneWidget,
+      );
+
+      await tester.pumpWidget(
+        guideApp(
+          controller: controller,
+          autoStart: false,
+          steps: buildSteps(total: 5),
+        ),
+      );
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey<String>('stable-total-3')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(controller.index, 2);
+      expect(controller.total, 5);
+
+      await _pumpHotReloadGuide(tester);
+      expect(
+        find.byKey(const ValueKey<String>('stable-total-3')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(contexts['stable-total-3']?.total, 5);
+    },
+  );
+
+  testWidgets('visible guide filters a removed future target from the total', (
+    tester,
+  ) async {
+    final SpotlightGuidePortalController controller =
+        SpotlightGuidePortalController();
+    final Map<String, SpotlightGuideStepContext> contexts =
+        <String, SpotlightGuideStepContext>{};
+    bool showSixthTarget = true;
+
+    Widget buildChild() {
+      return Stack(
+        children: <Widget>[
+          const Positioned(
+            left: 80,
+            top: 120,
+            child: SpotlightGuideTarget(
+              id: 'stable-target',
+              child: SizedBox(
+                width: 96,
+                height: 44,
+                child: ColoredBox(color: Colors.red),
+              ),
+            ),
+          ),
+          if (showSixthTarget)
+            const Positioned(
+              left: 260,
+              top: 420,
+              child: SpotlightGuideTarget(
+                id: 'future-target',
+                child: SizedBox(
+                  width: 92,
+                  height: 48,
+                  child: ColoredBox(color: Colors.blue),
+                ),
+              ),
+            ),
+        ],
+      );
+    }
+
+    List<SpotlightGuideStep> buildSteps() {
+      return <SpotlightGuideStep>[
+        _step('filtered-total-1', targetId: 'stable-target'),
+        _step('filtered-total-2', targetId: 'stable-target'),
+        _step(
+          'filtered-total-3',
+          targetId: 'stable-target',
+          contexts: contexts,
+        ),
+        _step('filtered-total-4', targetId: 'stable-target'),
+        _step('filtered-total-5', targetId: 'stable-target'),
+        _step('filtered-total-6', targetId: 'future-target'),
+      ];
+    }
+
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        autoStart: false,
+        steps: buildSteps(),
+        child: buildChild(),
+      ),
+    );
+    controller.showPortal(index: 2);
+    await _pumpHotReloadGuide(tester);
+
+    expect(
+      find.byKey(const ValueKey<String>('filtered-total-3')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(controller.index, 2);
+    expect(controller.total, 6);
+    expect(contexts['filtered-total-3']?.total, 6);
+
+    showSixthTarget = false;
+    await tester.pumpWidget(
+      guideApp(
+        controller: controller,
+        autoStart: false,
+        steps: buildSteps(),
+        child: buildChild(),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey<String>('filtered-total-3')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(controller.index, 2);
+    expect(controller.total, 5);
+
+    await _pumpHotReloadGuide(tester);
+    expect(
+      find.byKey(const ValueKey<String>('filtered-total-3')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(contexts['filtered-total-3']?.total, 5);
+  });
+
   testWidgets('target geometry and target id changes are picked up mid-guide', (
     tester,
   ) async {

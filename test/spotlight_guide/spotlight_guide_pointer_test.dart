@@ -2006,11 +2006,7 @@ void main() {
             );
             expect(
               bubbleRect.top,
-              greaterThanOrEqualTo(pointerRect.bottom + gap - 0.5),
-            );
-            expect(
-              bubbleRect.top,
-              greaterThanOrEqualTo(guide.targetRect.bottom + gap - 0.5),
+              moreOrLessEquals(pointerRect.bottom + gap, epsilon: 0.5),
             );
             expect(
               bubbleRect.left + anchorGeometry.offset,
@@ -2027,11 +2023,7 @@ void main() {
             );
             expect(
               bubbleRect.bottom,
-              lessThanOrEqualTo(pointerRect.top - gap + 0.5),
-            );
-            expect(
-              bubbleRect.bottom,
-              lessThanOrEqualTo(guide.targetRect.top - gap + 0.5),
+              moreOrLessEquals(pointerRect.top - gap, epsilon: 0.5),
             );
             expect(
               bubbleRect.left + anchorGeometry.offset,
@@ -2048,11 +2040,7 @@ void main() {
             );
             expect(
               bubbleRect.right,
-              lessThanOrEqualTo(pointerRect.left - gap + 0.5),
-            );
-            expect(
-              bubbleRect.right,
-              lessThanOrEqualTo(guide.targetRect.left - gap + 0.5),
+              moreOrLessEquals(pointerRect.left - gap, epsilon: 0.5),
             );
             expect(
               bubbleRect.top + anchorGeometry.offset,
@@ -2069,11 +2057,7 @@ void main() {
             );
             expect(
               bubbleRect.left,
-              greaterThanOrEqualTo(pointerRect.right + gap - 0.5),
-            );
-            expect(
-              bubbleRect.left,
-              greaterThanOrEqualTo(guide.targetRect.right + gap - 0.5),
+              moreOrLessEquals(pointerRect.right + gap, epsilon: 0.5),
             );
             expect(
               bubbleRect.top + anchorGeometry.offset,
@@ -2087,6 +2071,233 @@ void main() {
       }
     },
   );
+
+  testWidgets('same-axis bubblePlacement matches alongPlacement geometry', (
+    tester,
+  ) async {
+    const double gap = 10;
+    final List<_SameAxisBubblePlacementCase> cases =
+        <_SameAxisBubblePlacementCase>[
+          const _SameAxisBubblePlacementCase(
+            label: 'top',
+            placement: SpotlightGuidePlacement.top,
+            bubblePlacement: SpotlightGuidePointerBubblePlacement.top,
+            targetLeft: 300,
+            targetTop: 420,
+            targetWidth: 128,
+            targetHeight: 70,
+            pointerSize: Size(88, 42),
+          ),
+          const _SameAxisBubblePlacementCase(
+            label: 'bottom',
+            placement: SpotlightGuidePlacement.bottom,
+            bubblePlacement: SpotlightGuidePointerBubblePlacement.bottom,
+            targetLeft: 300,
+            targetTop: 90,
+            targetWidth: 128,
+            targetHeight: 70,
+            pointerSize: Size(88, 42),
+          ),
+          const _SameAxisBubblePlacementCase(
+            label: 'left',
+            placement: SpotlightGuidePlacement.left,
+            bubblePlacement: SpotlightGuidePointerBubblePlacement.left,
+            targetLeft: 560,
+            targetTop: 250,
+            targetWidth: 120,
+            targetHeight: 86,
+            pointerSize: Size(42, 88),
+          ),
+          const _SameAxisBubblePlacementCase(
+            label: 'right',
+            placement: SpotlightGuidePlacement.right,
+            bubblePlacement: SpotlightGuidePointerBubblePlacement.right,
+            targetLeft: 90,
+            targetTop: 250,
+            targetWidth: 120,
+            targetHeight: 86,
+            pointerSize: Size(42, 88),
+          ),
+        ];
+
+    Future<({Rect bubble, Rect pointer})> pumpLayout(
+      _SameAxisBubblePlacementCase testCase,
+      SpotlightGuidePointerBubblePlacement bubblePlacement,
+    ) async {
+      final String label = '${testCase.label}-${bubblePlacement.name}';
+      final ValueKey<String> pointerKey = ValueKey<String>('$label-pointer');
+
+      await tester.pumpWidget(
+        guideApp(
+          appKey: ValueKey<String>(label),
+          child: singleTargetStack(
+            id: 'a',
+            left: testCase.targetLeft,
+            top: testCase.targetTop,
+            width: testCase.targetWidth,
+            height: testCase.targetHeight,
+          ),
+          steps: <SpotlightGuideStep>[
+            SpotlightGuideStep.item(
+              SpotlightGuideStepItem(
+                targetId: 'a',
+                placement: testCase.placement,
+                targetDecoration: const SpotlightGuideTargetDecoration(
+                  padding: EdgeInsets.zero,
+                ),
+                gap: gap,
+                hintBuilder:
+                    (BuildContext context, SpotlightGuideStepContext guide) {
+                      return SpotlightGuideBubbleHint(
+                        guide: guide,
+                        pointer: SpotlightGuideHintPointer(
+                          size: testCase.pointerSize,
+                          bubblePlacement: bubblePlacement,
+                          child: SizedBox(
+                            key: pointerKey,
+                            width: testCase.pointerSize.width,
+                            height: testCase.pointerSize.height,
+                          ),
+                        ),
+                        child: const SizedBox(width: 112, height: 56),
+                      );
+                    },
+              ),
+            ),
+          ],
+        ),
+      );
+      await pumpGuide(tester);
+
+      return (
+        bubble: tester.getRect(find.byType(SpotlightGuideBubble)),
+        pointer: tester.getRect(find.byKey(pointerKey)),
+      );
+    }
+
+    for (final _SameAxisBubblePlacementCase testCase in cases) {
+      final ({Rect bubble, Rect pointer}) along = await pumpLayout(
+        testCase,
+        SpotlightGuidePointerBubblePlacement.alongPlacement,
+      );
+      final ({Rect bubble, Rect pointer}) explicit = await pumpLayout(
+        testCase,
+        testCase.bubblePlacement,
+      );
+
+      _expectRectsNearlyEqual(explicit.bubble, along.bubble, <String>[
+        'case=${testCase.label} bubble',
+      ]);
+      _expectRectsNearlyEqual(explicit.pointer, along.pointer, <String>[
+        'case=${testCase.label} pointer',
+      ]);
+    }
+  });
+
+  testWidgets('explicit-side pointer bubble stays inside reported hint bounds', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(
+      guideApp(
+        child: singleTargetStack(
+          id: 'a',
+          left: 96,
+          top: 360,
+          width: 238,
+          height: 74,
+        ),
+        steps: <SpotlightGuideStep>[
+          SpotlightGuideStep.item(
+            SpotlightGuideStepItem(
+              targetId: 'a',
+              placement: SpotlightGuidePlacement.verticalAuto,
+              targetDecoration: const SpotlightGuideTargetDecoration(
+                padding: EdgeInsets.zero,
+              ),
+              margin: const EdgeInsets.all(16),
+              minWidth: 180,
+              maxWidth: 300,
+              hintBuilder:
+                  (BuildContext context, SpotlightGuideStepContext guide) {
+                    return SpotlightGuideBubbleHint(
+                      guide: guide,
+                      pointer: const SpotlightGuideHintPointer(
+                        size: Size(88, 42),
+                        targetGap: 4,
+                        bubblePlacement:
+                            SpotlightGuidePointerBubblePlacement.bottom,
+                        child: SizedBox(
+                          key: ValueKey<String>('explicit-bottom-pointer'),
+                          width: 88,
+                          height: 42,
+                          child: ColoredBox(color: Colors.yellow),
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: 260,
+                        height: 260,
+                        child: Center(
+                          child: TextButton(
+                            key: const ValueKey<String>('explicit-bottom-next'),
+                            onPressed: guide.next,
+                            child: const Text('Next'),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+            ),
+          ),
+        ],
+      ),
+    );
+    await pumpGuide(tester);
+
+    final Rect hintRect = tester.getRect(find.byType(SpotlightGuideBubbleHint));
+    final Rect bubbleRect = tester.getRect(find.byType(SpotlightGuideBubble));
+    final Rect pointerRect = tester.getRect(
+      find.byKey(const ValueKey<String>('explicit-bottom-pointer')),
+    );
+    final Rect buttonRect = tester.getRect(
+      find.byKey(const ValueKey<String>('explicit-bottom-next')),
+    );
+
+    final String geometry =
+        'hint=$hintRect bubble=$bubbleRect pointer=$pointerRect button=$buttonRect';
+    expect(
+      hintRect.left,
+      lessThanOrEqualTo(bubbleRect.left + 0.5),
+      reason: geometry,
+    );
+    expect(
+      hintRect.top,
+      lessThanOrEqualTo(bubbleRect.top + 0.5),
+      reason: geometry,
+    );
+    expect(
+      hintRect.right,
+      greaterThanOrEqualTo(bubbleRect.right - 0.5),
+      reason: geometry,
+    );
+    expect(
+      hintRect.bottom,
+      greaterThanOrEqualTo(bubbleRect.bottom - 0.5),
+      reason: geometry,
+    );
+    expect(hintRect.contains(pointerRect.center), isTrue, reason: geometry);
+    expect(hintRect.contains(buttonRect.center), isTrue, reason: geometry);
+    expect(
+      find.byKey(const ValueKey<String>('explicit-bottom-next')).hitTestable(),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('bubblePlacement start and end resolve against Directionality', (
     tester,
@@ -3131,6 +3342,28 @@ class _BubblePlacementCase {
   final SpotlightGuidePlacement stepPlacement;
   final SpotlightGuidePointerBubblePlacement bubblePlacement;
   final SpotlightGuideIndicatorDirection expectedAnchorDirection;
+  final double targetLeft;
+  final double targetTop;
+  final double targetWidth;
+  final double targetHeight;
+  final Size pointerSize;
+}
+
+class _SameAxisBubblePlacementCase {
+  const _SameAxisBubblePlacementCase({
+    required this.label,
+    required this.placement,
+    required this.bubblePlacement,
+    required this.targetLeft,
+    required this.targetTop,
+    required this.targetWidth,
+    required this.targetHeight,
+    required this.pointerSize,
+  });
+
+  final String label;
+  final SpotlightGuidePlacement placement;
+  final SpotlightGuidePointerBubblePlacement bubblePlacement;
   final double targetLeft;
   final double targetTop;
   final double targetWidth;

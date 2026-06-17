@@ -90,6 +90,13 @@ spotlight_guide_controller_test.dart
   state callback coverage, async onStepWillShow, error reporting, controller
   replacement.
 
+spotlight_guide_direction_test.dart
+  Direction semantics matrix: SpotlightGuidePlacement fixed/auto/semantic
+  resolution, SpotlightGuidePointerBubblePlacement physical and semantic sides,
+  LTR/RTL start/end behavior, anchor positions, pointer direction rotations,
+  visual offsets, pointer-bubble anchor direction relationships, and a
+  lightweight screenshot pixel smoke test for rendered pointer/bubble output.
+
 spotlight_guide_hot_reload_test.dart
   Hot-reload-like parent rebuild behavior while a guide is visible: active
   index preservation, first-step property changes, no duplicate final step
@@ -107,8 +114,11 @@ spotlight_guide_test_helpers.dart
 ## Regression Map
 
 - Changing `SpotlightGuideStepItem`, `targetId`, `targetIds`, or `targetKey`: run targets and reveal tests.
-- Changing placement or constraints: run layout tests.
-- Changing pointer or arrow anchor math: run pointer and layout tests.
+- Changing placement or constraints: run direction and layout tests.
+- Changing pointer or arrow anchor math: run direction, pointer, and layout tests.
+- Changing semantic start/end, RTL behavior, pointer bubble placement, pointer
+  direction, visual offset, or signed gap direction semantics: run direction,
+  pointer, layout, and safe-area tests.
 - Changing built-in hint widgets, the bubble decoration, or the connected arrow painter: run hint and pointer tests.
 - Changing target decoration rings, glow, shadow, dashed outlines, or shapes: run target decoration and barrier tests.
 - Changing barrier color, blur, hole clipping, or target pass-through: run barrier tests.

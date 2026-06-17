@@ -55,11 +55,6 @@ void main() {
     await _pumpUntilFound(tester, find.text('Auto side pointer'));
     await _capture(tester, 'pointer_hint_05.png');
 
-    await tester.tap(find.text('Next').hitTestable());
-    await tester.pumpAndSettle();
-    await _pumpUntilFound(tester, find.text('Direct target anchor'));
-    await _capture(tester, 'pointer_hint_06.png');
-
     await _hideGuide(tester);
   });
 

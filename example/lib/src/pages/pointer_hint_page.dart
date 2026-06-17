@@ -215,6 +215,7 @@ class _AutoSideDemo extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _DirectAnchorDemo extends StatelessWidget {
   const _DirectAnchorDemo();
 
