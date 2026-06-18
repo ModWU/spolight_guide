@@ -90,12 +90,16 @@ abstract class SpotlightGuideAxisPosition {
   /// Base alignment on the resolved main axis.
   final SpotlightGuideAnchorAlignment alignment;
 
-  /// Signed offset applied along the resolved main axis.
+  /// Signed offset applied along the resolved main axis of the referenced rect.
+  ///
+  /// [SpotlightGuideAnchorAlignment.center] offsets from the center. Positive
+  /// values move toward semantic end on horizontal axes and down on vertical
+  /// axes; negative values move the opposite way.
   ///
   /// [SpotlightGuideAnchorAlignment.start] and
-  /// [SpotlightGuideAnchorAlignment.end] use this as an inset from the semantic
-  /// edge. [SpotlightGuideAnchorAlignment.center] uses this as a signed offset
-  /// from the center.
+  /// [SpotlightGuideAnchorAlignment.end] offset from their resolved edge. A
+  /// positive value moves inward from that edge. A negative value moves outward
+  /// beyond that edge.
   final double mainAxisOffset;
 }
 
@@ -116,12 +120,14 @@ abstract class SpotlightGuideAxisPosition {
 /// * For top or bottom hints, the main axis is horizontal along the target,
 ///   pointer, or bubble edge. Positive `center(offset)` moves toward the
 ///   semantic end: right in LTR and left in RTL. `start(inset)` is from the
-///   left edge in LTR and from the right edge in RTL. `end(inset)` is the
-///   opposite edge.
+///   left edge in LTR and from the right edge in RTL. `end(inset)` is from the
+///   opposite edge. Positive `start` and `end` values move inward; negative
+///   values move outward beyond that edge.
 /// * For left or right hints, the main axis is vertical along the target,
 ///   pointer, or bubble edge. Positive `center(offset)` moves down.
 ///   `start(inset)` means from the top edge, and `end(inset)` means from the
-///   bottom edge. RTL does not mirror vertical start and end.
+///   bottom edge. Positive `start` and `end` values move inward; negative
+///   values move outward. RTL does not mirror vertical start and end.
 ///
 /// Negative values are allowed. They can move the resolved point outside the
 /// target or pointer when a custom composition needs that.
@@ -134,6 +140,9 @@ abstract class SpotlightGuideAxisPosition {
 ///
 /// // 8px from center on the resolved main axis.
 /// const SpotlightGuideAnchorPosition.center(8);
+///
+/// // 10px inward from the end edge. Use -10 to move 10px outward instead.
+/// const SpotlightGuideAnchorPosition.end(10);
 /// ```
 @immutable
 class SpotlightGuideAnchorPosition extends SpotlightGuideAxisPosition {
@@ -152,11 +161,18 @@ class SpotlightGuideAnchorPosition extends SpotlightGuideAxisPosition {
 /// Describes a two-dimensional pointer position relative to a target.
 ///
 /// This is used by [SpotlightGuidePointer.pointerTargetPosition], where the
-/// pointer widget is positioned relative to the target. [mainAxisOffset] works
-/// like [SpotlightGuideAnchorPosition] and chooses the point along the target
-/// side where the pointer is placed. [crossAxisOffset] moves the pointer on
-/// the axis perpendicular to that target side; it does not move the bubble
-/// anchor.
+/// pointer widget is positioned relative to the target. [mainAxisOffset] chooses
+/// the point along the target side. The pointer's matching point is aligned to
+/// that target point on the main axis: start to start, center to center, and
+/// end to end. The same [mainAxisOffset] is not applied again to the pointer.
+///
+/// For example, `end(16)` chooses a target point 16px inward from the target's
+/// end edge, then aligns the pointer's end edge to that point. `end(-16)`
+/// chooses a target point 16px outward beyond the target's end edge, then still
+/// aligns the pointer's end edge to that point.
+///
+/// [crossAxisOffset] moves the pointer on the axis perpendicular to that target
+/// side; it does not move the bubble anchor.
 ///
 /// Most pointers only need `center()`, `center(mainAxisOffset)`,
 /// `start(inset)`, or `end(inset)`. Use the optional second value only when
@@ -183,6 +199,9 @@ class SpotlightGuideAnchorPosition extends SpotlightGuideAxisPosition {
 ///
 /// // 20px on the target main axis and -8px on the target cross axis.
 /// const SpotlightGuidePointPosition.center(20, -8);
+///
+/// // Pointer end edge aligns 12px inward from the target end edge.
+/// const SpotlightGuidePointPosition.end(12);
 /// ```
 @immutable
 class SpotlightGuidePointPosition extends SpotlightGuideAxisPosition {

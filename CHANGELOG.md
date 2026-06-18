@@ -2,6 +2,22 @@
 
 This file records the current component contract for maintainers.
 
+## 0.2.2
+
+- Clarified and tightened pointer positioning semantics:
+  `pointerTargetPosition` positions the pointer relative to the target,
+  `anchorPointerPosition` positions the bubble anchor relative to the pointer,
+  and `anchorTargetPosition` positions the bubble anchor relative to the target
+  for direct-target anchors.
+- Expanded pointer direction, RTL, gap, and anchor tests so target, pointer,
+  and bubble relationships stay independent across placement combinations.
+- Regenerated README GIF demos from the iPhone simulator so documentation
+  visuals match real device rendering, scroll timing, shadows, and text.
+- Replaced the old widget-test README capture flow with a simulator-backed
+  capture script and ignored generated frame directories.
+- Updated pointer, reveal, and troubleshooting documentation for the new
+  position semantics and simulator GIF workflow.
+
 ## 0.2.1
 
 - Refined default reveal scrolling so the first reveal can scroll before

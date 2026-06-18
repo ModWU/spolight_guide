@@ -4,13 +4,11 @@
 
 ## Preview
 
-| Basic flow | Pointer hint | Same-step hints |
+| Basic flow | Pointer hint | Target decoration |
 | --- | --- | --- |
-| ![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/basic_flow.gif) | ![Built-in tap pointer hint](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/pointer_hint.gif) | ![Several hints in one step](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/same_step_hints.gif) |
+| ![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/basic_flow.gif) | ![Built-in tap pointer hint](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/pointer_hint.gif) | ![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/target_decoration.gif) |
 | Same-step scroll | Lazy target reveal | Barrier dismiss |
-| ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/lazy_target_reveal.gif) | ![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/barrier_dismiss.gif) |
-| Custom anchors and groups | Horizontal auto | Target decoration |
-| ![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/custom_anchors.gif) | ![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/horizontal_auto.gif) | ![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/target_decoration.gif) |
+| ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/lazy_target_reveal.gif) | ![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/barrier_dismiss.gif) |
 
 ## Highlights
 
@@ -107,7 +105,7 @@ flutter run -d ios
 
 ## Basic Usage
 
-![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/basic_flow.gif)
+![Basic spotlight guide flow](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/basic_flow.gif)
 
 ```dart
 SpotlightGuidePortal(
@@ -143,7 +141,7 @@ the same placement, margin, pointer, and decoration system as custom hints.
 
 ## Pointer Hints
 
-![Built-in tap pointer hint](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/pointer_hint.gif)
+![Built-in tap pointer hint](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/pointer_hint.gif)
 
 Use a pointer when the guide should visually point at a small tap target. A
 pointer is any widget: the built-in tap pointer is only a shortcut, and you can
@@ -160,8 +158,8 @@ bubble arrow should still point directly at the target, set
 The default pointer chain keeps target, pointer, and bubble relationships
 separate:
 
-- `pointerTargetPosition` chooses the target-side point where the pointer is
-  placed.
+- `pointerTargetPosition` chooses the target-side point and aligns the
+  pointer's matching start, center, or end point to it.
 - `anchorPointerPosition` chooses the point on the pointer that the bubble
   anchor attaches to.
 - `anchorTargetPosition` is used only for a direct target anchor: no pointer, or
@@ -179,8 +177,16 @@ value is for target-side cross-axis adjustment, such as `center(-30, -8)`.
 
 The first value is `mainAxisOffset`. For top or bottom hints, the main axis is
 horizontal and positive `center(20)` moves toward semantic end: right in LTR and
-left in RTL. For left or right hints, the main axis is vertical and positive
-moves down. `start` and `end` mirror in RTL only on horizontal axes.
+left in RTL. Negative center offsets move toward semantic start. For left or
+right hints, the main axis is vertical and positive moves down. `start` and
+`end` mirror in RTL only on horizontal axes.
+
+For `start` and `end`, positive values are insets from the referenced edge and
+negative values move outward beyond that edge. For example, `end(16)` means
+16px inward from the target or pointer end edge; `end(-16)` means 16px outward
+beyond that end edge. With `pointerTargetPosition`, that number chooses the
+target-side point only: `SpotlightGuidePointPosition.end(16)` aligns the
+pointer's end edge to the target end point after the 16px inset.
 
 For `SpotlightGuidePointPosition`, the second value is `crossAxisOffset`. For
 positive values, the pointer moves away from the target in the final resolved
@@ -254,9 +260,9 @@ SpotlightGuidePaintGate(
 ```
 
 For custom pointer artwork with transparent padding or an off-center painted
-tip, prefer wrapping or sizing the pointer so its layout centerline represents
-the intended visual contact. Use `pointerTargetPosition` when the pointer
-itself should sit away from the target center:
+tip, prefer wrapping or sizing the pointer so its layout start, center, or end
+point represents the intended visual contact. Use `pointerTargetPosition` when
+the pointer itself should sit away from the target:
 
 ```dart
 pointer: const SpotlightGuidePointer(
@@ -328,7 +334,7 @@ Transform.rotate(
 
 ## Multiple Hints In One Step
 
-![Several hints in one step](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/same_step_hints.gif)
+![Several hints in one step](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/same_step_hints.gif)
 
 Use `SpotlightGuideStep(items: ...)` when several hints should appear together. A single item can also highlight several targets with `targetIds`.
 
@@ -343,7 +349,7 @@ SpotlightGuideStep(
 
 ## Repeated Target IDs
 
-![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/custom_anchors.gif)
+![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/custom_anchors.gif)
 
 When several mounted `SpotlightGuideTarget` widgets use the same `id`, the
 component treats them as one logical target group. All instances are highlighted
@@ -378,7 +384,7 @@ Use `targetDecoration` when the spotlight hole needs a specific shape, padding,
 outer rings or glow. The decoration paints on the overlay only; it does not wrap
 or modify the real target widget.
 
-![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/target_decoration.gif)
+![Target decoration guide scenarios](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/target_decoration.gif)
 
 Use translucent `SpotlightGuideTargetRingLayer`s for a crisp border-style halo,
 `SpotlightGuideTargetGlowLayer` for a blurred soft halo, or
@@ -424,7 +430,7 @@ targetDecoration: const SpotlightGuideTargetDecoration(
 
 ## Dynamic Or API-Driven Steps
 
-![Dynamic guide steps](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/dynamic_steps.gif)
+![Dynamic guide steps](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/dynamic_steps.gif)
 
 For automatic guides, rebuild `steps` after data loads. A portal without an
 external controller starts when `steps` first becomes non-empty.
@@ -487,7 +493,7 @@ SpotlightGuidePortal(
 
 | Same-step scroll | Lazy target reveal |
 | --- | --- |
-| ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/lazy_target_reveal.gif) |
+| ![Same-step automatic scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/same_step_scroll.gif) | ![Lazy target reveal scroll](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/lazy_target_reveal.gif) |
 
 If a target is already built but outside a scrollable viewport, the default
 `SpotlightGuideRevealOptions` calls `Scrollable.ensureVisible`. It does not
@@ -575,7 +581,7 @@ SpotlightGuidePortal(
 
 ## Barrier Taps
 
-![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/barrier_dismiss.gif)
+![Barrier tap dismiss modes](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/barrier_dismiss.gif)
 
 The dim barrier absorbs taps so they never reach the page behind the guide. By
 default, tapping empty space does not close or advance the guide.
@@ -641,7 +647,7 @@ SpotlightGuideStep.item(
 
 ## Stepping Back And Jumping
 
-![Controller API guide](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/controller_api.gif)
+![Controller API guide](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/controller_api.gif)
 
 The controller can start the portal-owned sequence with `showPortal()` or a
 runtime sequence with `showSteps(steps)`. The controller and the `guide` context
@@ -660,13 +666,13 @@ controller.hide();
 
 ## RTL And Anchors
 
-![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/horizontal_auto.gif)
+![Horizontal auto placement choosing left and right arrows](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/horizontal_auto.gif)
 
 Use `SpotlightGuideAnchorPosition.start`, `center`, or `end` for semantic alignment. `start` and `end` follow `Directionality`, so Arabic and other RTL layouts mirror correctly.
 
 ## Custom UI
 
-![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/v0.2.1/doc/images/readme/custom_anchors.gif)
+![Custom anchors and repeated target groups](https://raw.githubusercontent.com/ModWU/spolight_guide/main/doc/images/readme/custom_anchors.gif)
 
 `hintBuilder` may return:
 

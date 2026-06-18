@@ -41,11 +41,15 @@ flutter run -d ios
 flutter run -d android
 ```
 
-README preview assets can be regenerated with Python and Pillow:
+README GIF assets are captured from the iPhone simulator so the colors, text
+rendering, shadows, and scroll motion match the real example app:
 
 ```sh
 cd example
-flutter test tool/readme_capture_test.dart --update-goldens
+flutter drive \
+  --driver=test_driver/readme_device_capture_test.dart \
+  --target=integration_test/readme_device_capture_test.dart \
+  -d <simulator-id>
 cd ..
 python3 example/tool/build_readme_gifs.py
 ```

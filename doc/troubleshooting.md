@@ -133,8 +133,9 @@ If there is no pointer, `anchorTargetPosition` resolves on the target directly
 and the bubble anchor points to that target point.
 
 With the default pointer chain, `pointerTargetPosition` chooses the target-side
-point where the pointer is placed, and `anchorPointerPosition` chooses where
-the bubble anchor attaches to the pointer. Use
+point and aligns the pointer's matching start, center, or end point to it.
+`anchorPointerPosition` chooses where the bubble anchor attaches to the
+pointer. Use
 `SpotlightGuidePointPosition.crossAxisOffset` for the pointer's distance from
 the target side and `SpotlightGuideStepItem.gap` for the
 pointer-to-bubble-anchor distance. If the bubble has no anchor, the hint edge
@@ -143,8 +144,21 @@ resolves on the target directly and `gap` is the target-to-bubble distance.
 
 Use `pointerTargetPosition` with a main-axis and optional cross-axis offset,
 such as `SpotlightGuidePointPosition.center(-30, -8)`, when the pointer itself
-should sit away from the target center. Most cases should use `center()`,
+should sit away from the target contact point. Most cases should use `center()`,
 `center(x)`, `start(x)`, or `end(x)`.
+
+For `start` and `end`, positive values are insets from the referenced edge and
+negative values move outward beyond that edge. For example, `end(16)` aligns
+the pointer end edge to a target point 16px inward from the target end edge,
+while `end(-16)` aligns it 16px outward beyond that edge. `anchorTargetPosition`
+and `anchorPointerPosition` use the same signed edge rule, but they only move
+the anchor point, not the target or pointer widget.
+
+The pointer's layout slot is the source of truth. If the child is wrapped in a
+red `Container`, that full red rectangle is the pointer. If an image has
+transparent padding and the visible fingertip should align instead, crop the
+asset, adjust the `size` or wrapper, or use `pointerTargetPosition` offsets to
+align the intended visual point.
 
 If a pointer is present but should not become part of the anchor chain, set
 `SpotlightGuidePointer(anchorMode: SpotlightGuidePointerAnchorMode.target,
@@ -245,7 +259,9 @@ For one specific item in a repeated list, prefer a unique id such as
 
 ## Offset Works In LTR But Not RTL
 
-Use `SpotlightGuideAnchorPosition.start`, `center`, or `end` instead of hard-coded left/right logic. `start` and `end` mirror in RTL.
+Use `SpotlightGuideAnchorPosition.start`, `center`, or `end` instead of
+hard-coded left/right logic. `start` and `end` mirror in RTL on horizontal axes.
+Positive edge offsets move inward and negative edge offsets move outward.
 
 Related tests:
 

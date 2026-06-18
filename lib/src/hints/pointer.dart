@@ -275,11 +275,11 @@ class SpotlightGuidePointerContext {
 ///
 /// - [SpotlightGuideStepItem.placement] chooses which target side the
 ///   pointer/hint sits on.
-/// - [pointerTargetPosition] chooses the target-side point where the pointer is
-///   placed.
+/// - [pointerTargetPosition] chooses the target-side point where the pointer's
+///   matching point is placed.
 /// - [anchorPointerPosition] chooses which point on the pointer's layout slot
-///   the bubble anchor aligns to while the pointer participates in the default
-///   chain.
+///   the bubble anchor connects to while the pointer participates in the default
+///   chain. It does not move the pointer relative to the target.
 /// - [bubbleSide] chooses where the bubble sits relative to the pointer.
 ///
 /// When [anchorMode] is [SpotlightGuidePointerAnchorMode.pointer], the pointer
@@ -345,18 +345,25 @@ class SpotlightGuidePointer {
 
   /// Pointer position relative to the target.
   ///
-  /// The pointer widget is centered on the resolved target-side point along
-  /// the main axis. [SpotlightGuidePointPosition.crossAxisOffset] moves the
-  /// pointer away from or toward the target on the perpendicular axis. Changing
-  /// this position moves the pointer relative to the target; it does not move
-  /// the bubble anchor.
+  /// The pointer point selected by [SpotlightGuidePointPosition.alignment] is
+  /// aligned to the resolved target-side point on the main axis: start to start,
+  /// center to center, and end to end. The main-axis offset is resolved on the
+  /// target side only; the pointer contributes its matching start, center, or
+  /// end point without applying that offset a second time.
+  ///
+  /// [SpotlightGuidePointPosition.crossAxisOffset] moves the pointer away from
+  /// or toward the target on the perpendicular axis. Changing this position
+  /// moves the pointer relative to the target; it does not move the bubble
+  /// anchor.
   final SpotlightGuidePointPosition pointerTargetPosition;
 
   /// Position inside [child] where the bubble anchor connects.
   ///
-  /// This only chooses the pointer point used by the bubble anchor. It does not
-  /// move the pointer relative to the target; use [pointerTargetPosition] for
-  /// that relationship.
+  /// This only chooses the pointer point used by the bubble anchor. Positive
+  /// `start` and `end` offsets move inward from the pointer edge, negative
+  /// values move outward beyond that edge, and `center(offset)` moves from the
+  /// pointer center along the resolved main axis. It does not move the pointer
+  /// relative to the target; use [pointerTargetPosition] for that relationship.
   final SpotlightGuideAnchorPosition anchorPointerPosition;
 
   /// Whether [child] paints above or below the bubble.

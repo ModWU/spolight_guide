@@ -41,8 +41,9 @@ for a simple built-in tap cue, `Image.asset`, a Lottie animation, an icon badge,
 or custom paint.
 
 With the default pointer chain, `pointerTargetPosition` chooses the target-side
-point where the pointer is placed, and `anchorPointerPosition` chooses where
-the bubble anchor attaches to the pointer. Use
+point and aligns the pointer's matching start, center, or end point to it.
+`anchorPointerPosition` chooses where the bubble anchor attaches to the
+pointer. Use
 `SpotlightGuidePointPosition.crossAxisOffset` when the pointer itself should
 move away from or back toward the target, and `SpotlightGuideStepItem.gap` for
 the pointer-to-bubble-anchor distance. Custom pointers can omit `size` to use
@@ -51,6 +52,12 @@ their child layout size, or provide `size` when an asset needs a stable slot.
 `SpotlightGuideAnchorPosition`. `pointerTargetPosition` uses
 `SpotlightGuidePointPosition`, which also accepts an optional second value for
 target-side cross-axis adjustment.
+
+For `start` and `end`, positive main-axis values move inward from the
+referenced edge and negative values move outward. With
+`pointerTargetPosition`, the main-axis value is resolved on the target point
+only: `end(12)` aligns the pointer end edge to a target point 12px inward from
+the target end edge.
 
 Configure pointers on `SpotlightGuideStepItem.pointer`. The portal can then
 reserve the pointer target position, fixed pointer `size`, and

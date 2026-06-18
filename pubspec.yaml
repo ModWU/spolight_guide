@@ -1,6 +1,6 @@
 name: spotlight_guide
 description: A Flutter overlay guide for spotlighting widgets with dynamic targets, reveal scrolling, custom hints, and robust widget tests.
-version: 0.2.1
+version: 0.2.2
 homepage: https://github.com/ModWU/spolight_guide
 topics:
   - spotlight

@@ -30,7 +30,7 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
       title: 'Custom pointer widget',
       message:
           'A pointer can be an image, animation, CustomPaint, icon, badge, or '
-          'any widget that should visually connect the hint to the target.',
+          'any widget. This badge aligns its end edge to the target end edge.',
       pointer: const SpotlightGuidePointer(
         child: _CustomPointerBadge(),
         size: Size(88, 42),
@@ -99,7 +99,6 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
           _pointerTargetDistance,
         ),
         anchorMode: SpotlightGuidePointerAnchorMode.target,
-        paintOrder: SpotlightGuidePointerPaintOrder.aboveBubble,
       ),
     ),
   ];

@@ -542,8 +542,11 @@ void main() {
       const List<SpotlightGuideAnchorPosition> anchors =
           <SpotlightGuideAnchorPosition>[
             SpotlightGuideAnchorPosition.start(8),
+            SpotlightGuideAnchorPosition.start(-4),
             SpotlightGuideAnchorPosition.center(5),
+            SpotlightGuideAnchorPosition.center(-5),
             SpotlightGuideAnchorPosition.end(8),
+            SpotlightGuideAnchorPosition.end(-4),
           ];
 
       for (final TextDirection textDirection in TextDirection.values) {
@@ -795,8 +798,11 @@ void main() {
     const List<SpotlightGuideAnchorPosition> anchors =
         <SpotlightGuideAnchorPosition>[
           SpotlightGuideAnchorPosition.start(8),
+          SpotlightGuideAnchorPosition.start(-4),
           SpotlightGuideAnchorPosition.center(6),
+          SpotlightGuideAnchorPosition.center(-6),
           SpotlightGuideAnchorPosition.end(8),
+          SpotlightGuideAnchorPosition.end(-4),
         ];
     const List<SpotlightGuidePlacement> placements = <SpotlightGuidePlacement>[
       SpotlightGuidePlacement.bottom,
@@ -877,9 +883,14 @@ void main() {
             final bool horizontalAxis =
                 guide.anchorDirection == SpotlightGuideDirection.up ||
                 guide.anchorDirection == SpotlightGuideDirection.down;
-            final double pointerTargetAxis = horizontalAxis
-                ? pointerRect.center.dx
-                : pointerRect.center.dy;
+            final SpotlightGuidePointPosition pointerTargetPosition =
+                _pointPositionFor(anchorPointer);
+            final double pointerTargetAxis = _pointerMatchingAxis(
+              pointerRect,
+              pointerTargetPosition,
+              isHorizontalAxis: horizontalAxis,
+              textDirection: textDirection,
+            );
             final double bubbleAnchorAxis = _anchorAxisPosition(
               pointerRect,
               targetAnchor,
@@ -1120,7 +1131,12 @@ void main() {
                 guide.anchorDirection == SpotlightGuideDirection.up ||
                 guide.anchorDirection == SpotlightGuideDirection.down;
             expect(
-              horizontalAxis ? pointerRect.center.dx : pointerRect.center.dy,
+              _pointerMatchingAxis(
+                pointerRect,
+                position,
+                isHorizontalAxis: horizontalAxis,
+                textDirection: textDirection,
+              ),
               moreOrLessEquals(
                 horizontalAxis ? expectedPoint.dx : expectedPoint.dy,
                 epsilon: 0.5,
@@ -1254,7 +1270,12 @@ void main() {
             reason: label,
           );
           expect(
-            horizontalAxis ? pointerRect.center.dx : pointerRect.center.dy,
+            _pointerMatchingAxis(
+              pointerRect,
+              pointerTargetPosition,
+              isHorizontalAxis: horizontalAxis,
+              textDirection: textDirection,
+            ),
             moreOrLessEquals(
               horizontalAxis
                   ? expectedPointerTargetPoint.dx
@@ -1854,6 +1875,31 @@ double _anchorAxisPosition(
                 ? rect.left + position.mainAxisOffset
                 : rect.right - position.mainAxisOffset
           : rect.bottom - position.mainAxisOffset,
+  };
+}
+
+double _pointerMatchingAxis(
+  Rect pointerRect,
+  SpotlightGuidePointPosition position, {
+  required bool isHorizontalAxis,
+  required TextDirection textDirection,
+}) {
+  final bool reverse = isHorizontalAxis && textDirection == TextDirection.rtl;
+  return switch (position.alignment) {
+    SpotlightGuideAnchorAlignment.center =>
+      isHorizontalAxis ? pointerRect.center.dx : pointerRect.center.dy,
+    SpotlightGuideAnchorAlignment.start =>
+      isHorizontalAxis
+          ? reverse
+                ? pointerRect.right
+                : pointerRect.left
+          : pointerRect.top,
+    SpotlightGuideAnchorAlignment.end =>
+      isHorizontalAxis
+          ? reverse
+                ? pointerRect.left
+                : pointerRect.right
+          : pointerRect.bottom,
   };
 }
 

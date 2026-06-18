@@ -246,8 +246,11 @@ class SpotlightGuideStepItem {
   ///
   /// For top/bottom placements this resolves along the target's horizontal
   /// main axis. For left/right placements this resolves along the target's
-  /// vertical main axis. This position moves the anchor point on the target; it
-  /// does not move the target itself.
+  /// vertical main axis. Positive `start` and `end` offsets move inward from
+  /// the target edge, negative values move outward beyond that edge, and
+  /// `center(offset)` moves from the target center along the resolved main
+  /// axis. This position moves the anchor point on the target; it does not move
+  /// the target itself.
   final SpotlightGuideAnchorPosition anchorTargetPosition;
 
   /// Decoration used by built-in hint widgets.
@@ -493,7 +496,7 @@ class SpotlightGuideStepContext {
   /// Global overlay point where a direct bubble anchor aims at the target.
   Offset anchorTargetPoint;
 
-  /// Global overlay point where the pointer is positioned relative to target.
+  /// Global overlay point where the pointer's matching point aligns to target.
   ///
   /// This resolves [SpotlightGuidePointer.pointerTargetPosition] against
   /// [targetRect]. It is meaningful when [pointer] participates in the default

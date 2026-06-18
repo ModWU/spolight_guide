@@ -892,9 +892,19 @@ void main() {
         final bool horizontalAnchorAxis =
             guide.anchorDirection == SpotlightGuideDirection.up ||
             guide.anchorDirection == SpotlightGuideDirection.down;
-        final double pointerTargetAxis = horizontalAnchorAxis
-            ? pointerRect.center.dx
-            : pointerRect.center.dy;
+        final SpotlightGuidePointPosition pointerTargetPosition =
+            _pointPositionFor(anchorPointer);
+        final double pointerTargetAxis = _pointerTargetAxisPosition(
+          pointerRect,
+          pointerTargetPosition,
+          isHorizontalAxis: horizontalAnchorAxis,
+        );
+        final double anchorPointerAxis = _anchorPointerAxisPosition(
+          pointerRect,
+          const SpotlightGuideAnchorPosition.center(),
+          isHorizontalAxis: horizontalAnchorAxis,
+          textDirection: TextDirection.ltr,
+        );
         final double targetAxis = horizontalAnchorAxis
             ? guide.pointerTargetPoint.dx
             : guide.pointerTargetPoint.dy;
@@ -907,8 +917,8 @@ void main() {
         );
         expect(
           _bubbleAnchorGlobalAxis(bubbleRect, anchorGeometry),
-          moreOrLessEquals(pointerTargetAxis, epsilon: 0.5),
-          reason: '$label bubble anchor should stay on pointer center',
+          moreOrLessEquals(anchorPointerAxis, epsilon: 0.5),
+          reason: '$label bubble anchor should use anchorPointerPosition',
         );
       }
     }
@@ -1973,10 +1983,17 @@ void main() {
 
       final SpotlightGuideStepContext guide = contexts[testCase.label]!;
       final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
+      final SpotlightGuidePointPosition pointerTargetPosition =
+          guide.pointer?.pointerTargetPosition ??
+          const SpotlightGuidePointPosition.center();
       switch (guide.anchorDirection) {
         case SpotlightGuideDirection.up:
           expect(
-            pointerRect.center.dx,
+            _pointerTargetAxisPosition(
+              pointerRect,
+              pointerTargetPosition,
+              isHorizontalAxis: true,
+            ),
             moreOrLessEquals(guide.pointerTargetPoint.dx, epsilon: 0.5),
           );
           expect(
@@ -1985,7 +2002,11 @@ void main() {
           );
         case SpotlightGuideDirection.down:
           expect(
-            pointerRect.center.dx,
+            _pointerTargetAxisPosition(
+              pointerRect,
+              pointerTargetPosition,
+              isHorizontalAxis: true,
+            ),
             moreOrLessEquals(guide.pointerTargetPoint.dx, epsilon: 0.5),
           );
           expect(
@@ -1994,7 +2015,11 @@ void main() {
           );
         case SpotlightGuideDirection.left:
           expect(
-            pointerRect.center.dy,
+            _pointerTargetAxisPosition(
+              pointerRect,
+              pointerTargetPosition,
+              isHorizontalAxis: false,
+            ),
             moreOrLessEquals(guide.pointerTargetPoint.dy, epsilon: 0.5),
           );
           expect(
@@ -2003,7 +2028,11 @@ void main() {
           );
         case SpotlightGuideDirection.right:
           expect(
-            pointerRect.center.dy,
+            _pointerTargetAxisPosition(
+              pointerRect,
+              pointerTargetPosition,
+              isHorizontalAxis: false,
+            ),
             moreOrLessEquals(guide.pointerTargetPoint.dy, epsilon: 0.5),
           );
           expect(
@@ -3449,7 +3478,7 @@ void main() {
     final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
         _bubbleAnchorGeometry(tester);
     expect(
-      pointerRect.center.dx,
+      pointerRect.right,
       moreOrLessEquals(guide.pointerTargetPoint.dx, epsilon: 0.5),
     );
     expect(
@@ -3797,6 +3826,9 @@ void _expectDecorativePointerAtTargetPoint({
   required SpotlightGuideStepContext guide,
   required String reason,
 }) {
+  final SpotlightGuidePointPosition position =
+      guide.pointer?.pointerTargetPosition ??
+      const SpotlightGuidePointPosition.center();
   switch (guide.anchorDirection) {
     case SpotlightGuideDirection.up:
       expect(
@@ -3805,7 +3837,11 @@ void _expectDecorativePointerAtTargetPoint({
         reason: reason,
       );
       expect(
-        pointerRect.center.dx,
+        _pointerTargetAxisPosition(
+          pointerRect,
+          position,
+          isHorizontalAxis: true,
+        ),
         moreOrLessEquals(guide.pointerTargetPoint.dx, epsilon: 0.5),
         reason: reason,
       );
@@ -3816,7 +3852,11 @@ void _expectDecorativePointerAtTargetPoint({
         reason: reason,
       );
       expect(
-        pointerRect.center.dx,
+        _pointerTargetAxisPosition(
+          pointerRect,
+          position,
+          isHorizontalAxis: true,
+        ),
         moreOrLessEquals(guide.pointerTargetPoint.dx, epsilon: 0.5),
         reason: reason,
       );
@@ -3827,7 +3867,11 @@ void _expectDecorativePointerAtTargetPoint({
         reason: reason,
       );
       expect(
-        pointerRect.center.dy,
+        _pointerTargetAxisPosition(
+          pointerRect,
+          position,
+          isHorizontalAxis: false,
+        ),
         moreOrLessEquals(guide.pointerTargetPoint.dy, epsilon: 0.5),
         reason: reason,
       );
@@ -3838,7 +3882,11 @@ void _expectDecorativePointerAtTargetPoint({
         reason: reason,
       );
       expect(
-        pointerRect.center.dy,
+        _pointerTargetAxisPosition(
+          pointerRect,
+          position,
+          isHorizontalAxis: false,
+        ),
         moreOrLessEquals(guide.pointerTargetPoint.dy, epsilon: 0.5),
         reason: reason,
       );
@@ -3868,6 +3916,31 @@ double _anchorPointerAxisPosition(
                 ? pointerRect.left + position.mainAxisOffset
                 : pointerRect.right - position.mainAxisOffset
           : pointerRect.bottom - position.mainAxisOffset,
+  };
+}
+
+double _pointerTargetAxisPosition(
+  Rect pointerRect,
+  SpotlightGuidePointPosition position, {
+  required bool isHorizontalAxis,
+  TextDirection textDirection = TextDirection.ltr,
+}) {
+  final bool reverse = isHorizontalAxis && textDirection == TextDirection.rtl;
+  return switch (position.alignment) {
+    SpotlightGuideAnchorAlignment.center =>
+      isHorizontalAxis ? pointerRect.center.dx : pointerRect.center.dy,
+    SpotlightGuideAnchorAlignment.start =>
+      isHorizontalAxis
+          ? reverse
+                ? pointerRect.right
+                : pointerRect.left
+          : pointerRect.top,
+    SpotlightGuideAnchorAlignment.end =>
+      isHorizontalAxis
+          ? reverse
+                ? pointerRect.left
+                : pointerRect.right
+          : pointerRect.bottom,
   };
 }
 

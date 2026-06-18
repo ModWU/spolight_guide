@@ -42,7 +42,7 @@ void main() {
     },
   );
 
-  testWidgets('anchorTargetPosition start and end use the correct edge', (
+  testWidgets('anchorTargetPosition signed offsets use the correct edge', (
     tester,
   ) async {
     for (final TextDirection textDirection in TextDirection.values) {
@@ -74,30 +74,43 @@ void main() {
   });
 
   testWidgets(
-    'pointerTargetPosition offsets resolve from the target on every side',
+    'pointerTargetPosition aligns matching pointer and target points',
     (tester) async {
       const double distance = 10;
+      const List<SpotlightGuidePointPosition> positions =
+          <SpotlightGuidePointPosition>[
+            SpotlightGuidePointPosition.center(0, distance),
+            SpotlightGuidePointPosition.center(12, distance),
+            SpotlightGuidePointPosition.center(-12, distance),
+            SpotlightGuidePointPosition.start(11, distance),
+            SpotlightGuidePointPosition.start(-11, distance),
+            SpotlightGuidePointPosition.end(13, distance),
+            SpotlightGuidePointPosition.end(-13, distance),
+          ];
 
       for (final TextDirection textDirection in TextDirection.values) {
         for (final SpotlightGuidePlacement placement in _physicalPlacements) {
-          final String label =
-              'point-cross-${textDirection.name}-${placement.name}';
-          final _PointerLayout layout = await _pumpPointerPosition(
-            tester,
-            label: label,
-            textDirection: textDirection,
-            placement: placement,
-            pointerTargetPosition: const SpotlightGuidePointPosition.center(
-              0,
-              distance,
-            ),
-          );
+          for (final SpotlightGuidePointPosition position in positions) {
+            final String label =
+                'point-${textDirection.name}-${placement.name}'
+                '-${position.alignment.name}'
+                '-main-${position.mainAxisOffset}';
+            final _PointerLayout layout = await _pumpPointerPosition(
+              tester,
+              label: label,
+              textDirection: textDirection,
+              placement: placement,
+              pointerTargetPosition: position,
+            );
 
-          _expectPointerTargetContact(
-            pointerRect: layout.pointerRect,
-            guide: layout.guide,
-            reason: label,
-          );
+            _expectPointerTargetContact(
+              pointerRect: layout.pointerRect,
+              guide: layout.guide,
+              pointerTargetPosition: position,
+              textDirection: textDirection,
+              reason: label,
+            );
+          }
         }
       }
     },
@@ -160,9 +173,24 @@ const List<_AlignmentCase> _alignmentCases = <_AlignmentCase>[
     position: SpotlightGuideAnchorPosition.start(11),
   ),
   _AlignmentCase(
+    alignment: SpotlightGuideAnchorAlignment.start,
+    mainAxisOffset: -7,
+    position: SpotlightGuideAnchorPosition.start(-7),
+  ),
+  _AlignmentCase(
+    alignment: SpotlightGuideAnchorAlignment.center,
+    mainAxisOffset: -9,
+    position: SpotlightGuideAnchorPosition.center(-9),
+  ),
+  _AlignmentCase(
     alignment: SpotlightGuideAnchorAlignment.end,
     mainAxisOffset: 13,
     position: SpotlightGuideAnchorPosition.end(13),
+  ),
+  _AlignmentCase(
+    alignment: SpotlightGuideAnchorAlignment.end,
+    mainAxisOffset: -5,
+    position: SpotlightGuideAnchorPosition.end(-5),
   ),
 ];
 
@@ -350,6 +378,8 @@ double _resolveVerticalAxis(
 void _expectPointerTargetContact({
   required Rect pointerRect,
   required SpotlightGuideStepContext guide,
+  required SpotlightGuidePointPosition pointerTargetPosition,
+  required TextDirection textDirection,
   required String reason,
 }) {
   final String details =
@@ -358,7 +388,12 @@ void _expectPointerTargetContact({
   switch (guide.anchorDirection) {
     case SpotlightGuideDirection.up:
       expect(
-        pointerRect.center.dx,
+        _pointerMatchingPoint(
+          pointerRect,
+          pointerTargetPosition,
+          isHorizontalAxis: true,
+          textDirection: textDirection,
+        ),
         moreOrLessEquals(guide.pointerTargetPoint.dx, epsilon: 0.5),
         reason: details,
       );
@@ -369,7 +404,12 @@ void _expectPointerTargetContact({
       );
     case SpotlightGuideDirection.down:
       expect(
-        pointerRect.center.dx,
+        _pointerMatchingPoint(
+          pointerRect,
+          pointerTargetPosition,
+          isHorizontalAxis: true,
+          textDirection: textDirection,
+        ),
         moreOrLessEquals(guide.pointerTargetPoint.dx, epsilon: 0.5),
         reason: details,
       );
@@ -380,7 +420,12 @@ void _expectPointerTargetContact({
       );
     case SpotlightGuideDirection.left:
       expect(
-        pointerRect.center.dy,
+        _pointerMatchingPoint(
+          pointerRect,
+          pointerTargetPosition,
+          isHorizontalAxis: false,
+          textDirection: textDirection,
+        ),
         moreOrLessEquals(guide.pointerTargetPoint.dy, epsilon: 0.5),
         reason: details,
       );
@@ -391,7 +436,12 @@ void _expectPointerTargetContact({
       );
     case SpotlightGuideDirection.right:
       expect(
-        pointerRect.center.dy,
+        _pointerMatchingPoint(
+          pointerRect,
+          pointerTargetPosition,
+          isHorizontalAxis: false,
+          textDirection: textDirection,
+        ),
         moreOrLessEquals(guide.pointerTargetPoint.dy, epsilon: 0.5),
         reason: details,
       );
@@ -401,6 +451,31 @@ void _expectPointerTargetContact({
         reason: details,
       );
   }
+}
+
+double _pointerMatchingPoint(
+  Rect pointerRect,
+  SpotlightGuidePointPosition position, {
+  required bool isHorizontalAxis,
+  required TextDirection textDirection,
+}) {
+  final bool reverse = isHorizontalAxis && textDirection == TextDirection.rtl;
+  return switch (position.alignment) {
+    SpotlightGuideAnchorAlignment.center =>
+      isHorizontalAxis ? pointerRect.center.dx : pointerRect.center.dy,
+    SpotlightGuideAnchorAlignment.start =>
+      isHorizontalAxis
+          ? reverse
+                ? pointerRect.right
+                : pointerRect.left
+          : pointerRect.top,
+    SpotlightGuideAnchorAlignment.end =>
+      isHorizontalAxis
+          ? reverse
+                ? pointerRect.left
+                : pointerRect.right
+          : pointerRect.bottom,
+  };
 }
 
 SpotlightGuidePlacement _resolveSemanticPlacement(
