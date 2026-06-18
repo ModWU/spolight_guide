@@ -13,7 +13,7 @@ import 'spotlight_guide_test_helpers.dart';
 ///
 /// Run this file when changing placement resolution, pointer bubble placement,
 /// semantic start/end behavior, anchor positions, anchor directions, pointer
-/// rotations, visual offsets, or signed gap semantics.
+/// rotations, pointer offsets, or signed gap semantics.
 void main() {
   testWidgets('pointer bubble placement matrix resolves physical directions', (
     tester,
@@ -89,7 +89,7 @@ void main() {
                     targetDecoration: const SpotlightGuideTargetDecoration(
                       padding: EdgeInsets.zero,
                     ),
-                    targetAnchorPosition:
+                    anchorTargetPosition:
                         const SpotlightGuideAnchorPosition.center(),
                     gap: gap,
                     minWidth: 96,
@@ -441,7 +441,7 @@ void main() {
                     targetDecoration: const SpotlightGuideTargetDecoration(
                       padding: EdgeInsets.zero,
                     ),
-                    targetAnchorPosition:
+                    anchorTargetPosition:
                         const SpotlightGuideAnchorPosition.center(),
                     gap: gap,
                     minWidth: 96,
@@ -528,7 +528,7 @@ void main() {
   });
 
   testWidgets(
-    'targetAnchorPosition controls no-pointer anchors in LTR and RTL',
+    'anchorTargetPosition controls no-pointer anchors in LTR and RTL',
     (tester) async {
       const List<SpotlightGuidePlacement> stepPlacements =
           <SpotlightGuidePlacement>[
@@ -554,7 +554,7 @@ void main() {
           for (final SpotlightGuideAnchorPosition anchor in anchors) {
             final String label =
                 'no-pointer-${textDirection.name}-${stepPlacement.name}'
-                '-${anchor.anchor.name}';
+                '-${anchor.alignment.name}';
             final Map<String, SpotlightGuideStepContext> contexts =
                 <String, SpotlightGuideStepContext>{};
 
@@ -577,7 +577,7 @@ void main() {
                       targetDecoration: const SpotlightGuideTargetDecoration(
                         padding: EdgeInsets.zero,
                       ),
-                      targetAnchorPosition: anchor,
+                      anchorTargetPosition: anchor,
                       gap: 10,
                       minWidth: 96,
                       maxWidth: 140,
@@ -809,11 +809,11 @@ void main() {
       for (final SpotlightGuidePlacement placement in placements) {
         final _TargetGeometry target = _targetFor(placement);
         for (final SpotlightGuideAnchorPosition targetAnchor in anchors) {
-          for (final SpotlightGuideAnchorPosition pointerAnchor in anchors) {
+          for (final SpotlightGuideAnchorPosition anchorPointer in anchors) {
             final String label =
                 'anchor-${textDirection.name}-${placement.name}'
-                '-target-${targetAnchor.anchor.name}'
-                '-pointer-${pointerAnchor.anchor.name}';
+                '-target-${targetAnchor.alignment.name}'
+                '-pointer-${anchorPointer.alignment.name}';
             final Map<String, SpotlightGuideStepContext> contexts =
                 <String, SpotlightGuideStepContext>{};
             final ValueKey<String> pointerKey = ValueKey<String>(
@@ -839,13 +839,14 @@ void main() {
                       targetDecoration: const SpotlightGuideTargetDecoration(
                         padding: EdgeInsets.zero,
                       ),
-                      targetAnchorPosition: targetAnchor,
+                      anchorTargetPosition: targetAnchor,
                       gap: 10,
                       minWidth: 96,
                       maxWidth: 140,
                       pointer: SpotlightGuidePointer(
                         size: const Size(40, 28),
-                        pointerAnchorPosition: pointerAnchor,
+                        pointerTargetPosition: _pointPositionFor(anchorPointer),
+                        anchorPointerPosition: targetAnchor,
                         child: SizedBox(key: pointerKey, width: 40, height: 28),
                       ),
                       hintBuilder:
@@ -876,12 +877,9 @@ void main() {
             final bool horizontalAxis =
                 guide.anchorDirection == SpotlightGuideDirection.up ||
                 guide.anchorDirection == SpotlightGuideDirection.down;
-            final double pointerTargetAxis = _anchorAxisPosition(
-              pointerRect,
-              pointerAnchor,
-              isHorizontalAxis: horizontalAxis,
-              textDirection: textDirection,
-            );
+            final double pointerTargetAxis = horizontalAxis
+                ? pointerRect.center.dx
+                : pointerRect.center.dy;
             final double bubbleAnchorAxis = _anchorAxisPosition(
               pointerRect,
               targetAnchor,
@@ -889,8 +887,8 @@ void main() {
               textDirection: textDirection,
             );
             final double targetAxis = horizontalAxis
-                ? guide.targetRect.center.dx
-                : guide.targetRect.center.dy;
+                ? guide.pointerTargetPoint.dx
+                : guide.pointerTargetPoint.dy;
 
             expect(
               pointerTargetAxis,
@@ -908,32 +906,144 @@ void main() {
     }
   });
 
-  testWidgets('signed gap and targetGap follow resolved directions', (
-    tester,
-  ) async {
-    const List<SpotlightGuidePlacement> placements = <SpotlightGuidePlacement>[
-      SpotlightGuidePlacement.bottom,
-      SpotlightGuidePlacement.top,
-      SpotlightGuidePlacement.left,
-      SpotlightGuidePlacement.right,
-      SpotlightGuidePlacement.start,
-      SpotlightGuidePlacement.end,
-    ];
-    const List<double> gaps = <double>[12, -5];
-    const List<double> targetGaps = <double>[9, -4];
+  testWidgets(
+    'signed gap and pointer target distance follow resolved directions',
+    (tester) async {
+      const List<SpotlightGuidePlacement> placements =
+          <SpotlightGuidePlacement>[
+            SpotlightGuidePlacement.bottom,
+            SpotlightGuidePlacement.top,
+            SpotlightGuidePlacement.left,
+            SpotlightGuidePlacement.right,
+            SpotlightGuidePlacement.start,
+            SpotlightGuidePlacement.end,
+          ];
+      const List<double> gaps = <double>[12, -5];
+      const List<double> targetDistances = <double>[9, -4];
 
-    for (final TextDirection textDirection in TextDirection.values) {
-      for (final SpotlightGuidePlacement placement in placements) {
-        final SpotlightGuidePlacement resolvedPlacement = _resolveStepPlacement(
-          placement,
-          textDirection,
-        );
-        final _TargetGeometry target = _targetFor(resolvedPlacement);
-        for (final double gap in gaps) {
-          for (final double targetGap in targetGaps) {
+      for (final TextDirection textDirection in TextDirection.values) {
+        for (final SpotlightGuidePlacement placement in placements) {
+          final SpotlightGuidePlacement resolvedPlacement =
+              _resolveStepPlacement(placement, textDirection);
+          final _TargetGeometry target = _targetFor(resolvedPlacement);
+          for (final double gap in gaps) {
+            for (final double targetDistance in targetDistances) {
+              final String label =
+                  'signed-${textDirection.name}-${placement.name}'
+                  '-gap-$gap-targetDistance-$targetDistance';
+              final Map<String, SpotlightGuideStepContext> contexts =
+                  <String, SpotlightGuideStepContext>{};
+              final ValueKey<String> pointerKey = ValueKey<String>(
+                '$label-pointer',
+              );
+
+              await tester.pumpWidget(
+                guideApp(
+                  appKey: ValueKey<String>(label),
+                  textDirection: textDirection,
+                  child: singleTargetStack(
+                    id: 'a',
+                    left: target.left,
+                    top: target.top,
+                    width: target.width,
+                    height: target.height,
+                  ),
+                  steps: <SpotlightGuideStep>[
+                    SpotlightGuideStep.item(
+                      SpotlightGuideStepItem(
+                        targetId: 'a',
+                        placement: placement,
+                        targetDecoration: const SpotlightGuideTargetDecoration(
+                          padding: EdgeInsets.zero,
+                        ),
+                        gap: gap,
+                        minWidth: 96,
+                        maxWidth: 140,
+                        pointer: SpotlightGuidePointer(
+                          size: const Size(32, 32),
+                          pointerTargetPosition:
+                              SpotlightGuidePointPosition.center(
+                                0,
+                                targetDistance,
+                              ),
+                          child: SizedBox(
+                            key: pointerKey,
+                            width: 32,
+                            height: 32,
+                          ),
+                        ),
+                        hintBuilder:
+                            (
+                              BuildContext context,
+                              SpotlightGuideStepContext guide,
+                            ) {
+                              contexts[label] = guide;
+                              return SpotlightGuideBubbleHint(
+                                guide: guide,
+                                child: const SizedBox(width: 96, height: 42),
+                              );
+                            },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              await _pumpDirectionGuide(tester);
+
+              final SpotlightGuideStepContext guide = contexts[label]!;
+              final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
+              final Rect bubbleRect = tester.getRect(
+                find.byType(SpotlightGuideBubble),
+              );
+
+              expect(guide.placement, resolvedPlacement, reason: label);
+              expect(
+                _signedPointerTargetDistance(pointerRect, guide),
+                moreOrLessEquals(targetDistance, epsilon: 0.5),
+                reason: label,
+              );
+              expect(
+                _signedPointerBubbleGap(pointerRect, bubbleRect, guide),
+                moreOrLessEquals(gap, epsilon: 0.5),
+                reason: label,
+              );
+            }
+          }
+        }
+      }
+    },
+  );
+
+  testWidgets(
+    'pointerTargetPosition main and cross axes resolve in LTR and RTL',
+    (tester) async {
+      const List<SpotlightGuidePlacement> placements =
+          <SpotlightGuidePlacement>[
+            SpotlightGuidePlacement.bottom,
+            SpotlightGuidePlacement.top,
+            SpotlightGuidePlacement.left,
+            SpotlightGuidePlacement.right,
+            SpotlightGuidePlacement.start,
+            SpotlightGuidePlacement.end,
+          ];
+      const List<SpotlightGuidePointPosition> positions =
+          <SpotlightGuidePointPosition>[
+            SpotlightGuidePointPosition.center(12, 7),
+            SpotlightGuidePointPosition.start(9, 5),
+            SpotlightGuidePointPosition.end(11, -4),
+          ];
+
+      for (final TextDirection textDirection in TextDirection.values) {
+        for (final SpotlightGuidePlacement placement in placements) {
+          final SpotlightGuidePlacement resolvedPlacement =
+              _resolveStepPlacement(placement, textDirection);
+          final _TargetGeometry target = _targetFor(resolvedPlacement);
+          for (final SpotlightGuidePointPosition position in positions) {
             final String label =
-                'signed-${textDirection.name}-${placement.name}'
-                '-gap-$gap-targetGap-$targetGap';
+                'point-${textDirection.name}-${placement.name}'
+                '-${position.alignment.name}'
+                '-main-${position.mainAxisOffset}'
+                '-cross-${position.crossAxisOffset}';
             final Map<String, SpotlightGuideStepContext> contexts =
                 <String, SpotlightGuideStepContext>{};
             final ValueKey<String> pointerKey = ValueKey<String>(
@@ -959,13 +1069,13 @@ void main() {
                       targetDecoration: const SpotlightGuideTargetDecoration(
                         padding: EdgeInsets.zero,
                       ),
-                      gap: gap,
+                      gap: 8,
                       minWidth: 96,
                       maxWidth: 140,
                       pointer: SpotlightGuidePointer(
-                        size: const Size(32, 32),
-                        targetGap: targetGap,
-                        child: SizedBox(key: pointerKey, width: 32, height: 32),
+                        size: const Size(34, 26),
+                        pointerTargetPosition: position,
+                        child: SizedBox(key: pointerKey, width: 34, height: 26),
                       ),
                       hintBuilder:
                           (
@@ -987,26 +1097,192 @@ void main() {
 
             final SpotlightGuideStepContext guide = contexts[label]!;
             final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
-            final Rect bubbleRect = tester.getRect(
-              find.byType(SpotlightGuideBubble),
+            final Offset expectedPoint = _expectedPointerTargetPoint(
+              guide.targetRect,
+              position,
+              placement: resolvedPlacement,
+              textDirection: textDirection,
             );
 
             expect(guide.placement, resolvedPlacement, reason: label);
             expect(
-              _signedTargetGap(pointerRect, guide),
-              moreOrLessEquals(targetGap, epsilon: 0.5),
+              guide.pointerTargetPoint.dx,
+              moreOrLessEquals(expectedPoint.dx, epsilon: 0.5),
               reason: label,
             );
             expect(
-              _signedPointerBubbleGap(pointerRect, bubbleRect, guide),
-              moreOrLessEquals(gap, epsilon: 0.5),
+              guide.pointerTargetPoint.dy,
+              moreOrLessEquals(expectedPoint.dy, epsilon: 0.5),
+              reason: label,
+            );
+
+            final bool horizontalAxis =
+                guide.anchorDirection == SpotlightGuideDirection.up ||
+                guide.anchorDirection == SpotlightGuideDirection.down;
+            expect(
+              horizontalAxis ? pointerRect.center.dx : pointerRect.center.dy,
+              moreOrLessEquals(
+                horizontalAxis ? expectedPoint.dx : expectedPoint.dy,
+                epsilon: 0.5,
+              ),
+              reason: label,
+            );
+            expect(
+              _signedPointerTargetDistance(pointerRect, guide),
+              moreOrLessEquals(position.crossAxisOffset, epsilon: 0.5),
               reason: label,
             );
           }
         }
       }
-    }
-  });
+    },
+  );
+
+  testWidgets(
+    'position fields keep independent target pointer and anchor semantics',
+    (tester) async {
+      const List<SpotlightGuidePlacement> placements =
+          <SpotlightGuidePlacement>[
+            SpotlightGuidePlacement.bottom,
+            SpotlightGuidePlacement.top,
+            SpotlightGuidePlacement.left,
+            SpotlightGuidePlacement.right,
+            SpotlightGuidePlacement.start,
+            SpotlightGuidePlacement.end,
+          ];
+
+      for (final TextDirection textDirection in TextDirection.values) {
+        for (final SpotlightGuidePlacement placement in placements) {
+          final SpotlightGuidePlacement resolvedPlacement =
+              _resolveStepPlacement(placement, textDirection);
+          final _TargetGeometry target = _targetFor(resolvedPlacement);
+          final bool horizontalAxis =
+              resolvedPlacement == SpotlightGuidePlacement.top ||
+              resolvedPlacement == SpotlightGuidePlacement.bottom;
+          final SpotlightGuidePointPosition pointerTargetPosition =
+              horizontalAxis
+              ? const SpotlightGuidePointPosition.start(8, 6)
+              : const SpotlightGuidePointPosition.end(7, 6);
+          const SpotlightGuideAnchorPosition anchorPointerPosition =
+              SpotlightGuideAnchorPosition.end(5);
+          const SpotlightGuideAnchorPosition anchorTargetPosition =
+              SpotlightGuideAnchorPosition.start(13);
+          final String label =
+              'independent-${textDirection.name}-${placement.name}';
+          final Map<String, SpotlightGuideStepContext> contexts =
+              <String, SpotlightGuideStepContext>{};
+          final ValueKey<String> pointerKey = ValueKey<String>(
+            '$label-pointer',
+          );
+
+          await tester.pumpWidget(
+            guideApp(
+              appKey: ValueKey<String>(label),
+              textDirection: textDirection,
+              child: singleTargetStack(
+                id: 'a',
+                left: target.left,
+                top: target.top,
+                width: target.width,
+                height: target.height,
+              ),
+              steps: <SpotlightGuideStep>[
+                SpotlightGuideStep.item(
+                  SpotlightGuideStepItem(
+                    targetId: 'a',
+                    placement: placement,
+                    targetDecoration: const SpotlightGuideTargetDecoration(
+                      padding: EdgeInsets.zero,
+                    ),
+                    anchorTargetPosition: anchorTargetPosition,
+                    gap: 10,
+                    minWidth: 96,
+                    maxWidth: 140,
+                    pointer: SpotlightGuidePointer(
+                      size: const Size(38, 30),
+                      pointerTargetPosition: pointerTargetPosition,
+                      anchorPointerPosition: anchorPointerPosition,
+                      child: SizedBox(key: pointerKey, width: 38, height: 30),
+                    ),
+                    hintBuilder:
+                        (
+                          BuildContext context,
+                          SpotlightGuideStepContext guide,
+                        ) {
+                          contexts[label] = guide;
+                          return SpotlightGuideBubbleHint(
+                            guide: guide,
+                            child: const SizedBox(width: 96, height: 42),
+                          );
+                        },
+                  ),
+                ),
+              ],
+            ),
+          );
+          await _pumpDirectionGuide(tester);
+
+          final SpotlightGuideStepContext guide = contexts[label]!;
+          final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
+          final Rect bubbleRect = tester.getRect(
+            find.byType(SpotlightGuideBubble),
+          );
+          final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
+              _bubbleAnchorGeometry(tester);
+          final Offset expectedPointerTargetPoint = _expectedPointerTargetPoint(
+            guide.targetRect,
+            pointerTargetPosition,
+            placement: resolvedPlacement,
+            textDirection: textDirection,
+          );
+          final double expectedAnchorPointerAxis = _anchorAxisPosition(
+            pointerRect,
+            anchorPointerPosition,
+            isHorizontalAxis: horizontalAxis,
+            textDirection: textDirection,
+          );
+          final double expectedAnchorTargetAxis = _anchorAxisPosition(
+            guide.targetRect,
+            anchorTargetPosition,
+            isHorizontalAxis: horizontalAxis,
+            textDirection: textDirection,
+          );
+
+          expect(
+            guide.pointerTargetPoint,
+            within<Offset>(distance: 0.5, from: expectedPointerTargetPoint),
+            reason: label,
+          );
+          expect(
+            horizontalAxis ? pointerRect.center.dx : pointerRect.center.dy,
+            moreOrLessEquals(
+              horizontalAxis
+                  ? expectedPointerTargetPoint.dx
+                  : expectedPointerTargetPoint.dy,
+              epsilon: 0.5,
+            ),
+            reason: '$label pointerTargetPosition moves pointer only',
+          );
+          expect(
+            _bubbleAnchorGlobalAxis(bubbleRect, anchorGeometry),
+            moreOrLessEquals(expectedAnchorPointerAxis, epsilon: 0.5),
+            reason: '$label anchorPointerPosition controls bubble anchor',
+          );
+          expect(
+            _targetAnchorAxis(guide),
+            moreOrLessEquals(expectedAnchorTargetAxis, epsilon: 0.5),
+            reason: '$label anchorTargetPosition remains target-only',
+          );
+          expect(
+            _bubbleAnchorGlobalAxis(bubbleRect, anchorGeometry),
+            isNot(moreOrLessEquals(expectedAnchorTargetAxis, epsilon: 0.5)),
+            reason:
+                '$label default pointer chain must not use anchorTargetPosition',
+          );
+        }
+      }
+    },
+  );
 
   test('pointer direction rotations cover every anchor direction', () {
     final Map<SpotlightGuideDirection, double> expectedRadians =
@@ -1047,26 +1323,21 @@ void main() {
     }
   });
 
-  test('pointer offsets resolve physical and semantic directions', () {
-    const SpotlightGuidePointerOffset physical =
-        SpotlightGuidePointerOffset.physical(
-          left: 3,
-          right: 11,
-          up: 5,
-          down: 17,
-        );
-    expect(physical.resolve(TextDirection.ltr), const Offset(8, 12));
-    expect(physical.resolve(TextDirection.rtl), const Offset(8, 12));
+  test('anchor position stores main-axis offset', () {
+    const SpotlightGuideAnchorPosition position =
+        SpotlightGuideAnchorPosition.end(11);
 
-    const SpotlightGuidePointerOffset semantic =
-        SpotlightGuidePointerOffset.directional(
-          start: 3,
-          end: 11,
-          up: 5,
-          down: 17,
-        );
-    expect(semantic.resolve(TextDirection.ltr), const Offset(8, 12));
-    expect(semantic.resolve(TextDirection.rtl), const Offset(-8, 12));
+    expect(position.alignment, SpotlightGuideAnchorAlignment.end);
+    expect(position.mainAxisOffset, 11);
+  });
+
+  test('point position keeps main-axis and cross-axis offsets separate', () {
+    const SpotlightGuidePointPosition position =
+        SpotlightGuidePointPosition.end(11, -5);
+
+    expect(position.alignment, SpotlightGuideAnchorAlignment.end);
+    expect(position.mainAxisOffset, 11);
+    expect(position.crossAxisOffset, -5);
   });
 }
 
@@ -1472,19 +1743,22 @@ void _expectPointerCrossAxisAlignedWithTargetAnchor(
     case SpotlightGuideDirection.up || SpotlightGuideDirection.down:
       expect(
         pointerRect.center.dx,
-        moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
+        moreOrLessEquals(guide.anchorTargetPoint.dx, epsilon: 0.5),
         reason: reason,
       );
     case SpotlightGuideDirection.left || SpotlightGuideDirection.right:
       expect(
         pointerRect.center.dy,
-        moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
+        moreOrLessEquals(guide.anchorTargetPoint.dy, epsilon: 0.5),
         reason: reason,
       );
   }
 }
 
-double _signedTargetGap(Rect pointerRect, SpotlightGuideStepContext guide) {
+double _signedPointerTargetDistance(
+  Rect pointerRect,
+  SpotlightGuideStepContext guide,
+) {
   return switch (guide.anchorDirection) {
     SpotlightGuideDirection.up => pointerRect.top - guide.targetRect.bottom,
     SpotlightGuideDirection.down => guide.targetRect.top - pointerRect.bottom,
@@ -1520,19 +1794,19 @@ double _signedPointerBubbleGap(
 
 double _hintAnchorGlobalAxis(SpotlightGuideStepContext guide) {
   return switch (guide.anchorDirection) {
-    SpotlightGuideDirection.up ||
-    SpotlightGuideDirection.down => guide.hintRect.left + guide.anchorOffset,
-    SpotlightGuideDirection.left ||
-    SpotlightGuideDirection.right => guide.hintRect.top + guide.anchorOffset,
+    SpotlightGuideDirection.up || SpotlightGuideDirection.down =>
+      guide.hintRect.left + guide.bubbleAnchorOffset,
+    SpotlightGuideDirection.left || SpotlightGuideDirection.right =>
+      guide.hintRect.top + guide.bubbleAnchorOffset,
   };
 }
 
 double _targetAnchorAxis(SpotlightGuideStepContext guide) {
   return switch (guide.anchorDirection) {
     SpotlightGuideDirection.up ||
-    SpotlightGuideDirection.down => guide.targetAnchorPoint.dx,
+    SpotlightGuideDirection.down => guide.anchorTargetPoint.dx,
     SpotlightGuideDirection.left ||
-    SpotlightGuideDirection.right => guide.targetAnchorPoint.dy,
+    SpotlightGuideDirection.right => guide.anchorTargetPoint.dy,
   };
 }
 
@@ -1559,27 +1833,74 @@ double _bubbleAnchorGlobalAxis(
 
 double _anchorAxisPosition(
   Rect rect,
-  SpotlightGuideAnchorPosition position, {
+  SpotlightGuideAxisPosition position, {
   required bool isHorizontalAxis,
   required TextDirection textDirection,
 }) {
   final bool reverse = isHorizontalAxis && textDirection == TextDirection.rtl;
-  return switch (position.anchor) {
+  return switch (position.alignment) {
     SpotlightGuideAnchorAlignment.center =>
       (isHorizontalAxis ? rect.center.dx : rect.center.dy) +
-          (reverse ? -position.offset : position.offset),
+          (reverse ? -position.mainAxisOffset : position.mainAxisOffset),
     SpotlightGuideAnchorAlignment.start =>
       isHorizontalAxis
           ? reverse
-                ? rect.right - position.offset
-                : rect.left + position.offset
-          : rect.top + position.offset,
+                ? rect.right - position.mainAxisOffset
+                : rect.left + position.mainAxisOffset
+          : rect.top + position.mainAxisOffset,
     SpotlightGuideAnchorAlignment.end =>
       isHorizontalAxis
           ? reverse
-                ? rect.left + position.offset
-                : rect.right - position.offset
-          : rect.bottom - position.offset,
+                ? rect.left + position.mainAxisOffset
+                : rect.right - position.mainAxisOffset
+          : rect.bottom - position.mainAxisOffset,
+  };
+}
+
+Offset _expectedPointerTargetPoint(
+  Rect targetRect,
+  SpotlightGuidePointPosition position, {
+  required SpotlightGuidePlacement placement,
+  required TextDirection textDirection,
+}) {
+  final bool horizontalSide =
+      placement == SpotlightGuidePlacement.top ||
+      placement == SpotlightGuidePlacement.bottom;
+  final double mainAxis = _anchorAxisPosition(
+    targetRect,
+    position,
+    isHorizontalAxis: horizontalSide,
+    textDirection: textDirection,
+  );
+  if (horizontalSide) {
+    return Offset(
+      mainAxis,
+      placement == SpotlightGuidePlacement.bottom
+          ? targetRect.bottom + position.crossAxisOffset
+          : targetRect.top - position.crossAxisOffset,
+    );
+  }
+  return Offset(
+    placement == SpotlightGuidePlacement.right
+        ? targetRect.right + position.crossAxisOffset
+        : targetRect.left - position.crossAxisOffset,
+    mainAxis,
+  );
+}
+
+SpotlightGuidePointPosition _pointPositionFor(
+  SpotlightGuideAnchorPosition position,
+) {
+  return switch (position.alignment) {
+    SpotlightGuideAnchorAlignment.center => SpotlightGuidePointPosition.center(
+      position.mainAxisOffset,
+    ),
+    SpotlightGuideAnchorAlignment.start => SpotlightGuidePointPosition.start(
+      position.mainAxisOffset,
+    ),
+    SpotlightGuideAnchorAlignment.end => SpotlightGuidePointPosition.end(
+      position.mainAxisOffset,
+    ),
   };
 }
 
@@ -1597,11 +1918,12 @@ SpotlightGuidePointerContext _syntheticPointerContext(
       stepTargetRects: const <Rect>[Rect.zero],
       hintRect: Rect.zero,
       hintConstraints: const BoxConstraints(),
-      targetAnchorPoint: Offset.zero,
-      targetAnchorPosition: const SpotlightGuideAnchorPosition.center(),
+      anchorTargetPoint: Offset.zero,
+      pointerTargetPoint: Offset.zero,
+      anchorTargetPosition: const SpotlightGuideAnchorPosition.center(),
       placement: SpotlightGuidePlacement.bottom,
       anchorDirection: targetDirection,
-      anchorOffset: 0,
+      bubbleAnchorOffset: 0,
       anchorSafeInset: 0,
       anchorConnectionHalfExtent: 0,
       bubbleAnchorSideExtent: 0,

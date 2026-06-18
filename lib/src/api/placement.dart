@@ -75,18 +75,56 @@ enum SpotlightGuideDirection { up, down, left, right }
 /// layouts, [start] means the right edge and [end] means the left edge.
 enum SpotlightGuideAnchorAlignment { center, start, end }
 
-/// Describes where an anchor point should be resolved on one axis.
+/// Base class for semantic positions resolved on a guide connection axis.
 ///
-/// Use this for both the bubble-anchor relationship
-/// ([SpotlightGuideStepItem.targetAnchorPosition]) and the pointer-to-target
-/// contact relationship ([SpotlightGuidePointer.pointerAnchorPosition]).
+/// The resolved main axis is horizontal for top/bottom guide sides and
+/// vertical for left/right guide sides. Horizontal axes follow
+/// [Directionality]; vertical axes are physical. Concrete subclasses decide
+/// whether the position is one-dimensional, as with
+/// [SpotlightGuideAnchorPosition], or also has a cross-axis correction, as with
+/// [SpotlightGuidePointPosition].
+@immutable
+abstract class SpotlightGuideAxisPosition {
+  const SpotlightGuideAxisPosition(this.alignment, this.mainAxisOffset);
+
+  /// Base alignment on the resolved main axis.
+  final SpotlightGuideAnchorAlignment alignment;
+
+  /// Signed offset applied along the resolved main axis.
+  ///
+  /// [SpotlightGuideAnchorAlignment.start] and
+  /// [SpotlightGuideAnchorAlignment.end] use this as an inset from the semantic
+  /// edge. [SpotlightGuideAnchorAlignment.center] uses this as a signed offset
+  /// from the center.
+  final double mainAxisOffset;
+}
+
+/// Describes an anchor connection point on a target, pointer, or bubble edge.
 ///
-/// The [offset] value is intentionally signed. With [center], a positive
-/// horizontal offset moves toward semantic end after [Directionality] is
-/// resolved; on a vertical axis, positive moves toward the physical bottom.
-/// With [start] and [end], the value is an inset from that semantic edge.
-/// Negative values are allowed and may move the anchor outside the target or
-/// pointer.
+/// Use this value with fields that name the relationship being configured,
+/// such as [SpotlightGuideStepItem.anchorTargetPosition],
+/// [SpotlightGuidePointer.anchorPointerPosition]. The field name says which
+/// two objects are being connected; this class only says which point to use.
+///
+/// This is intentionally one-dimensional. It moves the anchor point along the
+/// resolved edge; it does not move the target or pointer widget itself. Use
+/// [SpotlightGuidePointPosition] for the pointer-to-target relationship when a
+/// custom pointer needs cross-axis correction.
+///
+/// [mainAxisOffset] moves along the main axis of the connection point:
+///
+/// * For top or bottom hints, the main axis is horizontal along the target,
+///   pointer, or bubble edge. Positive `center(offset)` moves toward the
+///   semantic end: right in LTR and left in RTL. `start(inset)` is from the
+///   left edge in LTR and from the right edge in RTL. `end(inset)` is the
+///   opposite edge.
+/// * For left or right hints, the main axis is vertical along the target,
+///   pointer, or bubble edge. Positive `center(offset)` moves down.
+///   `start(inset)` means from the top edge, and `end(inset)` means from the
+///   bottom edge. RTL does not mirror vertical start and end.
+///
+/// Negative values are allowed. They can move the resolved point outside the
+/// target or pointer when a custom composition needs that.
 ///
 /// Example:
 ///
@@ -94,31 +132,97 @@ enum SpotlightGuideAnchorAlignment { center, start, end }
 /// // LTR: 10px from the left edge. RTL: 10px from the right edge.
 /// const SpotlightGuideAnchorPosition.start(10);
 ///
-/// // 8px after center on the current semantic horizontal axis.
+/// // 8px from center on the resolved main axis.
 /// const SpotlightGuideAnchorPosition.center(8);
 /// ```
 @immutable
-class SpotlightGuideAnchorPosition {
-  const SpotlightGuideAnchorPosition._(this.anchor, this.offset);
+class SpotlightGuideAnchorPosition extends SpotlightGuideAxisPosition {
+  const SpotlightGuideAnchorPosition._(super.alignment, super.mainAxisOffset);
 
-  const SpotlightGuideAnchorPosition.center([double offset = 0])
-    : this._(SpotlightGuideAnchorAlignment.center, offset);
+  const SpotlightGuideAnchorPosition.center([double mainAxisOffset = 0])
+    : this._(SpotlightGuideAnchorAlignment.center, mainAxisOffset);
 
-  const SpotlightGuideAnchorPosition.start([double offset = 0])
-    : this._(SpotlightGuideAnchorAlignment.start, offset);
+  const SpotlightGuideAnchorPosition.start([double mainAxisOffset = 0])
+    : this._(SpotlightGuideAnchorAlignment.start, mainAxisOffset);
 
-  const SpotlightGuideAnchorPosition.end([double offset = 0])
-    : this._(SpotlightGuideAnchorAlignment.end, offset);
+  const SpotlightGuideAnchorPosition.end([double mainAxisOffset = 0])
+    : this._(SpotlightGuideAnchorAlignment.end, mainAxisOffset);
+}
 
-  final SpotlightGuideAnchorAlignment anchor;
+/// Describes a two-dimensional pointer position relative to a target.
+///
+/// This is used by [SpotlightGuidePointer.pointerTargetPosition], where the
+/// pointer widget is positioned relative to the target. [mainAxisOffset] works
+/// like [SpotlightGuideAnchorPosition] and chooses the point along the target
+/// side where the pointer is placed. [crossAxisOffset] moves the pointer on
+/// the axis perpendicular to that target side; it does not move the bubble
+/// anchor.
+///
+/// Most pointers only need `center()`, `center(mainAxisOffset)`,
+/// `start(inset)`, or `end(inset)`. Use the optional second value only when
+/// the pointer itself should sit away from, toward, or slightly across the
+/// target side.
+///
+/// Cross-axis signs are resolved from the final physical hint side:
+///
+/// * Positive [crossAxisOffset] moves the pointer away from the target in the
+///   resolved placement direction: down for bottom hints, up for top hints,
+///   right for right hints, and left for left hints.
+/// * Negative [crossAxisOffset] moves the pointer back toward or across the
+///   target. This is physical after [SpotlightGuidePlacement.start] and
+///   [SpotlightGuidePlacement.end] resolve.
+///
+/// Example:
+///
+/// ```dart
+/// // Common: pointer center is placed at the target center.
+/// const SpotlightGuidePointPosition.center();
+///
+/// // 20px from target center on the resolved main axis.
+/// const SpotlightGuidePointPosition.center(20);
+///
+/// // 20px on the target main axis and -8px on the target cross axis.
+/// const SpotlightGuidePointPosition.center(20, -8);
+/// ```
+@immutable
+class SpotlightGuidePointPosition extends SpotlightGuideAxisPosition {
+  const SpotlightGuidePointPosition._(
+    super.alignment,
+    super.mainAxisOffset,
+    this.crossAxisOffset,
+  );
 
-  /// Signed offset applied after the base anchor point is resolved.
+  const SpotlightGuidePointPosition.center([
+    double mainAxisOffset = 0,
+    double crossAxisOffset = 0,
+  ]) : this._(
+         SpotlightGuideAnchorAlignment.center,
+         mainAxisOffset,
+         crossAxisOffset,
+       );
+
+  const SpotlightGuidePointPosition.start([
+    double mainAxisOffset = 0,
+    double crossAxisOffset = 0,
+  ]) : this._(
+         SpotlightGuideAnchorAlignment.start,
+         mainAxisOffset,
+         crossAxisOffset,
+       );
+
+  const SpotlightGuidePointPosition.end([
+    double mainAxisOffset = 0,
+    double crossAxisOffset = 0,
+  ]) : this._(
+         SpotlightGuideAnchorAlignment.end,
+         mainAxisOffset,
+         crossAxisOffset,
+       );
+
+  /// Signed pointer offset on the axis perpendicular to [mainAxisOffset].
   ///
-  /// [SpotlightGuideAnchorAlignment.start] and
-  /// [SpotlightGuideAnchorAlignment.end] use this as an inset from the semantic
-  /// edge. [SpotlightGuideAnchorAlignment.center] uses this as a signed offset
-  /// from the center. Horizontal axes follow [Directionality]; vertical axes
-  /// are physical, where positive moves down. Negative values are allowed and
-  /// can move the point outside the target or pointer bounds.
-  final double offset;
+  /// This belongs to the pointer-to-target relationship only. It moves the
+  /// pointer widget relative to the target and does not change where the bubble
+  /// anchor connects to the pointer.
+  final double crossAxisOffset;
 }

@@ -34,10 +34,10 @@ void main() {
 
     expect(item.decoration.anchor, isNot(isA<SpotlightGuideTriangleAnchor>()));
     expect(
-      item.targetAnchorPosition.anchor,
+      item.anchorTargetPosition.alignment,
       SpotlightGuideAnchorAlignment.center,
     );
-    expect(item.targetAnchorPosition.offset, 0);
+    expect(item.anchorTargetPosition.mainAxisOffset, 0);
   });
 
   test('side anchor scenario uses horizontal auto placement', () {
@@ -91,7 +91,7 @@ void main() {
       SpotlightGuidePlacement.verticalAuto,
     );
     expect(
-      steps.first.items.single.targetAnchorPosition.anchor,
+      steps.first.items.single.anchorTargetPosition.alignment,
       SpotlightGuideAnchorAlignment.center,
     );
   });
@@ -336,7 +336,7 @@ void main() {
         find.byType(SpotlightGuideTextHint),
       );
       expect(hint.title, titles[index]);
-      expect(hint.guide.pointer?.targetGap, 4);
+      expect(hint.guide.pointer?.pointerTargetPosition.crossAxisOffset, 4);
 
       if (index < titles.length - 1) {
         await tester.tap(find.text('Next').hitTestable());

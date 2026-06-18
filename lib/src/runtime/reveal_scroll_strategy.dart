@@ -188,7 +188,6 @@ class _RevealScrollStrategy {
       margin: margin,
       hintSize: null,
       textDirection: textDirection,
-      layoutGap: _stepTargetLayoutGap(item),
     );
     final double layoutGap = _stepTargetLayoutGap(item);
     final double reserve = _estimatedHintMainAxisExtent(

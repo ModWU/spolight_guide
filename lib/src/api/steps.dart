@@ -45,7 +45,7 @@ part of '../../spotlight_guide.dart';
 /// SpotlightGuideStepItem(
 ///   targetId: 'more-button',
 ///   placement: SpotlightGuidePlacement.verticalAuto,
-///   targetAnchorPosition: const SpotlightGuideAnchorPosition.end(8),
+///   anchorTargetPosition: const SpotlightGuideAnchorPosition.end(8),
 ///   targetDecoration: const SpotlightGuideTargetDecoration(
 ///     padding: EdgeInsets.all(6),
 ///     shape: SpotlightGuideRoundedRectShape(
@@ -85,7 +85,7 @@ class SpotlightGuideStepItem {
     this.revealOptions,
     this.missingTargetBehavior,
     this.placement = SpotlightGuidePlacement.verticalAuto,
-    this.targetAnchorPosition = const SpotlightGuideAnchorPosition.center(),
+    this.anchorTargetPosition = const SpotlightGuideAnchorPosition.center(),
     this.decoration = const SpotlightGuideBubbleDecoration(),
     this.pointer,
     this.targetDecoration = const SpotlightGuideTargetDecoration(),
@@ -228,26 +228,27 @@ class SpotlightGuideStepItem {
   /// Preferred side used to place this hint around the target.
   final SpotlightGuidePlacement placement;
 
-  /// Anchor point used by the bubble anchor.
+  /// Position on the target that the guide chain aims at.
   ///
-  /// Without a pointer, this resolves on the layout rect that the bubble anchor
-  /// should point to. That rect is the [anchorTargetId] target or
+  /// This resolves on the layout rect that the bubble anchor or pointer should
+  /// point to. That rect is the [anchorTargetId] target or
   /// [SpotlightGuideTarget.anchorId] target when used, the [targetId] rect,
   /// the [targetKey] rect, or the union of all [targetIds] when no anchor is
   /// set. Repeated ids resolve as target groups, so this rect may also be a
   /// group's union rect. It is not applied separately to every highlighted id.
   ///
-  /// When a [SpotlightGuideBubbleHint] pointer participates in the default
-  /// pointer anchor chain, this resolves on the pointer instead. In that case
-  /// [SpotlightGuidePointer.pointerAnchorPosition] controls where the
-  /// pointer touches the target, while this value controls where the bubble
-  /// anchor attaches to the pointer. For example, `center(4)` keeps the pointer
-  /// contact stable and offsets the bubble anchor 4 logical pixels from the
-  /// pointer center.
+  /// When no pointer participates in the default pointer chain, this is where
+  /// the bubble anchor points. With the default pointer chain,
+  /// [SpotlightGuidePointer.pointerTargetPosition] instead chooses where the
+  /// pointer sits relative to the target, and
+  /// [SpotlightGuidePointer.anchorPointerPosition] chooses where the bubble
+  /// anchor connects to that pointer.
   ///
-  /// For top/bottom placements this resolves on the horizontal axis. For
-  /// left/right placements this resolves on the vertical axis.
-  final SpotlightGuideAnchorPosition targetAnchorPosition;
+  /// For top/bottom placements this resolves along the target's horizontal
+  /// main axis. For left/right placements this resolves along the target's
+  /// vertical main axis. This position moves the anchor point on the target; it
+  /// does not move the target itself.
+  final SpotlightGuideAnchorPosition anchorTargetPosition;
 
   /// Decoration used by built-in hint widgets.
   ///
@@ -259,7 +260,7 @@ class SpotlightGuideStepItem {
   /// Optional visual pointer used by built-in hint widgets.
   ///
   /// Keep pointer configuration here instead of inside the hint widget so the
-  /// portal can reserve the target-to-pointer gap and pointer size before
+  /// portal can reserve the pointer's target-side position and size before
   /// reveal scrolling, auto placement, and safe-area checks run.
   ///
   /// [SpotlightGuideBubbleHint] and [SpotlightGuideTextHint] use this pointer
@@ -287,16 +288,17 @@ class SpotlightGuideStepItem {
   /// neighbouring control is not hit by accident.
   final bool allowTargetInteraction;
 
-  /// Signed main-axis distance from the target to the first visual guide piece.
+  /// Signed main-axis distance for the active anchor segment.
   ///
   /// When [pointer] participates in the anchor chain with
-  /// [SpotlightGuidePointerAnchorMode.pointer], the pointer touches the target
-  /// side and this is the pointer-to-bubble-anchor distance. Without such a
-  /// pointer, this is the target-to-hint distance.
+  /// [SpotlightGuidePointerAnchorMode.pointer], this is the distance from the
+  /// pointer's far edge to the bubble anchor tip. The pointer-to-target distance
+  /// is configured by [SpotlightGuidePointer.pointerTargetPosition]. Without
+  /// such a pointer, this is the target-to-hint distance.
   ///
   /// The sign follows the final resolved placement, including auto and semantic
-  /// placements. Positive values move the first guide piece away from the
-  /// target: down for [SpotlightGuidePlacement.bottom], up for
+  /// placements. Positive values move the hint or bubble anchor away from the
+  /// target or pointer: down for [SpotlightGuidePlacement.bottom], up for
   /// [SpotlightGuidePlacement.top], left for [SpotlightGuidePlacement.left],
   /// and right for [SpotlightGuidePlacement.right]. Negative values move it in
   /// the opposite direction, back toward or across the target.
@@ -440,15 +442,16 @@ class SpotlightGuideStepContext {
     required this.targetRect,
     required List<Rect> targetRects,
     required List<Rect> stepTargetRects,
-    required this.targetAnchorPoint,
-    this.targetAnchorPosition = const SpotlightGuideAnchorPosition.center(),
+    required this.anchorTargetPoint,
+    required this.pointerTargetPoint,
+    this.anchorTargetPosition = const SpotlightGuideAnchorPosition.center(),
     required this.overlaySize,
     required this.hintRect,
     required this.hintConstraints,
     required this.margin,
     required this.placement,
     required this.anchorDirection,
-    required this.anchorOffset,
+    required this.bubbleAnchorOffset,
     required this.anchorSafeInset,
     required this.bubbleAnchorSideExtent,
     required this.contentSize,
@@ -487,16 +490,25 @@ class SpotlightGuideStepContext {
   /// All target rects kept visible in the current step.
   List<Rect> stepTargetRects;
 
-  /// Global overlay point where the pointer or visual anchor should aim.
-  Offset targetAnchorPoint;
+  /// Global overlay point where a direct bubble anchor aims at the target.
+  Offset anchorTargetPoint;
 
-  /// Anchor position requested by the current step item.
+  /// Global overlay point where the pointer is positioned relative to target.
   ///
-  /// Built-in bubble hints use this to resolve the bubble anchor against the
-  /// pointer when a pointer participates in the default anchor chain. Without a
-  /// pointer, [targetAnchorPoint] already contains this position resolved
-  /// against the target.
-  SpotlightGuideAnchorPosition targetAnchorPosition;
+  /// This resolves [SpotlightGuidePointer.pointerTargetPosition] against
+  /// [targetRect]. It is meaningful when [pointer] participates in the default
+  /// target -> pointer -> bubble chain. When no pointer is configured, it
+  /// resolves to the target center on the same side used by [placement].
+  Offset pointerTargetPoint;
+
+  /// Position on the target requested by the current step item.
+  ///
+  /// [anchorTargetPoint] contains this position resolved against [targetRect].
+  /// When a pointer participates in the default chain, the bubble anchor
+  /// connects to [SpotlightGuidePointer.anchorPointerPosition] on the pointer
+  /// instead, and [pointerTargetPoint] controls where that pointer sits around
+  /// the target.
+  SpotlightGuideAnchorPosition anchorTargetPosition;
 
   /// Size of the overlay used by the guide.
   Size overlaySize;
@@ -523,7 +535,7 @@ class SpotlightGuideStepContext {
 
   /// Offset from the physical leading edge of the hint bubble's anchor side to
   /// the anchor tip.
-  double anchorOffset;
+  double bubbleAnchorOffset;
 
   /// Minimum distance from the anchor tip center to either edge of the bubble
   /// side that owns the anchor.
@@ -574,15 +586,16 @@ class SpotlightGuideStepContext {
     targetRect = other.targetRect;
     targetRects = other.targetRects;
     stepTargetRects = other.stepTargetRects;
-    targetAnchorPoint = other.targetAnchorPoint;
-    targetAnchorPosition = other.targetAnchorPosition;
+    anchorTargetPoint = other.anchorTargetPoint;
+    pointerTargetPoint = other.pointerTargetPoint;
+    anchorTargetPosition = other.anchorTargetPosition;
     overlaySize = other.overlaySize;
     hintRect = other.hintRect;
     hintConstraints = other.hintConstraints;
     margin = other.margin;
     placement = other.placement;
     anchorDirection = other.anchorDirection;
-    anchorOffset = other.anchorOffset;
+    bubbleAnchorOffset = other.bubbleAnchorOffset;
     anchorSafeInset = other.anchorSafeInset;
     bubbleAnchorSideExtent = other.bubbleAnchorSideExtent;
     contentSize = other.contentSize;

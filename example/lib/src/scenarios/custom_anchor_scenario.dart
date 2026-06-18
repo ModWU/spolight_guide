@@ -13,7 +13,7 @@ List<SpotlightGuideStep> buildCustomAnchorScenario() {
       SpotlightGuideStepItem(
         targetId: metricPriceId,
         placement: SpotlightGuidePlacement.bottom,
-        targetAnchorPosition: const SpotlightGuideAnchorPosition.center(),
+        anchorTargetPosition: const SpotlightGuideAnchorPosition.center(),
         decoration: _anchorDecoration(_CustomAnchorStyle.droplet),
         margin: kExampleGuideMargin,
         maxWidth: 360,

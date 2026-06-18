@@ -4,10 +4,11 @@ part of '../../spotlight_guide.dart';
 class _HintLayout {
   const _HintLayout({
     required this.rect,
-    required this.targetAnchorPoint,
+    required this.anchorTargetPoint,
+    required this.pointerTargetPoint,
     required this.margin,
     required this.placement,
-    required this.anchorOffset,
+    required this.bubbleAnchorOffset,
     required this.anchorSafeInset,
     required this.bubbleAnchorSideExtent,
     required this.anchorDirection,
@@ -18,10 +19,11 @@ class _HintLayout {
   });
 
   final Rect rect;
-  final Offset targetAnchorPoint;
+  final Offset anchorTargetPoint;
+  final Offset pointerTargetPoint;
   final EdgeInsets margin;
   final SpotlightGuidePlacement placement;
-  final double anchorOffset;
+  final double bubbleAnchorOffset;
   final double anchorSafeInset;
   final double bubbleAnchorSideExtent;
   final SpotlightGuideDirection anchorDirection;
@@ -36,7 +38,6 @@ class _HintLayout {
     required SpotlightGuideStepItem step,
     required TextDirection textDirection,
     Size? hintSize,
-    double? layoutGap,
   }) {
     final EdgeInsets margin = (step.margin ?? const EdgeInsets.all(16)).resolve(
       textDirection,
@@ -48,7 +49,6 @@ class _HintLayout {
       margin: margin,
       hintSize: hintSize,
       textDirection: textDirection,
-      layoutGap: layoutGap,
     );
 
     return switch (placement) {
@@ -61,7 +61,6 @@ class _HintLayout {
         anchorDirection: SpotlightGuideDirection.down,
         textDirection: textDirection,
         hintSize: hintSize,
-        layoutGap: layoutGap,
       ),
       SpotlightGuidePlacement.bottom ||
       SpotlightGuidePlacement.auto => _vertical(
@@ -73,7 +72,6 @@ class _HintLayout {
         anchorDirection: SpotlightGuideDirection.up,
         textDirection: textDirection,
         hintSize: hintSize,
-        layoutGap: layoutGap,
       ),
       SpotlightGuidePlacement.verticalAuto ||
       SpotlightGuidePlacement.horizontalAuto ||
@@ -90,7 +88,6 @@ class _HintLayout {
         anchorDirection: SpotlightGuideDirection.right,
         textDirection: textDirection,
         hintSize: hintSize,
-        layoutGap: layoutGap,
       ),
       SpotlightGuidePlacement.right => _horizontal(
         screenSize: screenSize,
@@ -101,7 +98,6 @@ class _HintLayout {
         anchorDirection: SpotlightGuideDirection.left,
         textDirection: textDirection,
         hintSize: hintSize,
-        layoutGap: layoutGap,
       ),
     };
   }
@@ -113,7 +109,6 @@ class _HintLayout {
     required EdgeInsets margin,
     required Size? hintSize,
     required TextDirection textDirection,
-    required double? layoutGap,
   }) {
     final SpotlightGuidePlacement placement = _resolveDirectionalPlacement(
       step.placement,
@@ -136,13 +131,12 @@ class _HintLayout {
             screenSize.height -
             margin.bottom -
             targetRect.bottom -
-            _resolvedLayoutGap(step, layoutGap),
+            _resolvedLayoutGap(step),
       ),
       _PlacementSpace(
         placement: SpotlightGuidePlacement.top,
         width: screenSize.width - margin.horizontal,
-        height:
-            targetRect.top - _resolvedLayoutGap(step, layoutGap) - margin.top,
+        height: targetRect.top - _resolvedLayoutGap(step) - margin.top,
       ),
     ];
     final List<_PlacementSpace> horizontalSpaces = [
@@ -152,13 +146,12 @@ class _HintLayout {
             screenSize.width -
             margin.right -
             targetRect.right -
-            _resolvedLayoutGap(step, layoutGap),
+            _resolvedLayoutGap(step),
         height: screenSize.height - margin.vertical,
       ),
       _PlacementSpace(
         placement: SpotlightGuidePlacement.left,
-        width:
-            targetRect.left - _resolvedLayoutGap(step, layoutGap) - margin.left,
+        width: targetRect.left - _resolvedLayoutGap(step) - margin.left,
         height: screenSize.height - margin.vertical,
       ),
     ];
@@ -253,13 +246,8 @@ class _HintLayout {
     };
   }
 
-  static double _resolvedLayoutGap(
-    SpotlightGuideStepItem step,
-    double? layoutGap,
-  ) {
-    return layoutGap == null
-        ? _stepTargetLayoutGap(step)
-        : _finiteOrZero(layoutGap);
+  static double _resolvedLayoutGap(SpotlightGuideStepItem step) {
+    return _stepTargetLayoutGap(step);
   }
 
   static _HintLayout _vertical({
@@ -271,9 +259,8 @@ class _HintLayout {
     required SpotlightGuideDirection anchorDirection,
     required TextDirection textDirection,
     required Size? hintSize,
-    required double? layoutGap,
   }) {
-    final double gap = _resolvedLayoutGap(step, layoutGap);
+    final double gap = _resolvedLayoutGap(step);
     final double maxWidth = _resolveMaxExtent(
       step.maxWidth,
       screenSize.width - margin.horizontal,
@@ -295,11 +282,17 @@ class _HintLayout {
     final bool expandWidth = step.maxWidth?.isInfinite == true;
     final bool expandHeight = step.maxHeight?.isInfinite == true;
     final bool hasMeasuredHint = hintSize != null;
-    final Offset targetAnchorPoint = _targetAnchorPoint(
+    final Offset anchorTargetPoint = _anchorTargetPoint(
       targetRect: targetRect,
       step: step,
       textDirection: textDirection,
-      isHorizontalSide: true,
+      placement: placement,
+    );
+    final Offset pointerTargetPoint = _pointerTargetPoint(
+      targetRect: targetRect,
+      step: step,
+      textDirection: textDirection,
+      placement: placement,
     );
     final double width = expandWidth
         ? maxWidth
@@ -308,7 +301,7 @@ class _HintLayout {
         ? maxHeight
         : _resolveExtent(hintSize?.height ?? minHeight, minHeight, maxHeight);
     final _AxisLayout arrowSideLayout = _resolveAxisLayout(
-      anchor: targetAnchorPoint.dx,
+      anchor: anchorTargetPoint.dx,
       extent: width,
       minOrigin: margin.left,
       maxEnd: screenSize.width - margin.right,
@@ -346,10 +339,11 @@ class _HintLayout {
 
     return _HintLayout(
       rect: rect,
-      targetAnchorPoint: targetAnchorPoint,
+      anchorTargetPoint: anchorTargetPoint,
+      pointerTargetPoint: pointerTargetPoint,
       margin: margin,
       placement: placement,
-      anchorOffset: arrowSideLayout.anchorOffset,
+      bubbleAnchorOffset: arrowSideLayout.bubbleAnchorOffset,
       anchorSafeInset: arrowSideLayout.safeInset,
       bubbleAnchorSideExtent: _expandedArrowSideExtent(
         arrowSideLayout,
@@ -382,9 +376,8 @@ class _HintLayout {
     required SpotlightGuideDirection anchorDirection,
     required TextDirection textDirection,
     required Size? hintSize,
-    required double? layoutGap,
   }) {
-    final double gap = _resolvedLayoutGap(step, layoutGap);
+    final double gap = _resolvedLayoutGap(step);
     final double sideMaxWidth = placement == SpotlightGuidePlacement.right
         ? screenSize.width - margin.right - targetRect.right - gap
         : targetRect.left - gap - margin.left;
@@ -409,11 +402,17 @@ class _HintLayout {
     final bool expandWidth = step.maxWidth?.isInfinite == true;
     final bool expandHeight = step.maxHeight?.isInfinite == true;
     final bool hasMeasuredHint = hintSize != null;
-    final Offset targetAnchorPoint = _targetAnchorPoint(
+    final Offset anchorTargetPoint = _anchorTargetPoint(
       targetRect: targetRect,
       step: step,
       textDirection: textDirection,
-      isHorizontalSide: false,
+      placement: placement,
+    );
+    final Offset pointerTargetPoint = _pointerTargetPoint(
+      targetRect: targetRect,
+      step: step,
+      textDirection: textDirection,
+      placement: placement,
     );
     final double width = expandWidth
         ? maxWidth
@@ -427,7 +426,7 @@ class _HintLayout {
         ? targetRect.right + gap
         : targetRect.left - gap - width;
     final _AxisLayout arrowSideLayout = _resolveAxisLayout(
-      anchor: targetAnchorPoint.dy,
+      anchor: anchorTargetPoint.dy,
       extent: height,
       minOrigin: margin.top,
       maxEnd: screenSize.height - margin.bottom,
@@ -460,10 +459,11 @@ class _HintLayout {
 
     return _HintLayout(
       rect: rect,
-      targetAnchorPoint: targetAnchorPoint,
+      anchorTargetPoint: anchorTargetPoint,
+      pointerTargetPoint: pointerTargetPoint,
       margin: margin,
       placement: placement,
-      anchorOffset: arrowSideLayout.anchorOffset,
+      bubbleAnchorOffset: arrowSideLayout.bubbleAnchorOffset,
       anchorSafeInset: arrowSideLayout.safeInset,
       bubbleAnchorSideExtent: _expandedArrowSideExtent(
         arrowSideLayout,
@@ -514,7 +514,7 @@ class _HintLayout {
     final _AxisLayout base = _AxisLayout(
       origin: origin,
       extent: resolvedExtent,
-      anchorOffset: anchor - origin,
+      bubbleAnchorOffset: anchor - origin,
       safeInset: safeInset,
     );
     return _resolveSafeAxisLayout(
@@ -627,7 +627,7 @@ class _HintLayout {
     final _AxisLayout shifted = _AxisLayout(
       origin: origin,
       extent: base.extent,
-      anchorOffset: anchor - origin,
+      bubbleAnchorOffset: anchor - origin,
       safeInset: base.safeInset,
     );
     return _isAnchorSafe(shifted, safeInset) ? shifted : null;
@@ -663,7 +663,7 @@ class _HintLayout {
     final _AxisLayout expanded = _AxisLayout(
       origin: origin,
       extent: extent,
-      anchorOffset: anchor - origin,
+      bubbleAnchorOffset: anchor - origin,
       safeInset: base.safeInset,
       expanded: extent > base.extent,
     );
@@ -671,19 +671,35 @@ class _HintLayout {
   }
 
   static bool _isAnchorSafe(_AxisLayout layout, double safeInset) {
-    return layout.anchorOffset >= safeInset &&
-        layout.extent - layout.anchorOffset >= safeInset;
+    return layout.bubbleAnchorOffset >= safeInset &&
+        layout.extent - layout.bubbleAnchorOffset >= safeInset;
   }
 
   static double _resolvePositionOffset(
-    SpotlightGuideAnchorPosition position, {
+    SpotlightGuideAxisPosition position, {
+    required TextDirection textDirection,
+    required bool isHorizontalAxis,
+    required double extent,
+  }) {
+    return _resolveAxisOffset(
+      alignment: position.alignment,
+      mainAxisOffset: position.mainAxisOffset,
+      textDirection: textDirection,
+      isHorizontalAxis: isHorizontalAxis,
+      extent: extent,
+    );
+  }
+
+  static double _resolveAxisOffset({
+    required SpotlightGuideAnchorAlignment alignment,
+    required double mainAxisOffset,
     required TextDirection textDirection,
     required bool isHorizontalAxis,
     required double extent,
   }) {
     final bool reverse = isHorizontalAxis && textDirection == TextDirection.rtl;
-    final double positionOffset = _finiteOrZero(position.offset);
-    final double offset = switch (position.anchor) {
+    final double positionOffset = _finiteOrZero(mainAxisOffset);
+    final double offset = switch (alignment) {
       SpotlightGuideAnchorAlignment.center =>
         extent / 2 + (reverse ? -positionOffset : positionOffset),
       SpotlightGuideAnchorAlignment.start =>
@@ -711,17 +727,20 @@ class _HintLayout {
     return offset.clamp(minOffset, maxOffset).toDouble();
   }
 
-  static Offset _targetAnchorPoint({
+  static Offset _anchorTargetPoint({
     required Rect targetRect,
     required SpotlightGuideStepItem step,
     required TextDirection textDirection,
-    required bool isHorizontalSide,
+    required SpotlightGuidePlacement placement,
   }) {
+    final bool isHorizontalSide =
+        placement == SpotlightGuidePlacement.top ||
+        placement == SpotlightGuidePlacement.bottom;
     if (isHorizontalSide) {
       return Offset(
         targetRect.left +
             _resolvePositionOffset(
-              step.targetAnchorPosition,
+              step.anchorTargetPosition,
               textDirection: textDirection,
               isHorizontalAxis: true,
               extent: targetRect.width,
@@ -733,7 +752,48 @@ class _HintLayout {
       targetRect.center.dx,
       targetRect.top +
           _resolvePositionOffset(
-            step.targetAnchorPosition,
+            step.anchorTargetPosition,
+            textDirection: textDirection,
+            isHorizontalAxis: false,
+            extent: targetRect.height,
+          ),
+    );
+  }
+
+  static Offset _pointerTargetPoint({
+    required Rect targetRect,
+    required SpotlightGuideStepItem step,
+    required TextDirection textDirection,
+    required SpotlightGuidePlacement placement,
+  }) {
+    final SpotlightGuidePointPosition position =
+        step.pointer?.pointerTargetPosition ??
+        const SpotlightGuidePointPosition.center();
+    final double crossAxisOffset = _finiteOrZero(position.crossAxisOffset);
+    final bool isHorizontalSide =
+        placement == SpotlightGuidePlacement.top ||
+        placement == SpotlightGuidePlacement.bottom;
+    if (isHorizontalSide) {
+      return Offset(
+        targetRect.left +
+            _resolvePositionOffset(
+              position,
+              textDirection: textDirection,
+              isHorizontalAxis: true,
+              extent: targetRect.width,
+            ),
+        placement == SpotlightGuidePlacement.bottom
+            ? targetRect.bottom + crossAxisOffset
+            : targetRect.top - crossAxisOffset,
+      );
+    }
+    return Offset(
+      placement == SpotlightGuidePlacement.right
+          ? targetRect.right + crossAxisOffset
+          : targetRect.left - crossAxisOffset,
+      targetRect.top +
+          _resolvePositionOffset(
+            position,
             textDirection: textDirection,
             isHorizontalAxis: false,
             extent: targetRect.height,
@@ -800,16 +860,16 @@ class _AxisLayout {
   const _AxisLayout({
     required this.origin,
     required this.extent,
-    required this.anchorOffset,
+    required this.bubbleAnchorOffset,
     required this.safeInset,
     this.expanded = false,
   });
 
   final double origin;
   final double extent;
-  final double anchorOffset;
+  final double bubbleAnchorOffset;
   final double safeInset;
   final bool expanded;
 
-  double get arrowGlobal => origin + anchorOffset;
+  double get arrowGlobal => origin + bubbleAnchorOffset;
 }

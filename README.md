@@ -157,16 +157,42 @@ responsive layout can move the target. If a pointer is only decorative and the
 bubble arrow should still point directly at the target, set
 `anchorMode: SpotlightGuidePointerAnchorMode.target`.
 
-`pointerAnchorPosition` chooses which point inside the pointer widget attaches
-to the target. `targetAnchorPosition` then chooses which point inside the
-pointer the bubble arrow attaches to. For example, `center(4)` keeps the
-pointer contact stable and moves the arrow attachment 4 logical pixels from the
-pointer center. Negative offsets are allowed.
+The default pointer chain keeps target, pointer, and bubble relationships
+separate:
+
+- `pointerTargetPosition` chooses the target-side point where the pointer is
+  placed.
+- `anchorPointerPosition` chooses the point on the pointer that the bubble
+  anchor attaches to.
+- `anchorTargetPosition` is used only for a direct target anchor: no pointer, or
+  `anchorMode: SpotlightGuidePointerAnchorMode.target`.
+
+`anchorTargetPosition` and `anchorPointerPosition` use
+`SpotlightGuideAnchorPosition`. They are one-dimensional: `center()`,
+`center(20)`, `start(8)`, and `end(8)` move the anchor point along the resolved
+edge, but do not move the target or pointer widget.
+
+`pointerTargetPosition` uses `SpotlightGuidePointPosition` because that
+relationship positions the pointer widget relative to the target. Most cases
+still use `center()`, `center(20)`, `start(8)`, or `end(8)`. The optional second
+value is for target-side cross-axis adjustment, such as `center(-30, -8)`.
+
+The first value is `mainAxisOffset`. For top or bottom hints, the main axis is
+horizontal and positive `center(20)` moves toward semantic end: right in LTR and
+left in RTL. For left or right hints, the main axis is vertical and positive
+moves down. `start` and `end` mirror in RTL only on horizontal axes.
+
+For `SpotlightGuidePointPosition`, the second value is `crossAxisOffset`. For
+positive values, the pointer moves away from the target in the final resolved
+hint direction: down for `bottom`, up for `top`, right for `right`, and left for
+`left`. Negative values move it back toward or across the target side. After
+`start` and `end` resolve through `Directionality`, this offset is physical.
 
 `gap` is the signed main-axis distance for the active anchor chain. With the
-default pointer anchor mode, the pointer touches the target side and `gap` is
-the distance from the pointer's far edge to the bubble anchor tip. If the bubble
-uses `SpotlightGuideNoAnchor`, the hint edge is treated as that tip. Without a
+default pointer anchor mode, `gap` is the distance from the pointer's far edge
+to the bubble anchor tip; the pointer-to-target distance belongs to
+`pointerTargetPosition.crossAxisOffset`. If the bubble uses
+`SpotlightGuideNoAnchor`, the hint edge is treated as that tip. Without a
 pointer, or when the pointer uses
 `anchorMode: SpotlightGuidePointerAnchorMode.target`, `gap` remains the target
 to bubble distance.
@@ -174,15 +200,15 @@ to bubble distance.
 Configure pointers on `SpotlightGuideStepItem.pointer`, not inside the hint
 widget. The portal reads item-level pointer metadata before the hint is built,
 so automatic reveal scrolling, auto placement, and safe-area checks can reserve
-the real target-to-pointer gap and fixed pointer size.
+the pointer's target-side position and fixed size.
 
-Use `SpotlightGuidePointer.targetGap` when the pointer itself should sit
-away from the target. Positive values move it away from the target in the
-resolved placement direction, negative values pull it back toward the target,
-and zero keeps the pointer touching the target. Custom pointer widgets can omit
-`size` to use the child's laid-out size; provide `size` when an image or
-animation should reserve a stable visual slot and participate in reveal-space
-estimation.
+Use the second value of `SpotlightGuidePointPosition`, the
+`crossAxisOffset`, when the pointer itself should sit away from the target.
+Positive values move it away from the target in the resolved placement
+direction, negative values pull it back toward the target, and zero keeps the
+pointer touching the target. Custom pointer widgets can omit `size` to use the
+child's laid-out size; provide `size` when an image or animation should reserve
+a stable visual slot and participate in reveal-space estimation.
 
 For image pointers, prefer a stable layout slot. This follows Flutter's image
 layout guidance: an image with only one dimension may change size after decode.
@@ -227,11 +253,18 @@ SpotlightGuidePaintGate(
 )
 ```
 
-Use `visualOffset` only for small asset-level nudges. It moves the pointer
-widget's painted content, but does not move the target anchor, pointer layout
-slot, bubble anchor, or bubble position. Use
-`SpotlightGuidePointerOffset.directional` when the horizontal nudge should
-mirror in RTL.
+For custom pointer artwork with transparent padding or an off-center painted
+tip, prefer wrapping or sizing the pointer so its layout centerline represents
+the intended visual contact. Use `pointerTargetPosition` when the pointer
+itself should sit away from the target center:
+
+```dart
+pointer: const SpotlightGuidePointer(
+  size: Size(68, 103),
+  pointerTargetPosition: SpotlightGuidePointPosition.center(-30, -8),
+  child: MyPointerAsset(),
+)
+```
 
 For directional artwork, keep the pointer `child` as the default asset and use
 `builder` to wrap it with resolved layout information. The builder receives a
@@ -255,7 +288,7 @@ SpotlightGuideStepItem(
   gap: 10,
   pointer: SpotlightGuidePointer.tap(
     anchorMode: SpotlightGuidePointerAnchorMode.pointer,
-    visualOffset: SpotlightGuidePointerOffset.directional(end: 2),
+    pointerTargetPosition: const SpotlightGuidePointPosition.center(2),
     builder: (
       BuildContext context,
       SpotlightGuidePointerContext pointer,
@@ -647,7 +680,9 @@ side the anchor is on. For example, a hint placed below a target has an
 `up` direction because the anchor sits on the bubble's top edge and points
 toward the target. Path-based custom anchors can read the same resolved side
 from `SpotlightGuideBubbleAnchorPathBuilder.direction` inside `addToPath`.
-Use `guide.targetAnchorPosition` when custom pointer or bubble layouts need to
-resolve the same anchor position that built-in hints use.
+Use `guide.anchorTargetPoint` for a resolved direct target anchor point,
+`guide.pointerTargetPoint` for the resolved pointer-to-target point, and
+`guide.bubbleAnchorOffset` only when a custom bubble must place its own anchor
+along the bubble edge.
 
 For the full API and built-in hint catalog, see `doc/reference.md`.

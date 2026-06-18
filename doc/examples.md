@@ -40,18 +40,22 @@ target and bubble. The pointer child can be anything: `SpotlightGuideTapPointer`
 for a simple built-in tap cue, `Image.asset`, a Lottie animation, an icon badge,
 or custom paint.
 
-With the default pointer chain, the pointer touches the target side and `gap`
-is the signed distance from the pointer's far edge to the bubble anchor tip. If
-the bubble uses `SpotlightGuideNoAnchor`, the hint edge is treated as that tip.
-Use `SpotlightGuidePointer.targetGap` when the pointer itself should move
-away from or back toward the target. Custom pointers can omit `size` to use
+With the default pointer chain, `pointerTargetPosition` chooses the target-side
+point where the pointer is placed, and `anchorPointerPosition` chooses where
+the bubble anchor attaches to the pointer. Use
+`SpotlightGuidePointPosition.crossAxisOffset` when the pointer itself should
+move away from or back toward the target, and `SpotlightGuideStepItem.gap` for
+the pointer-to-bubble-anchor distance. Custom pointers can omit `size` to use
 their child layout size, or provide `size` when an asset needs a stable slot.
-Use `visualOffset` only when the pointer asset needs a tiny paint-only nudge;
-the anchor chain remains aligned to the unmoved pointer layout slot.
+`anchorTargetPosition` and `anchorPointerPosition` use the one-dimensional
+`SpotlightGuideAnchorPosition`. `pointerTargetPosition` uses
+`SpotlightGuidePointPosition`, which also accepts an optional second value for
+target-side cross-axis adjustment.
 
 Configure pointers on `SpotlightGuideStepItem.pointer`. The portal can then
-reserve pointer `targetGap`, fixed pointer `size`, and pointer-to-bubble `gap`
-before automatic reveal scrolling decides whether the hint can fit.
+reserve the pointer target position, fixed pointer `size`, and
+pointer-to-bubble `gap` before automatic reveal scrolling decides whether the
+hint can fit.
 
 For image pointers, use a stable slot. Flutter images that only specify width
 or height can change layout after the image decodes, so set
@@ -100,7 +104,7 @@ SpotlightGuideStepItem(
   targetId: 'more-button',
   gap: 10,
   pointer: SpotlightGuidePointer.tap(
-    visualOffset: SpotlightGuidePointerOffset.directional(end: 2),
+    pointerTargetPosition: const SpotlightGuidePointPosition.center(2),
     builder: (
       BuildContext context,
       SpotlightGuidePointerContext pointer,
@@ -164,7 +168,7 @@ SpotlightGuidePortal(
         pointer: SpotlightGuidePointer(
           child: Image.asset('assets/guide_pointer.png'),
           size: const Size(70, 54),
-          pointerAnchorPosition: const SpotlightGuideAnchorPosition.end(14),
+          pointerTargetPosition: const SpotlightGuidePointPosition.end(14),
           bubbleOffset: 100,
         ),
         hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {

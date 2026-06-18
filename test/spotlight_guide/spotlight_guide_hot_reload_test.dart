@@ -125,7 +125,7 @@ void main() {
             _step(
               'first-after-hot-reload',
               placement: SpotlightGuidePlacement.bottom,
-              targetAnchorPosition: const SpotlightGuideAnchorPosition.end(6),
+              anchorTargetPosition: const SpotlightGuideAnchorPosition.end(6),
               gap: 22,
               minWidth: 160,
               maxWidth: 160,
@@ -234,7 +234,7 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.all(6),
               ),
-              targetAnchorPosition: const SpotlightGuideAnchorPosition.start(4),
+              anchorTargetPosition: const SpotlightGuideAnchorPosition.start(4),
               gap: 18,
               contexts: contexts,
             ),
@@ -555,7 +555,7 @@ void main() {
                 borderRadius: BorderRadius.all(Radius.circular(18)),
               ),
             ),
-            targetAnchorPosition: const SpotlightGuideAnchorPosition.end(10),
+            anchorTargetPosition: const SpotlightGuideAnchorPosition.end(10),
             gap: 24,
             margin: const EdgeInsets.all(20),
             minWidth: 140,
@@ -636,13 +636,13 @@ void main() {
               contexts: contexts,
               placement: SpotlightGuidePlacement.bottom,
               gap: 18,
-              targetAnchorPosition: const SpotlightGuideAnchorPosition.center(
+              anchorTargetPosition: const SpotlightGuideAnchorPosition.center(
                 6,
               ),
               pointer: const SpotlightGuidePointer(
                 size: Size(40, 32),
-                targetGap: 5,
-                pointerAnchorPosition: SpotlightGuideAnchorPosition.center(),
+                pointerTargetPosition: SpotlightGuidePointPosition.center(0, 5),
+                anchorPointerPosition: SpotlightGuideAnchorPosition.center(),
                 child: SizedBox(
                   key: ValueKey<String>('pointer-new-child'),
                   width: 40,
@@ -674,14 +674,14 @@ void main() {
       );
       expect(
         pointerRect.center.dx,
-        moreOrLessEquals(guide.targetRect.center.dx, epsilon: 0.5),
+        moreOrLessEquals(guide.pointerTargetPoint.dx, epsilon: 0.5),
       );
       expect(guide.hintRect.bottom, greaterThan(pointerRect.bottom));
     },
   );
 
   testWidgets(
-    'visible reassemble keeps pointer hint visible while visualOffset changes',
+    'visible reassemble keeps pointer hint visible while target position changes',
     (tester) async {
       final Map<String, SpotlightGuideStepContext> contexts =
           <String, SpotlightGuideStepContext>{};
@@ -689,7 +689,7 @@ void main() {
         'stable-pointer-child',
       );
 
-      Widget buildApp({required bool withVisualOffset}) {
+      Widget buildApp({required bool withTargetOffset}) {
         return guideApp(
           child: singleTargetStack(
             id: 'a',
@@ -705,13 +705,9 @@ void main() {
               placement: SpotlightGuidePlacement.verticalAuto,
               pointer: SpotlightGuidePointer(
                 size: const Size(88, 42),
-                targetGap: 4,
-                visualOffset: withVisualOffset
-                    ? const SpotlightGuidePointerOffset.directional(
-                        end: 3,
-                        up: 2,
-                      )
-                    : SpotlightGuidePointerOffset.zero,
+                pointerTargetPosition: withTargetOffset
+                    ? const SpotlightGuidePointPosition.center(3, -2)
+                    : const SpotlightGuidePointPosition.center(0, 4),
                 paintOrder: SpotlightGuidePointerPaintOrder.aboveBubble,
                 bubbleSide: SpotlightGuideBubbleSide.bottom,
                 child: const SizedBox(
@@ -726,7 +722,7 @@ void main() {
         );
       }
 
-      await tester.pumpWidget(buildApp(withVisualOffset: true));
+      await tester.pumpWidget(buildApp(withTargetOffset: true));
       await _pumpHotReloadGuide(tester);
       expect(find.byKey(pointerKey), findsOneWidget);
       expect(
@@ -745,7 +741,7 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.pumpWidget(buildApp(withVisualOffset: false));
+      await tester.pumpWidget(buildApp(withTargetOffset: false));
       await tester.pump();
       expect(find.byKey(pointerKey), findsOneWidget);
       expect(
@@ -758,7 +754,7 @@ void main() {
       final Rect pointerRect = tester.getRect(find.byKey(pointerKey));
       expect(
         pointerRect.top,
-        moreOrLessEquals(guide.targetRect.bottom + 4, epsilon: 0.5),
+        moreOrLessEquals(guide.pointerTargetPoint.dy, epsilon: 0.5),
       );
     },
   );
@@ -781,11 +777,7 @@ void main() {
             placement: SpotlightGuidePlacement.verticalAuto,
             pointer: const SpotlightGuidePointer(
               size: Size(88, 42),
-              targetGap: 4,
-              visualOffset: SpotlightGuidePointerOffset.directional(
-                end: 3,
-                up: 2,
-              ),
+              pointerTargetPosition: SpotlightGuidePointPosition.center(3, -2),
               paintOrder: SpotlightGuidePointerPaintOrder.aboveBubble,
               bubbleSide: SpotlightGuideBubbleSide.bottom,
               child: SizedBox(
@@ -1162,7 +1154,7 @@ void main() {
           _step(
             'rtl-old',
             placement: SpotlightGuidePlacement.start,
-            targetAnchorPosition: const SpotlightGuideAnchorPosition.start(10),
+            anchorTargetPosition: const SpotlightGuideAnchorPosition.start(10),
             contexts: contexts,
           ),
         ],
@@ -1172,7 +1164,7 @@ void main() {
     final SpotlightGuideStepContext ltr = contexts['rtl-old']!;
     expect(ltr.placement, SpotlightGuidePlacement.left);
     expect(ltr.anchorDirection, SpotlightGuideDirection.right);
-    expect(ltr.targetAnchorPoint.dy, moreOrLessEquals(ltr.targetRect.top + 10));
+    expect(ltr.anchorTargetPoint.dy, moreOrLessEquals(ltr.targetRect.top + 10));
     await tester.pumpWidget(
       guideApp(
         textDirection: TextDirection.rtl,
@@ -1187,7 +1179,7 @@ void main() {
           _step(
             'rtl-new',
             placement: SpotlightGuidePlacement.start,
-            targetAnchorPosition: const SpotlightGuideAnchorPosition.start(10),
+            anchorTargetPosition: const SpotlightGuideAnchorPosition.start(10),
             contexts: contexts,
           ),
         ],
@@ -1200,7 +1192,7 @@ void main() {
     final SpotlightGuideStepContext rtl = contexts['rtl-new']!;
     expect(rtl.placement, SpotlightGuidePlacement.right);
     expect(rtl.anchorDirection, SpotlightGuideDirection.left);
-    expect(rtl.targetAnchorPoint.dy, moreOrLessEquals(rtl.targetRect.top + 10));
+    expect(rtl.anchorTargetPoint.dy, moreOrLessEquals(rtl.targetRect.top + 10));
   });
 
   testWidgets('missing target behavior updates from wait to skip mid-flow', (
@@ -1277,7 +1269,7 @@ SpotlightGuideStep _step(
   SpotlightGuidePlacement placement = SpotlightGuidePlacement.verticalAuto,
   SpotlightGuideTargetDecoration targetDecoration =
       const SpotlightGuideTargetDecoration(padding: EdgeInsets.zero),
-  SpotlightGuideAnchorPosition targetAnchorPosition =
+  SpotlightGuideAnchorPosition anchorTargetPosition =
       const SpotlightGuideAnchorPosition.center(),
   double gap = 8,
   EdgeInsetsGeometry? margin,
@@ -1290,7 +1282,7 @@ SpotlightGuideStep _step(
       targetId: targetId,
       placement: placement,
       targetDecoration: targetDecoration,
-      targetAnchorPosition: targetAnchorPosition,
+      anchorTargetPosition: anchorTargetPosition,
       gap: gap,
       margin: margin,
       minWidth: minWidth,
@@ -1305,7 +1297,7 @@ SpotlightGuideStep _pointerStep({
   required SpotlightGuidePointer pointer,
   required Map<String, SpotlightGuideStepContext> contexts,
   SpotlightGuidePlacement placement = SpotlightGuidePlacement.bottom,
-  SpotlightGuideAnchorPosition targetAnchorPosition =
+  SpotlightGuideAnchorPosition anchorTargetPosition =
       const SpotlightGuideAnchorPosition.center(),
   double gap = 8,
 }) {
@@ -1316,7 +1308,7 @@ SpotlightGuideStep _pointerStep({
       targetDecoration: const SpotlightGuideTargetDecoration(
         padding: EdgeInsets.zero,
       ),
-      targetAnchorPosition: targetAnchorPosition,
+      anchorTargetPosition: anchorTargetPosition,
       gap: gap,
       pointer: pointer,
       hintBuilder: (BuildContext context, SpotlightGuideStepContext guide) {

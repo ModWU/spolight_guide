@@ -92,7 +92,7 @@ double? _pointerTargetLayoutGap(SpotlightGuidePointer? pointer) {
       pointer.anchorMode != SpotlightGuidePointerAnchorMode.pointer) {
     return null;
   }
-  return _finiteOrZero(pointer.targetGap);
+  return _finiteOrZero(pointer.pointerTargetPosition.crossAxisOffset);
 }
 
 double _stepTargetLayoutGap(SpotlightGuideStepItem item) {
@@ -122,7 +122,7 @@ enum SpotlightGuidePointerAnchorMode {
 /// the job of [SpotlightGuideStepItem.placement]. This enum chooses only the
 /// second segment of the chain, from pointer to bubble. The distance on that
 /// segment is controlled by [SpotlightGuideStepItem.gap], not by the target
-/// size or [SpotlightGuidePointer.targetGap].
+/// size or [SpotlightGuidePointer.pointerTargetPosition].
 enum SpotlightGuideBubbleSide {
   /// Keep the target -> pointer -> bubble line on the same axis.
   ///
@@ -269,93 +269,25 @@ class SpotlightGuidePointerContext {
   }
 }
 
-/// Visual-only offset applied to [SpotlightGuidePointer.child].
-///
-/// This offset moves the pointer widget's painted content without changing the
-/// target -> pointer -> bubble layout chain. Use it as a last-mile adjustment
-/// when a custom pointer asset has a visual tip that does not sit exactly on
-/// the widget bounds.
-@immutable
-class SpotlightGuidePointerOffset {
-  const SpotlightGuidePointerOffset._({
-    required double physicalDx,
-    required double directionalDx,
-    required this.dy,
-  }) : _physicalDx = physicalDx,
-       _directionalDx = directionalDx;
-
-  /// No visual offset.
-  static const SpotlightGuidePointerOffset zero = SpotlightGuidePointerOffset._(
-    physicalDx: 0,
-    directionalDx: 0,
-    dy: 0,
-  );
-
-  /// Physical screen offset.
-  ///
-  /// Positive [right] moves the visual pointer right, positive [left] moves it
-  /// left, positive [down] moves it down, and positive [up] moves it up. This
-  /// constructor is not mirrored in RTL.
-  const SpotlightGuidePointerOffset.physical({
-    double left = 0,
-    double right = 0,
-    double up = 0,
-    double down = 0,
-  }) : this._(physicalDx: right - left, directionalDx: 0, dy: down - up);
-
-  /// Direction-aware horizontal offset.
-  ///
-  /// Positive [start] moves toward the semantic start side and positive [end]
-  /// moves toward the semantic end side. In RTL, start is right and end is
-  /// left. Vertical [up] and [down] are physical.
-  const SpotlightGuidePointerOffset.directional({
-    double start = 0,
-    double end = 0,
-    double up = 0,
-    double down = 0,
-  }) : this._(physicalDx: 0, directionalDx: end - start, dy: down - up);
-
-  final double _physicalDx;
-  final double _directionalDx;
-
-  /// Physical vertical offset. Positive values move down.
-  final double dy;
-
-  /// Resolves this offset to physical screen coordinates.
-  Offset resolve(TextDirection textDirection) {
-    final double resolvedDirectionalDx = switch (textDirection) {
-      TextDirection.ltr => _directionalDx,
-      TextDirection.rtl => -_directionalDx,
-    };
-    return Offset(
-      _finiteOrZero(_physicalDx + resolvedDirectionalDx),
-      _finiteOrZero(dy),
-    );
-  }
-}
-
 /// Configuration for a visual pointer attached to a guide hint.
 ///
 /// Pointer layout has three independent relationships:
 ///
-/// - [SpotlightGuideStepItem.placement] chooses where the pointer/hint sits
-///   relative to the target.
-/// - [pointerAnchorPosition] chooses which point inside [child] aligns to the
-///   target anchor.
-/// - [SpotlightGuideStepItem.targetAnchorPosition] chooses which point inside
-///   [child] the bubble anchor aligns to while the pointer participates in the
-///   default anchor chain.
-/// - [targetGap] controls the signed main-axis distance from the target edge to
-///   the pointer.
+/// - [SpotlightGuideStepItem.placement] chooses which target side the
+///   pointer/hint sits on.
+/// - [pointerTargetPosition] chooses the target-side point where the pointer is
+///   placed.
+/// - [anchorPointerPosition] chooses which point on the pointer's layout slot
+///   the bubble anchor aligns to while the pointer participates in the default
+///   chain.
 /// - [bubbleSide] chooses where the bubble sits relative to the pointer.
 ///
 /// When [anchorMode] is [SpotlightGuidePointerAnchorMode.pointer], the pointer
-/// touches the target side chosen by [SpotlightGuideStepItem.placement], and
-/// [SpotlightGuideStepContext.gap] controls the distance from the pointer to
-/// the bubble anchor tip. [targetGap] can move the pointer away from or toward
-/// the target before that pointer-to-bubble segment is laid out. If the bubble
-/// decoration uses an anchor that paints nothing, the bubble edge is treated as
-/// that tip.
+/// sits relative to the target side chosen by [SpotlightGuideStepItem.placement].
+/// [SpotlightGuidePointPosition.crossAxisOffset] controls the pointer-target
+/// distance, and [SpotlightGuideStepContext.gap] controls the distance from the
+/// pointer to the bubble anchor tip. If the bubble decoration uses an anchor
+/// that paints nothing, the bubble edge is treated as that tip.
 ///
 /// If a custom pointer image has transparent padding or a painted tip that is
 /// not on the widget edge, wrap or size that pointer widget so its layout edge
@@ -372,26 +304,24 @@ class SpotlightGuidePointer {
     required this.child,
     this.builder,
     this.size,
-    this.pointerAnchorPosition = const SpotlightGuideAnchorPosition.center(),
-    this.targetGap = 0,
+    this.pointerTargetPosition = const SpotlightGuidePointPosition.center(),
+    this.anchorPointerPosition = const SpotlightGuideAnchorPosition.center(),
     this.paintOrder = SpotlightGuidePointerPaintOrder.belowBubble,
     this.anchorMode = SpotlightGuidePointerAnchorMode.pointer,
     this.bubbleSide = SpotlightGuideBubbleSide.along,
     this.bubbleOffset,
-    this.visualOffset = SpotlightGuidePointerOffset.zero,
   });
 
   /// Convenience configuration using the built-in [SpotlightGuideTapPointer].
   const SpotlightGuidePointer.tap({
     this.builder,
     this.size = SpotlightGuideTapPointer.defaultSize,
-    this.pointerAnchorPosition = const SpotlightGuideAnchorPosition.center(),
-    this.targetGap = 0,
+    this.pointerTargetPosition = const SpotlightGuidePointPosition.center(),
+    this.anchorPointerPosition = const SpotlightGuideAnchorPosition.center(),
     this.paintOrder = SpotlightGuidePointerPaintOrder.belowBubble,
     this.anchorMode = SpotlightGuidePointerAnchorMode.pointer,
     this.bubbleSide = SpotlightGuideBubbleSide.along,
     this.bubbleOffset,
-    this.visualOffset = SpotlightGuidePointerOffset.zero,
   }) : child = const SpotlightGuideTapPointer();
 
   /// Pointer widget, such as [SpotlightGuideTapPointer], an image, or animation.
@@ -413,21 +343,21 @@ class SpotlightGuidePointer {
   /// decode timing.
   final Size? size;
 
-  /// Anchor inside [child] that aligns with the resolved target anchor.
+  /// Pointer position relative to the target.
   ///
-  /// For top/bottom placements this resolves on the pointer's horizontal axis.
-  /// For left/right placements this resolves on the pointer's vertical axis.
-  final SpotlightGuideAnchorPosition pointerAnchorPosition;
+  /// The pointer widget is centered on the resolved target-side point along
+  /// the main axis. [SpotlightGuidePointPosition.crossAxisOffset] moves the
+  /// pointer away from or toward the target on the perpendicular axis. Changing
+  /// this position moves the pointer relative to the target; it does not move
+  /// the bubble anchor.
+  final SpotlightGuidePointPosition pointerTargetPosition;
 
-  /// Signed main-axis distance from the target edge to the pointer.
+  /// Position inside [child] where the bubble anchor connects.
   ///
-  /// Positive values move the pointer away from the target in the resolved
-  /// placement direction: down for bottom hints, up for top hints, left for
-  /// left hints, and right for right hints. Negative values move the pointer
-  /// back toward or across the target. This only affects the target -> pointer
-  /// segment; [SpotlightGuideStepItem.gap] still controls the pointer -> bubble
-  /// anchor segment.
-  final double targetGap;
+  /// This only chooses the pointer point used by the bubble anchor. It does not
+  /// move the pointer relative to the target; use [pointerTargetPosition] for
+  /// that relationship.
+  final SpotlightGuideAnchorPosition anchorPointerPosition;
 
   /// Whether [child] paints above or below the bubble.
   final SpotlightGuidePointerPaintOrder paintOrder;
@@ -449,9 +379,6 @@ class SpotlightGuidePointer {
   /// Leave null for the default pointer-between-target-and-bubble layout. Set
   /// a value only when a custom pointer asset needs manual composition.
   final double? bubbleOffset;
-
-  /// Visual-only child offset that does not affect the anchor chain.
-  final SpotlightGuidePointerOffset visualOffset;
 }
 
 extension on SpotlightGuidePointer {

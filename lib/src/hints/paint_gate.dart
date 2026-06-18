@@ -90,9 +90,6 @@ class _RenderSpotlightGuidePaintGate extends RenderProxyBox
   Offset get layoutOffsetCorrection => Offset.zero;
 
   @override
-  double? get targetLayoutGap => null;
-
-  @override
   void useLayoutGuide(SpotlightGuideStepContext value) {}
 
   @override

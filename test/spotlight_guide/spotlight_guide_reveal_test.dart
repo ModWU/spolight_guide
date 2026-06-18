@@ -239,7 +239,10 @@ void main() {
               gap: 24,
               pointer: const SpotlightGuidePointer(
                 size: Size(56, 96),
-                targetGap: 12,
+                pointerTargetPosition: SpotlightGuidePointPosition.center(
+                  0,
+                  12,
+                ),
                 child: SizedBox(
                   key: ValueKey<String>('item-level-pointer'),
                   width: 56,

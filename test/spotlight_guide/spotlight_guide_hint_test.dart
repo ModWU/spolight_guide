@@ -401,7 +401,7 @@ void main() {
                     padding: EdgeInsets.zero,
                   ),
                   margin: const EdgeInsets.symmetric(horizontal: margin),
-                  targetAnchorPosition: caseInfo.anchor,
+                  anchorTargetPosition: caseInfo.anchor,
                   hintBuilder:
                       (BuildContext context, SpotlightGuideStepContext guide) {
                         return SpotlightGuideBubbleHint(

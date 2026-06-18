@@ -24,7 +24,7 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
               ),
-              targetAnchorPosition: const SpotlightGuideAnchorPosition.start(
+              anchorTargetPosition: const SpotlightGuideAnchorPosition.start(
                 10,
               ),
               hintBuilder: hint('ltr-anchor', ltrContexts),
@@ -36,7 +36,7 @@ void main() {
     await pumpGuide(tester);
     final SpotlightGuideStepContext ltrContext = ltrContexts['ltr-anchor']!;
     expect(
-      ltrContext.targetAnchorPoint.dx,
+      ltrContext.anchorTargetPoint.dx,
       moreOrLessEquals(ltrContext.targetRect.left + 10, epsilon: 0.5),
     );
 
@@ -52,7 +52,7 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
               ),
-              targetAnchorPosition: const SpotlightGuideAnchorPosition.start(
+              anchorTargetPosition: const SpotlightGuideAnchorPosition.start(
                 10,
               ),
               hintBuilder: hint('rtl-anchor', rtlContexts),
@@ -64,7 +64,7 @@ void main() {
     await pumpGuide(tester);
     final SpotlightGuideStepContext rtlContext = rtlContexts['rtl-anchor']!;
     expect(
-      rtlContext.targetAnchorPoint.dx,
+      rtlContext.anchorTargetPoint.dx,
       moreOrLessEquals(rtlContext.targetRect.right - 10, epsilon: 0.5),
     );
   });
@@ -576,7 +576,7 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
               ),
-              targetAnchorPosition: const SpotlightGuideAnchorPosition.end(12),
+              anchorTargetPosition: const SpotlightGuideAnchorPosition.end(12),
               hintBuilder: hint('ltr-end', ltrContexts),
             ),
           ),
@@ -586,7 +586,7 @@ void main() {
     await pumpGuide(tester);
     final SpotlightGuideStepContext ltrGuide = ltrContexts['ltr-end']!;
     expect(
-      ltrGuide.targetAnchorPoint.dx,
+      ltrGuide.anchorTargetPoint.dx,
       moreOrLessEquals(ltrGuide.targetRect.right - 12, epsilon: 0.5),
     );
 
@@ -602,7 +602,7 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
               ),
-              targetAnchorPosition: const SpotlightGuideAnchorPosition.end(12),
+              anchorTargetPosition: const SpotlightGuideAnchorPosition.end(12),
               hintBuilder: hint('rtl-end', rtlContexts),
             ),
           ),
@@ -612,7 +612,7 @@ void main() {
     await pumpGuide(tester);
     final SpotlightGuideStepContext rtlGuide = rtlContexts['rtl-end']!;
     expect(
-      rtlGuide.targetAnchorPoint.dx,
+      rtlGuide.anchorTargetPoint.dx,
       moreOrLessEquals(rtlGuide.targetRect.left + 12, epsilon: 0.5),
     );
   });
@@ -643,7 +643,7 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
-                targetAnchorPosition: const SpotlightGuideAnchorPosition.start(
+                anchorTargetPosition: const SpotlightGuideAnchorPosition.start(
                   8,
                 ),
                 hintBuilder: hint('arabic-start', contexts),
@@ -654,7 +654,7 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
-                targetAnchorPosition: const SpotlightGuideAnchorPosition.end(8),
+                anchorTargetPosition: const SpotlightGuideAnchorPosition.end(8),
                 hintBuilder: hint('arabic-end', contexts),
               ),
             ],
@@ -667,11 +667,11 @@ void main() {
     final SpotlightGuideStepContext startGuide = contexts['arabic-start']!;
     final SpotlightGuideStepContext endGuide = contexts['arabic-end']!;
     expect(
-      startGuide.targetAnchorPoint.dx,
+      startGuide.anchorTargetPoint.dx,
       moreOrLessEquals(startGuide.targetRect.right - 8, epsilon: 0.5),
     );
     expect(
-      endGuide.targetAnchorPoint.dx,
+      endGuide.anchorTargetPoint.dx,
       moreOrLessEquals(endGuide.targetRect.left + 8, epsilon: 0.5),
     );
   });
@@ -887,7 +887,7 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
-                targetAnchorPosition: const SpotlightGuideAnchorPosition.end(),
+                anchorTargetPosition: const SpotlightGuideAnchorPosition.end(),
                 decoration: const SpotlightGuideBubbleDecoration(
                   borderRadius: 18,
                   anchor: SpotlightGuideTriangleAnchor(size: Size(24, 16)),
@@ -901,9 +901,12 @@ void main() {
       await pumpGuide(tester);
 
       final SpotlightGuideStepContext guide = contexts['safe-arrow']!;
-      expect(guide.anchorOffset, greaterThanOrEqualTo(guide.anchorSafeInset));
       expect(
-        arrowSideExtent(guide) - guide.anchorOffset,
+        guide.bubbleAnchorOffset,
+        greaterThanOrEqualTo(guide.anchorSafeInset),
+      );
+      expect(
+        arrowSideExtent(guide) - guide.bubbleAnchorOffset,
         greaterThanOrEqualTo(guide.anchorSafeInset),
       );
     },
@@ -964,7 +967,7 @@ void main() {
                 targetDecoration: const SpotlightGuideTargetDecoration(
                   padding: EdgeInsets.zero,
                 ),
-                targetAnchorPosition: placementCase.anchor,
+                anchorTargetPosition: placementCase.anchor,
                 decoration: const SpotlightGuideBubbleDecoration(
                   borderRadius: 18,
                   anchor: SpotlightGuideTriangleAnchor(size: Size(24, 16)),
@@ -979,9 +982,12 @@ void main() {
 
       final SpotlightGuideStepContext guide = contexts[placementCase.label]!;
       expect(guide.placement, placementCase.placement);
-      expect(guide.anchorOffset, greaterThanOrEqualTo(guide.anchorSafeInset));
       expect(
-        arrowSideExtent(guide) - guide.anchorOffset,
+        guide.bubbleAnchorOffset,
+        greaterThanOrEqualTo(guide.anchorSafeInset),
+      );
+      expect(
+        arrowSideExtent(guide) - guide.bubbleAnchorOffset,
         greaterThanOrEqualTo(guide.anchorSafeInset),
       );
     }
@@ -1086,7 +1092,7 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
               ),
-              targetAnchorPosition: const SpotlightGuideAnchorPosition.center(
+              anchorTargetPosition: const SpotlightGuideAnchorPosition.center(
                 -12,
               ),
               hintBuilder: hint('negative-center', contexts),
@@ -1099,7 +1105,7 @@ void main() {
 
     final SpotlightGuideStepContext guide = contexts['negative-center']!;
     expect(
-      guide.targetAnchorPoint.dx,
+      guide.anchorTargetPoint.dx,
       moreOrLessEquals(guide.targetRect.center.dx - 12, epsilon: 0.5),
     );
   });
@@ -1127,7 +1133,7 @@ void main() {
               targetDecoration: const SpotlightGuideTargetDecoration(
                 padding: EdgeInsets.zero,
               ),
-              targetAnchorPosition: const SpotlightGuideAnchorPosition.end(),
+              anchorTargetPosition: const SpotlightGuideAnchorPosition.end(),
               decoration: const SpotlightGuideBubbleDecoration(
                 borderRadius: 10,
                 anchor: _WideVisualNarrowConnectionAnchor(),
@@ -1142,9 +1148,9 @@ void main() {
 
     final SpotlightGuideStepContext guide = contexts['safe-connection-range']!;
     expect(guide.anchorSafeInset, moreOrLessEquals(14, epsilon: 0.5));
-    expect(guide.anchorOffset, greaterThanOrEqualTo(14));
+    expect(guide.bubbleAnchorOffset, greaterThanOrEqualTo(14));
     expect(
-      arrowSideExtent(guide) - guide.anchorOffset,
+      arrowSideExtent(guide) - guide.bubbleAnchorOffset,
       greaterThanOrEqualTo(14),
     );
   });

@@ -212,8 +212,6 @@ class _SpotlightGuideOverlayReadiness extends ChangeNotifier {
 abstract interface class _HintLayoutParticipant {
   bool get isPaintReady;
 
-  double? get targetLayoutGap;
-
   Offset get layoutOffsetCorrection;
 
   void useLayoutGuide(SpotlightGuideStepContext value);
@@ -256,7 +254,6 @@ class _SpotlightGuideHintLayoutInputs {
   _HintLayout layoutFor({
     required TextDirection textDirection,
     required Size? hintSize,
-    double? layoutGap,
   }) {
     return _HintLayout.compute(
       screenSize: overlaySize,
@@ -264,7 +261,6 @@ class _SpotlightGuideHintLayoutInputs {
       step: overlayItem.item,
       textDirection: textDirection,
       hintSize: hintSize,
-      layoutGap: layoutGap,
     );
   }
 
@@ -284,15 +280,16 @@ class _SpotlightGuideHintLayoutInputs {
       targetRect: overlayItem.targetRect,
       targetRects: overlayItem.targetRects,
       stepTargetRects: stepTargetRects,
-      targetAnchorPoint: layout.targetAnchorPoint,
-      targetAnchorPosition: overlayItem.item.targetAnchorPosition,
+      anchorTargetPoint: layout.anchorTargetPoint,
+      pointerTargetPoint: layout.pointerTargetPoint,
+      anchorTargetPosition: overlayItem.item.anchorTargetPosition,
       overlaySize: overlaySize,
       hintRect: layout.rect,
       hintConstraints: layout.hintConstraints,
       margin: layout.margin,
       placement: layout.placement,
       anchorDirection: layout.anchorDirection,
-      anchorOffset: layout.anchorOffset,
+      bubbleAnchorOffset: layout.bubbleAnchorOffset,
       anchorSafeInset: layout.anchorSafeInset,
       bubbleAnchorSideExtent: layout.bubbleAnchorSideExtent,
       contentSize: contentSize,
@@ -453,11 +450,9 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
     }
 
     Size? measuredSize;
-    final double? layoutGap = _internalTargetGap(child);
     _HintLayout layout = _inputs.layoutFor(
       textDirection: _textDirection,
       hintSize: measuredSize,
-      layoutGap: layoutGap,
     );
 
     for (int pass = 0; pass < _maxLayoutPasses; pass += 1) {
@@ -472,7 +467,6 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
       final _HintLayout nextLayout = _inputs.layoutFor(
         textDirection: _textDirection,
         hintSize: nextSize,
-        layoutGap: layoutGap,
       );
       final bool stableSize = _sizesNearlyEqual(measuredSize, nextSize);
       final bool stableLayout = _layoutsNearlyEqual(layout, nextLayout);
@@ -565,7 +559,10 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
 
   bool _layoutsNearlyEqual(_HintLayout a, _HintLayout b) {
     return _rectsNearlyEqual(a.rect, b.rect) &&
-        (a.anchorOffset - b.anchorOffset).abs() <= _layoutTolerance &&
+        _offsetsNearlyEqual(a.anchorTargetPoint, b.anchorTargetPoint) &&
+        _offsetsNearlyEqual(a.pointerTargetPoint, b.pointerTargetPoint) &&
+        (a.bubbleAnchorOffset - b.bubbleAnchorOffset).abs() <=
+            _layoutTolerance &&
         a.placement == b.placement &&
         a.anchorDirection == b.anchorDirection &&
         a.hintConstraints == b.hintConstraints &&
@@ -577,6 +574,11 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
         (a.top - b.top).abs() <= _layoutTolerance &&
         (a.width - b.width).abs() <= _layoutTolerance &&
         (a.height - b.height).abs() <= _layoutTolerance;
+  }
+
+  bool _offsetsNearlyEqual(Offset a, Offset b) {
+    return (a.dx - b.dx).abs() <= _layoutTolerance &&
+        (a.dy - b.dy).abs() <= _layoutTolerance;
   }
 
   void _updateChildGuide(RenderBox child, SpotlightGuideStepContext guide) {
@@ -612,23 +614,6 @@ class _RenderSpotlightGuideHintSlot extends RenderProxyBox {
       }
     });
     return correction;
-  }
-
-  double? _internalTargetGap(RenderObject renderObject) {
-    final _HintLayoutParticipant? participant = _hintLayoutParticipantOf(
-      renderObject,
-    );
-    if (participant != null) {
-      final double? targetGap = participant.targetLayoutGap;
-      if (targetGap != null) {
-        return targetGap;
-      }
-    }
-    double? targetGap;
-    renderObject.visitChildren((RenderObject child) {
-      targetGap ??= _internalTargetGap(child);
-    });
-    return targetGap;
   }
 
   _HintLayoutParticipant? _hintLayoutParticipantOf(RenderObject renderObject) {

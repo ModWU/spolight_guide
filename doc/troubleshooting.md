@@ -126,26 +126,25 @@ flutter test --no-pub test/spotlight_guide/spotlight_guide_layout_test.dart
 Remember the anchor chain:
 
 ```text
-SpotlightGuidePointer.pointerAnchorPosition -> targetGap -> pointer layout slot -> targetAnchorPosition -> gap -> bubble anchor tip
+pointerTargetPosition(mainAxisOffset, crossAxisOffset) -> pointer layout slot -> anchorPointerPosition -> gap -> bubble anchor tip
 ```
 
-If there is no pointer, `SpotlightGuidePointer.pointerAnchorPosition` is not used and `targetAnchorPosition` resolves on the target directly.
+If there is no pointer, `anchorTargetPosition` resolves on the target directly
+and the bubble anchor points to that target point.
 
-With the default pointer chain, `pointerAnchorPosition` chooses which point
-inside the pointer attaches to the target. `targetAnchorPosition` then chooses
-which point inside the pointer the bubble anchor attaches to. The pointer
-touches the target side and `SpotlightGuideStepItem.gap` is the
-pointer-to-bubble-anchor distance. Use `SpotlightGuidePointer.targetGap`
-for the target-to-pointer distance: positive values move the pointer away from
-the target, negative values pull it back toward the target, and zero keeps it
-touching. If the bubble has no anchor, the hint edge is treated as the anchor
-tip. Without a pointer, `gap` is still the target-to-bubble distance.
+With the default pointer chain, `pointerTargetPosition` chooses the target-side
+point where the pointer is placed, and `anchorPointerPosition` chooses where
+the bubble anchor attaches to the pointer. Use
+`SpotlightGuidePointPosition.crossAxisOffset` for the pointer's distance from
+the target side and `SpotlightGuideStepItem.gap` for the
+pointer-to-bubble-anchor distance. If the bubble has no anchor, the hint edge
+is treated as the anchor tip. Without a pointer, `anchorTargetPosition`
+resolves on the target directly and `gap` is the target-to-bubble distance.
 
-If only the pointer artwork needs a tiny nudge, use
-`SpotlightGuidePointer.visualOffset`. It moves only the pointer child paint,
-so it should not be used to fix target, pointer, or bubble anchor alignment. Use
-`SpotlightGuidePointerOffset.directional` when the horizontal nudge should
-mirror in RTL.
+Use `pointerTargetPosition` with a main-axis and optional cross-axis offset,
+such as `SpotlightGuidePointPosition.center(-30, -8)`, when the pointer itself
+should sit away from the target center. Most cases should use `center()`,
+`center(x)`, `start(x)`, or `end(x)`.
 
 If a pointer is present but should not become part of the anchor chain, set
 `SpotlightGuidePointer(anchorMode: SpotlightGuidePointerAnchorMode.target,

@@ -213,7 +213,7 @@ void main() {
   });
 
   testWidgets(
-    'targetAnchorPosition start bubble anchor stays safe without moving pointer',
+    'anchorPointerPosition start bubble anchor stays safe without moving pointer',
     (tester) async {
       const EdgeInsets margin = EdgeInsets.all(24);
       final List<_PointerStartSafeCase> cases = <_PointerStartSafeCase>[
@@ -255,15 +255,13 @@ void main() {
                   targetDecoration: const SpotlightGuideTargetDecoration(
                     padding: EdgeInsets.zero,
                   ),
-                  targetAnchorPosition:
-                      const SpotlightGuideAnchorPosition.start(),
                   decoration: const SpotlightGuideBubbleDecoration(
                     borderRadius: 28,
                   ),
                   margin: margin,
                   pointer: SpotlightGuidePointer(
                     size: const Size(40, 24),
-                    pointerAnchorPosition:
+                    anchorPointerPosition:
                         const SpotlightGuideAnchorPosition.start(),
                     bubbleSide: SpotlightGuideBubbleSide.bottom,
                     child: SizedBox(
@@ -298,14 +296,14 @@ void main() {
         );
         final SpotlightGuideBubbleAnchorGeometry anchorGeometry =
             decoration.effectiveAnchorGeometry!;
-        final double pointerTargetX =
+        final double anchorPointerX =
             testCase.textDirection == TextDirection.rtl
             ? pointerRect.right
             : pointerRect.left;
 
         expect(
-          pointerTargetX,
-          moreOrLessEquals(guide.targetRect.center.dx, epsilon: 0.5),
+          pointerRect.center.dx,
+          moreOrLessEquals(guide.anchorTargetPoint.dx, epsilon: 2.5),
           reason: testCase.label,
         );
         _expectBubbleInsideMargin(bubbleRect, guide, reason: testCase.label);
@@ -317,7 +315,7 @@ void main() {
         );
         expect(
           bubbleRect.left + anchorGeometry.offset,
-          moreOrLessEquals(pointerTargetX, epsilon: 0.5),
+          moreOrLessEquals(anchorPointerX, epsilon: 0.5),
           reason: testCase.label,
         );
       }
@@ -411,11 +409,11 @@ void main() {
   );
 
   testWidgets(
-    'along-placement pointer reserves pointer and target gap before right margin',
+    'along-placement pointer reserves pointer target distance before right margin',
     (tester) async {
       const EdgeInsets margin = EdgeInsets.all(24);
       const double gap = 10;
-      const double targetGap = 14;
+      const double targetDistance = 14;
       const Size pointerSize = Size(48, 48);
       final Map<String, SpotlightGuideStepContext> contexts =
           <String, SpotlightGuideStepContext>{};
@@ -445,7 +443,10 @@ void main() {
                 maxWidth: 300,
                 pointer: const SpotlightGuidePointer(
                   size: pointerSize,
-                  targetGap: targetGap,
+                  pointerTargetPosition: SpotlightGuidePointPosition.center(
+                    0,
+                    targetDistance,
+                  ),
                   child: SizedBox(
                     key: ValueKey<String>('right-reserve-pointer'),
                     width: 48,
@@ -482,12 +483,12 @@ void main() {
       _expectBubbleInsideMargin(bubbleRect, guide, reason: 'right-reserve');
       expect(
         pointerRect.left,
-        moreOrLessEquals(guide.targetRect.right + targetGap, epsilon: 0.5),
+        moreOrLessEquals(guide.targetRect.right + targetDistance, epsilon: 0.5),
         reason: 'right-reserve',
       );
       expect(
         pointerRect.center.dy,
-        moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
+        moreOrLessEquals(guide.anchorTargetPoint.dy, epsilon: 0.5),
         reason: 'right-reserve',
       );
       _expectBubbleAnchorAlignedToPointer(
@@ -597,7 +598,7 @@ void _expectPointerTouchesTarget(
       );
       expect(
         pointerRect.center.dx,
-        moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
+        moreOrLessEquals(guide.anchorTargetPoint.dx, epsilon: 0.5),
         reason: reason,
       );
     case SpotlightGuideDirection.down:
@@ -608,7 +609,7 @@ void _expectPointerTouchesTarget(
       );
       expect(
         pointerRect.center.dx,
-        moreOrLessEquals(guide.targetAnchorPoint.dx, epsilon: 0.5),
+        moreOrLessEquals(guide.anchorTargetPoint.dx, epsilon: 0.5),
         reason: reason,
       );
     case SpotlightGuideDirection.left:
@@ -619,7 +620,7 @@ void _expectPointerTouchesTarget(
       );
       expect(
         pointerRect.center.dy,
-        moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
+        moreOrLessEquals(guide.anchorTargetPoint.dy, epsilon: 0.5),
         reason: reason,
       );
     case SpotlightGuideDirection.right:
@@ -630,7 +631,7 @@ void _expectPointerTouchesTarget(
       );
       expect(
         pointerRect.center.dy,
-        moreOrLessEquals(guide.targetAnchorPoint.dy, epsilon: 0.5),
+        moreOrLessEquals(guide.anchorTargetPoint.dy, epsilon: 0.5),
         reason: reason,
       );
   }

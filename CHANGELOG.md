@@ -40,9 +40,9 @@ This file records the current component contract for maintainers.
   are not mounted and have no reveal callback are removed from the active
   sequence automatically. Use `wait` when a target is intentionally expected to
   appear later.
-- Clarified pointer semantics for `gap`, `targetGap`, `visualOffset`,
-  `bubbleSide`, and `anchorMode`, and expanded pointer examples around
-  target, pointer, and bubble anchor relationships.
+- Clarified pointer semantics for `gap`, pointer positions,
+  `bubbleSide`, and `anchorMode`, and expanded pointer examples around target,
+  pointer, and bubble anchor relationships.
 - Hardened target decoration, reveal scrolling helpers, and bubble decoration
   inputs against invalid numeric values.
 - Expanded focused tests for hot reload, pointer layout, missing target

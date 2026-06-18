@@ -102,8 +102,13 @@ spotlight_guide_direction_test.dart
   Direction semantics matrix: SpotlightGuidePlacement fixed/auto/semantic
   resolution, SpotlightGuideBubbleSide physical and semantic sides,
   LTR/RTL start/end behavior, anchor positions, pointer direction rotations,
-  visual offsets, pointer-bubble anchor direction relationships, and a
+  pointer offsets, pointer-bubble anchor direction relationships, and a
   lightweight screenshot pixel smoke test for rendered pointer/bubble output.
+
+spotlight_guide_anchor_position_axis_test.dart
+  Focused [SpotlightGuideAnchorPosition] main-axis semantics and
+  [SpotlightGuidePointPosition] cross-axis pointer correction for top, bottom,
+  left, right, semantic start/end placement, and LTR/RTL layouts.
 
 spotlight_guide_hot_reload_test.dart
   Hot-reload-like parent rebuild behavior while a guide is visible: active
@@ -126,9 +131,10 @@ spotlight_guide_test_helpers.dart
 - Changing pointer or arrow anchor math: run direction, pointer, and layout tests.
 - Changing first-frame hint visibility, async image/animation hint content, or
   target-hole reveal timing: run readiness, pointer, and barrier tests.
-- Changing semantic start/end, RTL behavior, pointer bubble placement, pointer
-  direction, visual offset, or signed gap direction semantics: run direction,
-  pointer, layout, and safe-area tests.
+- Changing semantic start/end, RTL behavior, anchor position axes, pointer
+  bubble placement, pointer direction, pointer offsets, or signed gap direction
+  semantics: run anchor-position-axis, direction, pointer, layout, and safe-area
+  tests.
 - Changing built-in hint widgets, the bubble decoration, or the connected arrow painter: run hint and pointer tests.
 - Changing target decoration rings, glow, shadow, dashed outlines, or shapes: run target decoration and barrier tests.
 - Changing barrier color, blur, hole clipping, or target pass-through: run barrier tests.

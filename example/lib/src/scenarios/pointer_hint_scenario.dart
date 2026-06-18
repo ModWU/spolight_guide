@@ -18,7 +18,10 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
         builder: _buildDirectionalTapPointer,
         child: _whiteTapPointer,
         size: Size(56, 56),
-        targetGap: _pointerTargetGap,
+        pointerTargetPosition: SpotlightGuidePointPosition.center(
+          0,
+          _pointerTargetDistance,
+        ),
       ),
     ),
     _pointerStep(
@@ -31,8 +34,10 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
       pointer: const SpotlightGuidePointer(
         child: _CustomPointerBadge(),
         size: Size(88, 42),
-        targetGap: _pointerTargetGap,
-        visualOffset: SpotlightGuidePointerOffset.directional(end: 3, up: 2),
+        pointerTargetPosition: SpotlightGuidePointPosition.end(
+          0,
+          _pointerTargetDistance,
+        ),
         paintOrder: SpotlightGuidePointerPaintOrder.aboveBubble,
         bubbleSide: SpotlightGuideBubbleSide.bottom,
       ),
@@ -48,12 +53,15 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
       message:
           'Move the bubble anchor toward the pointer edge while the pointer '
           'stays centered on the target.',
-      targetAnchorPosition: const SpotlightGuideAnchorPosition.start(12),
       pointer: const SpotlightGuidePointer(
         builder: _buildDirectionalTapPointer,
         child: _whiteTapPointer,
         size: SpotlightGuideTapPointer.defaultSize,
-        targetGap: _pointerTargetGap,
+        anchorPointerPosition: SpotlightGuideAnchorPosition.start(12),
+        pointerTargetPosition: SpotlightGuidePointPosition.center(
+          0,
+          _pointerTargetDistance,
+        ),
       ),
     ),
     _pointerStep(
@@ -68,7 +76,10 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
         builder: _buildDirectionalTapPointer,
         child: _whiteTapPointer,
         size: SpotlightGuideTapPointer.defaultSize,
-        targetGap: _pointerTargetGap,
+        pointerTargetPosition: SpotlightGuidePointPosition.center(
+          0,
+          _pointerTargetDistance,
+        ),
       ),
     ),
     _pointerStep(
@@ -83,7 +94,10 @@ List<SpotlightGuideStep> buildPointerHintScenario() {
         builder: _buildDirectionalTapPointer,
         child: _whiteTapPointer,
         size: SpotlightGuideTapPointer.defaultSize,
-        targetGap: _pointerTargetGap,
+        pointerTargetPosition: SpotlightGuidePointPosition.center(
+          0,
+          _pointerTargetDistance,
+        ),
         anchorMode: SpotlightGuidePointerAnchorMode.target,
         paintOrder: SpotlightGuidePointerPaintOrder.aboveBubble,
       ),
@@ -103,11 +117,11 @@ SpotlightGuideStep _leftTargetPointerStep() {
       builder: _buildConnectedTapPointer,
       child: _whiteTapPointer,
       size: Size(_ConnectedTapPointer.size, _ConnectedTapPointer.height),
-      pointerAnchorPosition: SpotlightGuideAnchorPosition.start(
-        _ConnectedTapPointer.size / 2,
+      pointerTargetPosition: SpotlightGuidePointPosition.center(
+        _ConnectedTapPointer.connectorLength / 2,
+        _pointerTargetDistance,
       ),
       bubbleSide: SpotlightGuideBubbleSide.bottom,
-      targetGap: _pointerTargetGap,
     ),
     gap: 0,
     showProgress: false,
@@ -120,7 +134,7 @@ SpotlightGuideStep _pointerStep({
   required String title,
   required String message,
   required SpotlightGuidePointer pointer,
-  SpotlightGuideAnchorPosition targetAnchorPosition =
+  SpotlightGuideAnchorPosition anchorTargetPosition =
       const SpotlightGuideAnchorPosition.center(),
   SpotlightGuideRevealOptions? revealOptions,
   double gap = 10,
@@ -130,7 +144,7 @@ SpotlightGuideStep _pointerStep({
     SpotlightGuideStepItem(
       targetId: targetId,
       placement: placement,
-      targetAnchorPosition: targetAnchorPosition,
+      anchorTargetPosition: anchorTargetPosition,
       targetDecoration: _pointerTargetDecoration,
       decoration: const SpotlightGuideBubbleDecoration(
         borderRadius: 10,
@@ -160,7 +174,7 @@ SpotlightGuideStep _pointerStep({
   );
 }
 
-const double _pointerTargetGap = 4;
+const double _pointerTargetDistance = 4;
 
 const SpotlightGuideTargetDecoration _pointerTargetDecoration =
     SpotlightGuideTargetDecoration(
@@ -204,9 +218,9 @@ class _ConnectedTapPointer extends StatelessWidget {
   const _ConnectedTapPointer({required this.pointer, required this.child});
 
   static const double size = 64;
-  static const double _connectorLength = 80;
+  static const double connectorLength = 80;
   static const double _connectorWidth = 1.4;
-  static const double height = size + _connectorLength;
+  static const double height = size + connectorLength;
 
   final SpotlightGuidePointerContext pointer;
   final Widget child;
@@ -235,7 +249,7 @@ class _ConnectedTapPointer extends StatelessWidget {
           Positioned(
             top: size,
             width: _connectorWidth,
-            height: _connectorLength,
+            height: connectorLength,
             child: DecoratedBox(
               key: const ValueKey<String>('right-pointing-pointer-connector'),
               decoration: BoxDecoration(
